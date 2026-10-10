@@ -1,0 +1,377 @@
+// E-Find — esquema de dados
+//
+// Desenvolvimento usa SQLite. Para produção troque o provider para "postgresql"
+// e aponte DATABASE_URL para o Postgres; o esquema evita recursos exclusivos de um banco.
+//
+// Campos "enum" são String validados em src/lib/constants.ts (SQLite não tem enum nativo).
+// Toda entidade de campanha carrega campaignId: é a fronteira de isolamento entre candidatos.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Uma campanha = um candidato (tenant). Criada pelo SUPER_ADMIN.
+model Campaign {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  candidateName String
+  ballotName    String
+  ballotNumber  String?
+  party         String?
+  /// OFFICES em src/lib/constants.ts
+  office        String
+  city          String?
+  state         String?
+  electionYear  Int
+  logoUrl       String?
+  primaryColor  String   @default("#4f46e5")
+  /// ACTIVE | SUSPENDED
+  status        String   @default("ACTIVE")
+  /// Meta total de cadastros da campanha
+  voterGoal     Int?
+  /// Texto de consentimento LGPD exibido no formulário público (null = texto padrão)
+  consentText   String?
+  /// Título/mensagem exibidos no topo do formulário público
+  formTitle     String?
+  formMessage   String?
+  /// Configuração dos campos opcionais do formulário público (ver FormConfig em src/lib/constants.ts)
+  formConfig    Json?
+  /// Contato do controlador de dados (LGPD) exibido na política de privacidade
+  privacyContact String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users           User[]
+  voters          Voter[]
+  rolePermissions RolePermission[]
+  dashboards      Dashboard[]
+  connections     WhatsAppConnection[]
+  templates       MessageTemplate[]
+  broadcasts      Broadcast[]
+  inboundMessages InboundMessage[]
+  auditLogs       AuditLog[]
+}
+
+/// Usuário do sistema. Hierarquia: ADMIN → COORDENADOR → CABO (parentId aponta para o superior).
+model User {
+  id           String    @id @default(cuid())
+  /// null apenas para SUPER_ADMIN
+  campaignId   String?
+  campaign     Campaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name         String
+  email        String    @unique
+  phone        String?
+  passwordHash String
+  /// SUPER_ADMIN | ADMIN | COORDENADOR | CABO
+  role         String
+  parentId     String?
+  parent       User?     @relation("Hierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     User[]    @relation("Hierarchy")
+  /// Código único do link/QR Code de cadastro de eleitores deste usuário
+  inviteCode   String    @unique
+  active       Boolean   @default(true)
+  /// Meta individual de cadastros
+  goal         Int?
+  /// Região/bairro de atuação (texto livre)
+  region       String?
+  /// Incrementado para invalidar sessões (troca de senha, desativação)
+  sessionVersion Int     @default(0)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  votersRegistered Voter[]          @relation("RegisteredBy")
+  permissions      UserPermission[]
+  dashboards       Dashboard[]
+  templates        MessageTemplate[]
+  broadcasts       Broadcast[]
+  auditLogs        AuditLog[]
+
+  @@index([campaignId, role])
+  @@index([parentId])
+}
+
+/// Permissões por papel dentro de uma campanha (definidas pelo ADMIN). ADMIN sempre tem acesso total.
+model RolePermission {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  /// COORDENADOR | CABO
+  role       String
+  /// MODULES em src/lib/permissions.ts
+  module     String
+  canView    Boolean  @default(false)
+  canCreate  Boolean  @default(false)
+  canEdit    Boolean  @default(false)
+  canDelete  Boolean  @default(false)
+  canExport  Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([campaignId, role, module])
+}
+
+/// Exceções de permissão por usuário. null = herda do papel.
+model UserPermission {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module    String
+  canView   Boolean?
+  canCreate Boolean?
+  canEdit   Boolean?
+  canDelete Boolean?
+  canExport Boolean?
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, module])
+}
+
+/// Eleitor cadastrado. Sempre vinculado a quem cadastrou (registeredById).
+model Voter {
+  id               String    @id @default(cuid())
+  campaignId       String
+  campaign         Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  registeredById   String
+  registeredBy     User      @relation("RegisteredBy", fields: [registeredById], references: [id], onDelete: Restrict)
+  name             String
+  /// Somente dígitos, formato E.164 sem "+": 55 + DDD + número (ex.: 5511987654321)
+  phone            String
+  email            String?
+  birthDate        DateTime?
+  /// M | F | O | N (prefere não informar)
+  gender           String?
+  electoralZone    String?
+  electoralSection String?
+  /// 8 dígitos, sem hífen
+  cep              String?
+  street           String?
+  number           String?
+  complement       String?
+  neighborhood     String?
+  city             String?
+  state            String?
+  /// Coordenadas no nível do CEP/logradouro (não do imóvel), para o mapa
+  latitude         Float?
+  longitude        Float?
+  /// PENDING | OK | APPROXIMATE | FAILED
+  geoStatus        String    @default("PENDING")
+  /// SUPPORT_LEVELS em src/lib/constants.ts
+  supportLevel     String?
+  /// Tags normalizadas separadas por vírgula, com vírgulas nas pontas: ",saude,jovem,"
+  tags             String?
+  notes            String?
+  /// LINK | QRCODE | MANUAL | IMPORT
+  source           String    @default("LINK")
+  /// Consentimento LGPD para tratamento dos dados
+  consentAt        DateTime?
+  consentIp        String?
+  consentText      String?
+  /// Consentimento para receber mensagens de WhatsApp
+  whatsappOptIn    Boolean   @default(false)
+  /// Descadastro (respondeu SAIR ou pediu remoção)
+  optOutAt         DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  broadcastMessages BroadcastMessage[]
+
+  @@unique([campaignId, phone])
+  @@index([campaignId, registeredById])
+  @@index([campaignId, neighborhood])
+  @@index([campaignId, city])
+  @@index([campaignId, createdAt])
+  @@index([geoStatus])
+}
+
+/// Cache de consultas de CEP + geocodificação (compartilhado, não contém dados pessoais)
+model CepCache {
+  cep          String   @id
+  street       String?
+  neighborhood String?
+  city         String?
+  state        String?
+  latitude     Float?
+  longitude    Float?
+  /// Origem das coordenadas: brasilapi | nominatim | nominatim-bairro | none
+  geoSource    String?
+  updatedAt    DateTime @updatedAt
+}
+
+/// Dashboard personalizável (vários modelos por campanha)
+model Dashboard {
+  id          String   @id @default(cuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  ownerId     String?
+  owner       User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  name        String
+  description String?
+  /// Visível para toda a equipe com permissão de dashboard (senão, só para o dono)
+  shared      Boolean  @default(false)
+  /// Dashboard padrão da campanha (aberto em /painel)
+  isDefault   Boolean  @default(false)
+  /// DashboardWidget[] — ver src/lib/dashboard-types.ts
+  widgets     Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([campaignId])
+}
+
+/// Conexão com um provedor de WhatsApp (credenciais criptografadas)
+model WhatsAppConnection {
+  id                 String    @id @default(cuid())
+  campaignId         String
+  campaign           Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name               String
+  /// META_CLOUD | TWILIO | DIALOG360 | SANDBOX
+  provider           String
+  /// DRAFT | CONNECTED | ERROR | DISABLED
+  status             String    @default("DRAFT")
+  /// Número exibido (apenas informativo)
+  phoneNumber        String?
+  /// JSON criptografado (AES-256-GCM) com as credenciais do provedor — ver src/lib/crypto.ts
+  credentials        String
+  /// Token aleatório usado na URL do webhook e como verify token da Meta
+  webhookToken       String    @unique
+  isDefault          Boolean   @default(false)
+  /// Limite de envio (mensagens por minuto)
+  ratePerMinute      Int       @default(20)
+  lastTestedAt       DateTime?
+  lastError          String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  broadcasts       Broadcast[]
+  inboundMessages  InboundMessage[]
+
+  @@index([campaignId])
+}
+
+/// Modelo de mensagem com variáveis {{nome}}, {{bairro}}, ...
+model MessageTemplate {
+  id                String   @id @default(cuid())
+  campaignId        String
+  campaign          Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  createdById       String?
+  createdBy         User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  name              String
+  /// TEMPLATE_CATEGORIES em src/lib/constants.ts
+  category          String   @default("INFORMATIVO")
+  /// TEXT | IMAGE | DOCUMENT | VIDEO
+  type              String   @default("TEXT")
+  body              String
+  mediaUrl          String?
+  /// Para a API oficial da Meta: nome do template aprovado, idioma e ordem das variáveis ({{1}}, {{2}}...)
+  providerTemplateName     String?
+  providerTemplateLanguage String?  @default("pt_BR")
+  /// string[] com as chaves de variáveis na ordem dos parâmetros do template aprovado
+  providerVariables        Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  broadcasts Broadcast[]
+
+  @@index([campaignId])
+}
+
+/// Disparo (envio em massa para um público segmentado)
+model Broadcast {
+  id             String    @id @default(cuid())
+  campaignId     String
+  campaign       Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name           String
+  templateId     String?
+  template       MessageTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  connectionId   String?
+  connection     WhatsAppConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  createdById    String?
+  createdBy      User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  /// DRAFT | SCHEDULED | RUNNING | PAUSED | COMPLETED | CANCELLED | FAILED
+  status         String    @default("DRAFT")
+  /// VoterFilters (src/lib/voter-filters.ts) que definem o público
+  filters        Json
+  scheduledAt    DateTime?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  ratePerMinute  Int       @default(20)
+  totalRecipients Int      @default(0)
+  sentCount      Int       @default(0)
+  deliveredCount Int       @default(0)
+  readCount      Int       @default(0)
+  failedCount    Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  messages BroadcastMessage[]
+
+  @@index([campaignId, status])
+  @@index([status, scheduledAt])
+}
+
+/// Uma mensagem individual de um disparo
+model BroadcastMessage {
+  id                String    @id @default(cuid())
+  broadcastId       String
+  broadcast         Broadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  campaignId        String
+  voterId           String?
+  voter             Voter?    @relation(fields: [voterId], references: [id], onDelete: SetNull)
+  phone             String
+  renderedBody      String
+  /// PENDING | SENDING | SENT | DELIVERED | READ | FAILED | SKIPPED
+  status            String    @default("PENDING")
+  providerMessageId String?
+  error             String?
+  attempts          Int       @default(0)
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  readAt            DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([broadcastId, status])
+  @@index([providerMessageId])
+  @@index([campaignId])
+}
+
+/// Mensagens recebidas via webhook (usadas para descadastro "SAIR" e histórico)
+model InboundMessage {
+  id           String   @id @default(cuid())
+  campaignId   String
+  campaign     Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  connectionId String?
+  connection   WhatsAppConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  fromPhone    String
+  body         String?
+  voterId      String?
+  /// true quando a mensagem foi interpretada como pedido de descadastro
+  isOptOut     Boolean  @default(false)
+  receivedAt   DateTime @default(now())
+
+  @@index([campaignId, receivedAt])
+}
+
+/// Trilha de auditoria (LGPD: quem acessou/alterou/exportou dados)
+model AuditLog {
+  id         String    @id @default(cuid())
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// Ex.: auth.login, voter.create, voter.export, broadcast.start — ver AUDIT_ACTIONS em src/lib/audit.ts
+  action     String
+  entity     String?
+  entityId   String?
+  details    Json?
+  ip         String?
+  createdAt  DateTime  @default(now())
+
+  @@index([campaignId, createdAt])
+  @@index([userId])
+}

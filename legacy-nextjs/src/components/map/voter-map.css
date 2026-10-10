@@ -1,0 +1,84 @@
+/* Ajustes visuais do mapa territorial (Leaflet) — escopo .efind-map */
+
+.efind-map.leaflet-container {
+  background: #e2e8f0;
+}
+
+.efind-map .leaflet-popup-content-wrapper {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgb(15 23 42 / 0.2), 0 4px 6px -4px rgb(15 23 42 / 0.1);
+}
+
+.efind-map .leaflet-popup-content {
+  margin: 12px 14px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #0f172a;
+}
+
+/* O Leaflet aplica margem grande em "p" dentro de popups */
+.efind-map .leaflet-popup-content p {
+  margin: 0;
+}
+
+.efind-map .leaflet-tooltip {
+  border-radius: 0.5rem;
+  border-color: #e2e8f0;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0f172a;
+  box-shadow: 0 4px 10px -2px rgb(15 23 42 / 0.15);
+}
+
+/* Links dentro de popups: o Leaflet força azul em ".leaflet-container a" */
+.efind-map a.efind-map-link {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+.efind-map a.efind-map-link:hover {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
+/* Ponto individual (L.divIcon — sem imagens padrão do Leaflet) */
+.efind-point {
+  border-radius: 9999px;
+  background: #4f46e5;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgb(79 70 229 / 0.45), 0 1px 3px rgb(15 23 42 / 0.3);
+}
+
+/* Agrupamentos do markercluster na cor da marca */
+.efind-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgb(99 102 241 / 0.25);
+}
+.efind-cluster > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+  border-radius: 9999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.efind-cluster-sm > span {
+  background: #818cf8;
+}
+.efind-cluster-md > span {
+  background: #4f46e5;
+}
+.efind-cluster-lg {
+  background: rgb(49 46 129 / 0.25);
+}
+.efind-cluster-lg > span {
+  background: #312e81;
+}
