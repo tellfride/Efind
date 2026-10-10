@@ -1,0 +1,185 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}Editar {{ dashboard.name }} · E-Find{% endblock %}
+
+{% block content %}
+<div x-data="dashboardBuilder" @keydown.escape.window="if (addOpen) closeAdd(); else if (st.open) closeSettings()">
+
+  {# ------------------------------------------------------------------ Barra de ações (fixa) #}
+  <div class="sticky top-16 z-20 mb-4 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <a href="{% url 'dashboards:list' %}" class="btn btn-ghost btn-sm" @click="leave($event)">{% icon "arrow-left" %} <span class="hidden sm:inline">Dashboards</span></a>
+      <div class="min-w-0 flex-1 basis-40">
+        <p class="truncate text-sm font-semibold text-slate-900"><span class="font-normal text-slate-500">Editando:</span> <span x-text="name || 'Sem nome'">{{ dashboard.name }}</span></p>
+        <p x-cloak x-show="dirty" class="text-xs font-medium text-amber-700">Alterações não salvas</p>
+        <p x-show="!dirty" class="text-xs text-slate-500">Tudo salvo</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" class="btn btn-ghost btn-sm" @click="discard()" :disabled="!dirty || saving">{% icon "undo-2" %} <span class="hidden sm:inline">Descartar alterações</span><span class="sm:hidden">Descartar</span></button>
+        <a class="btn btn-outline btn-sm" href="{% url 'dashboards:detail' dashboard.pk %}" @click="leave($event)">{% icon "eye" %} <span class="hidden sm:inline">Ver dashboard</span><span class="sm:hidden">Ver</span></a>
+        <button type="button" class="btn btn-primary btn-sm" @click="save()" :disabled="saving || !dirty">{% icon "save" %} <span x-text="saving ? 'Salvando…' : 'Salvar'">Salvar</span></button>
+      </div>
+    </div>
+  </div>
+
+  {# ------------------------------------------------------------------ Dados do dashboard #}
+  <section class="card mb-4" aria-label="Dados do dashboard">
+    <div class="card-body grid gap-4 md:grid-cols-2">
+      <div class="space-y-1.5">
+        <label class="label" for="dash-name">Nome</label>
+        <input id="dash-name" x-ref="nameInput" x-model="name" type="text" class="input" maxlength="80" required autocomplete="off">
+      </div>
+      <div class="space-y-1.5">
+        <label class="label" for="dash-description">Descrição</label>
+        <input id="dash-description" x-model="description" type="text" class="input" maxlength="300" placeholder="Opcional" autocomplete="off">
+      </div>
+      {% if is_admin %}
+        <div class="grid gap-3 sm:grid-cols-2 md:col-span-2">
+          <label class="flex items-start gap-3 rounded-lg border border-slate-200 p-3 text-sm">
+            <input type="checkbox" class="checkbox mt-0.5" x-model="shared" :disabled="campaignDefault">
+            <span>
+              <span class="block font-medium text-slate-800">Compartilhar com a equipe</span>
+              <span class="block text-xs text-slate-500">Quem tem acesso a dashboards passa a ver este painel. Somente administradores o editam.</span>
+            </span>
+          </label>
+          <label class="flex items-start gap-3 rounded-lg border border-slate-200 p-3 text-sm">
+            <input type="checkbox" class="checkbox mt-0.5" x-model="campaignDefault">
+            <span>
+              <span class="block font-medium text-slate-800">Padrão da campanha</span>
+              <span class="block text-xs text-slate-500">É aberto ao entrar no painel por quem não escolheu um dashboard próprio. Só pode haver um.</span>
+            </span>
+          </label>
+        </div>
+      {% else %}
+        <p class="text-xs text-slate-500 md:col-span-2">Este dashboard é seu: só você o vê e o edita. O administrador pode compartilhar dashboards com toda a equipe.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  {# ------------------------------------------------------------------ Widgets #}
+  <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+    <button type="button" class="btn btn-primary" @click="openAdd($event)" :disabled="atLimit">{% icon "plus" %} Adicionar widget</button>
+    <p class="text-sm text-slate-500">
+      <span class="tabular-nums" x-text="count">{{ widgets|length }}</span> de <span class="tabular-nums" x-text="maxWidgets">30</span> widgets ·
+      <span class="hidden sm:inline">arraste pelo ícone de alça ou use as setas para reordenar.</span><span class="sm:hidden">use as setas para reordenar.</span>
+    </p>
+    <span x-cloak x-show="busy" class="ml-auto text-xs text-slate-500">Atualizando dados…</span>
+  </div>
+
+  <div data-dash-grid class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"></div>
+  <noscript>{% alert "warning" title="JavaScript desativado" %}O montador de dashboards precisa do JavaScript do navegador.{% endalert %}</noscript>
+
+  {# ------------------------------------------------------------------ Modal: adicionar widget #}
+  <div x-cloak x-show="addOpen" class="fixed inset-0 z-[1000] flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="dash-add-title">
+    <div class="absolute inset-0 bg-slate-900/50" @click="closeAdd()"></div>
+    <div x-ref="addDialog" tabindex="-1" @keydown.tab="trap($event)" class="relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl focus:outline-none sm:max-h-[85vh] sm:max-w-4xl sm:rounded-2xl">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+        <div class="min-w-0">
+          <h2 id="dash-add-title" class="text-lg font-semibold text-slate-900">Adicionar widget</h2>
+          <p class="text-sm text-slate-500">Escolha o que mostrar. Depois você ajusta tamanho, período e filtros.</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-icon shrink-0" @click="closeAdd()" aria-label="Fechar">{% icon "x" "size-5" %}</button>
+      </div>
+      <div class="border-b border-slate-100 px-5 py-3">
+        <label class="sr-only" for="dash-add-search">Buscar widget</label>
+        <input id="dash-add-search" x-ref="addSearch" x-model="query" type="search" class="input" placeholder="Buscar widget..." autocomplete="off">
+      </div>
+      <div class="scrollbar-thin flex-1 overflow-y-auto px-5 py-4">
+        <div x-cloak x-show="atLimit" class="alert alert-warning mb-4">Este dashboard já tem o máximo de widgets. Remova algum para adicionar outro.</div>
+        <p x-cloak x-show="filteredGroups.length === 0" class="py-10 text-center text-sm text-slate-500">Nenhum widget encontrado para essa busca.</p>
+        <template x-for="g in filteredGroups" :key="g.key">
+          <section class="mb-6 last:mb-0">
+            <h3 class="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase" x-text="g.label"></h3>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <template x-for="item in g.items" :key="item.type">
+                <button type="button" @click="pick(item)" :disabled="!item.available || atLimit"
+                        class="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-brand-300 hover:bg-brand-50/40 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:bg-white">
+                  <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600" x-html="iconHtml(item.icon, 'size-5')"></span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-semibold text-slate-900" x-text="item.label"></span>
+                    <span class="mt-0.5 block text-xs text-slate-500" x-text="item.description"></span>
+                    <span x-show="!item.available" class="mt-1 block text-xs font-medium text-amber-700">Você não tem permissão para ver estes dados.</span>
+                  </span>
+                </button>
+              </template>
+            </div>
+          </section>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  {# ------------------------------------------------------------------ Modal: configurar widget #}
+  <div x-cloak x-show="st.open" class="fixed inset-0 z-[1000] flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="dash-st-title">
+    <div class="absolute inset-0 bg-slate-900/50" @click="closeSettings()"></div>
+    <div x-ref="settingsDialog" tabindex="-1" @keydown.tab="trap($event)" class="relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl focus:outline-none sm:max-h-[88vh] sm:max-w-2xl sm:rounded-2xl">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+        <div class="min-w-0">
+          <h2 id="dash-st-title" class="text-lg font-semibold text-slate-900">Configurar widget</h2>
+          <p class="truncate text-sm text-slate-500" x-text="st.label"></p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-icon shrink-0" @click="closeSettings()" aria-label="Fechar">{% icon "x" "size-5" %}</button>
+      </div>
+
+      <div class="scrollbar-thin flex-1 space-y-5 overflow-y-auto px-5 py-4">
+        <div class="space-y-1.5">
+          <label class="label" for="dash-st-title-input">Título</label>
+          <input id="dash-st-title-input" x-model="st.title" @keydown.enter.prevent="applySettings()" type="text" class="input" maxlength="{{ max_title }}" :placeholder="st.label" autocomplete="off">
+          <p class="field-hint">Deixe em branco para usar o nome padrão do widget.</p>
+        </div>
+
+        <div x-cloak x-show="st.options.period" class="space-y-1.5">
+          <label class="label" for="dash-st-period">Período</label>
+          <select id="dash-st-period" x-model.number="st.period" class="select">
+            <template x-for="p in periods" :key="p.value"><option :value="p.value" :selected="Number(st.period) === p.value" x-text="p.label"></option></template>
+          </select>
+        </div>
+
+        <div x-cloak x-show="st.options.limit" class="space-y-1.5">
+          <label class="label" for="dash-st-limit">Quantidade de itens</label>
+          <input id="dash-st-limit" x-model="st.limit" @keydown.enter.prevent="applySettings()" type="number" inputmode="numeric" class="input w-32"
+                 :min="st.options.limit ? st.options.limit.min : null" :max="st.options.limit ? st.options.limit.max : null">
+          <p class="field-hint" x-show="st.options.limit">Entre <span x-text="st.options.limit ? st.options.limit.min : ''"></span> e <span x-text="st.options.limit ? st.options.limit.max : ''"></span>.</p>
+        </div>
+
+        <div x-cloak x-show="st.options.text" class="space-y-1.5">
+          <label class="label" for="dash-st-text">Texto do recado</label>
+          <textarea id="dash-st-text" x-model="st.text" class="textarea" rows="6" maxlength="{{ max_note }}" placeholder="Escreva um aviso ou orientação para a equipe. Quebras de linha são mantidas."></textarea>
+          <p class="field-hint"><span x-text="(st.text || '').length"></span> de {{ max_note }} caracteres. Texto simples, sem formatação.</p>
+        </div>
+
+        <div x-cloak x-show="st.options.filters" class="space-y-2">
+          <div>
+            <h3 class="text-sm font-semibold text-slate-900">Filtros de eleitores</h3>
+            <p class="text-xs text-slate-500">O widget considera só os eleitores que atendem aos filtros, sempre dentro da sua rede.</p>
+          </div>
+          <div x-cloak x-show="filtersState === 'loading'" class="space-y-2" aria-busy="true">
+            <div class="skeleton h-10 w-full"></div><div class="skeleton h-10 w-full"></div>
+          </div>
+          <div x-cloak x-show="filtersState === 'error'" class="alert alert-danger flex flex-wrap items-center justify-between gap-2">
+            <span>Não foi possível carregar os filtros.</span>
+            <button type="button" class="btn btn-outline btn-sm" @click="loadFilters(st.filters)">{% icon "refresh-cw" %} Tentar novamente</button>
+          </div>
+          <div x-ref="filtersBox" x-show="filtersState === 'ready'" @submit.prevent="applySettings()" @click="onFiltersClick($event)"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3">
+        <button type="button" class="btn btn-outline" @click="closeSettings()">Cancelar</button>
+        <button type="button" class="btn btn-primary" @click="applySettings()">Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "dashboards/_icons.html" %}
+{{ dash_config|json_script:"dash-config" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'vendor/chart.umd.min.js' %}"></script>
+<script src="{% static 'vendor/Sortable.min.js' %}"></script>
+<script src="{% static 'js/dashboards/widgets.js' %}"></script>
+<script src="{% static 'js/dashboards/board.js' %}"></script>
+<script src="{% static 'js/dashboards/builder.js' %}"></script>
+{% endblock %}

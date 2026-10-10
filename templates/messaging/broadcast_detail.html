@@ -1,0 +1,8 @@
+{% extends "layouts/shell.html" %}
+{% block title %}{{ broadcast.name }} · Disparos · E-Find{% endblock %}
+{% block content %}
+{% page_header title=broadcast.name description="Acompanhe o envio e pause ou cancele quando precisar." %}
+  <a class="btn btn-outline" href="{{ list_url }}">{% icon "arrow-left" %} Disparos</a>
+{% endpage_header %}
+{% include "messaging/_broadcast_detail_live.html" %}
+{% endblock %}

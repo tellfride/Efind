@@ -1,0 +1,191 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}Permissões · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Permissões" description="Defina o que cada papel e cada pessoa pode fazer na campanha." %}
+  <a class="btn btn-outline" href="{% url 'team:list' %}">{% icon "users" %} Equipe</a>
+{% endpage_header %}
+
+<div class="mb-6">
+  {% alert "info" title="Como funcionam as permissões" %}
+    <ul class="list-disc space-y-1 pl-5">
+      <li>O <strong>administrador</strong> sempre tem acesso total, e esta página é exclusiva dele (não pode ser delegada).</li>
+      <li>O <strong>escopo da hierarquia continua valendo</strong>: um cabo com “Ver” em Eleitores enxerga somente os eleitores que ele mesmo cadastrou; o coordenador enxerga a própria rede (ele e seus cabos).</li>
+      <li>Sem “Ver” em um módulo, nenhuma outra ação dele vale. As mudanças passam a valer na hora, para todos do papel.</li>
+    </ul>
+  {% endalert %}
+</div>
+
+<div x-data="{ tab: '{{ active_tab }}' }">
+  <div class="tabs mb-4" role="tablist" aria-label="Papéis">
+    {% for t in tabs %}
+    <button type="button" class="tab" role="tab" :aria-selected="tab === '{{ t.slug }}'" @click="tab = '{{ t.slug }}'">{% icon "user-cog" %} {{ t.label }}</button>
+    {% endfor %}
+  </div>
+
+  {% for t in tabs %}
+  <section role="tabpanel" x-show="tab === '{{ t.slug }}'" {% if t.slug != active_tab %}x-cloak{% endif %} x-data="permissionMatrix('{{ t.slug }}')" aria-label="Permissões: {{ t.label }}">
+    <form method="post" action="{{ t.save_url }}" class="card">
+      {% csrf_token %}
+      <div class="card-header">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="card-title">Permissões do {{ t.label|lower }}</h2>
+          <div class="flex items-center gap-2">
+            <span x-cloak x-show="dirty" class="badge badge-yellow">Alterações não salvas</span>
+            <span class="badge badge-gray"><span x-text="enabled">{{ t.enabled }}</span>&nbsp;de {{ t.total }} ativas</span>
+          </div>
+        </div>
+        <p class="card-description">{{ t.description }}</p>
+      </div>
+
+      <div class="hidden items-center gap-2 border-y border-slate-200 bg-slate-50 px-5 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase md:grid md:grid-cols-[minmax(0,1fr)_repeat(5,4.5rem)]">
+        <span>Módulo</span>
+        {% for cell in t.rows.0.cells %}<span class="text-center">{{ cell.label }}</span>{% endfor %}
+      </div>
+      <div class="divide-y divide-slate-100">
+        {% for row in t.rows %}
+        <div class="grid grid-cols-2 gap-x-3 gap-y-2 px-4 py-4 sm:grid-cols-3 md:grid-cols-[minmax(0,1fr)_repeat(5,4.5rem)] md:items-center md:gap-2 md:px-5">
+          <div class="col-span-full md:col-span-1">
+            <p class="font-medium text-slate-900">{{ row.label }}</p>
+            <p class="text-xs text-slate-500">{{ row.description }}</p>
+          </div>
+          {% for cell in row.cells %}
+          {% if cell.supported %}
+          <label class="flex items-center gap-2 text-sm text-slate-700 md:justify-center">
+            <input type="checkbox" class="checkbox" name="{{ cell.name }}" {% if cell.checked %}checked{% endif %}
+                   :checked="m['{{ row.key }}']['{{ cell.action }}']" @change="set('{{ row.key }}', '{{ cell.action }}', $event.target.checked)">
+            <span class="md:sr-only">{{ cell.label }}</span>
+          </label>
+          {% else %}
+          <span class="hidden text-center text-slate-300 md:block" aria-hidden="true">—</span>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="card-footer flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <button type="submit" class="btn btn-outline" form="reset-{{ t.slug }}">{% icon "rotate-ccw" %} Restaurar padrão</button>
+        <button type="submit" class="btn btn-primary">{% icon "save" %} Salvar permissões</button>
+      </div>
+    </form>
+    <form id="reset-{{ t.slug }}" method="post" action="{{ t.reset_url }}" hidden data-confirm="Restaurar as permissões padrão do {{ t.label|lower }}? As configurações atuais deste papel serão substituídas.">{% csrf_token %}</form>
+  </section>
+  {% endfor %}
+</div>
+
+{# ================================================================ Exceções por usuário #}
+<section id="excecoes" class="mt-10 scroll-mt-20">
+  <div class="mb-4">
+    <h2 class="text-lg font-semibold text-slate-900">Exceções por usuário</h2>
+    <p class="mt-1 text-sm text-slate-500">Ajuste permissões de uma pessoa específica sem mudar o papel inteiro. Cada célula pode <strong>herdar</strong> o valor do papel, <strong>permitir</strong> ou <strong>negar</strong>.</p>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-3">
+    <div class="space-y-6 xl:col-span-2">
+      <form method="get" action="{% url 'team:permissions' %}#excecoes" class="card">
+        <input type="hidden" name="aba" value="{{ active_tab }}">
+        <div class="card-body flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div class="min-w-0 flex-1">
+            <label for="ov-user" class="label">Usuário</label>
+            <select id="ov-user" name="usuario" class="select mt-1.5" onchange="this.form.submit()">
+              <option value="">Escolha um coordenador ou cabo…</option>
+              {% for u in configurable_users %}
+              <option value="{{ u.pk }}" {% if selected_user and selected_user.pk == u.pk %}selected{% endif %}>{{ u.name }} · {{ u.role|role_label }}{% if not u.is_active %} (inativo){% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-outline">{% icon "search" %} Carregar</button>
+        </div>
+      </form>
+
+      {% if selected_missing %}
+      {% alert "warning" %}Usuário não encontrado nesta campanha. Escolha outro na lista.{% endalert %}
+      {% endif %}
+
+      {% if selected_user %}
+      <form method="post" action="{{ user_save_url }}" class="card" x-data="overrideMatrix()">
+        {% csrf_token %}
+        <div class="card-header">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="card-title">{{ selected_user.name }} <span class="font-normal text-slate-500">· {{ selected_role_label }}</span></h3>
+            <div class="flex items-center gap-2">
+              <span x-cloak x-show="dirty" class="badge badge-yellow">Alterações não salvas</span>
+              <span class="badge badge-gray"><span x-text="changed">{{ override_count }}</span>&nbsp;exceç<span x-text="changed === 1 ? 'ão' : 'ões'">{% if override_count == 1 %}ão{% else %}ões{% endif %}</span></span>
+            </div>
+          </div>
+          <p class="card-description">Cada campo mostra o valor herdado do papel. “Resultado” é o que a pessoa terá de fato.</p>
+        </div>
+
+        <div class="hidden items-center gap-2 border-y border-slate-200 bg-slate-50 px-5 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase xl:grid xl:grid-cols-[minmax(0,1fr)_repeat(5,7rem)]">
+          <span>Módulo</span>
+          {% for cell in override_rows.0.cells %}<span class="text-center">{{ cell.label }}</span>{% endfor %}
+        </div>
+        <div class="divide-y divide-slate-100">
+          {% for row in override_rows %}
+          <div class="grid grid-cols-2 gap-x-3 gap-y-3 px-4 py-4 sm:grid-cols-3 xl:grid-cols-[minmax(0,1fr)_repeat(5,7rem)] xl:items-start xl:gap-2 xl:px-5">
+            <div class="col-span-full xl:col-span-1">
+              <p class="font-medium text-slate-900">{{ row.label }}</p>
+              <p class="text-xs text-slate-500">{{ row.description }}</p>
+            </div>
+            {% for cell in row.cells %}
+            {% if cell.supported %}
+            <div class="space-y-1">
+              <label for="ov-{{ row.key }}-{{ cell.action }}" class="label text-xs xl:sr-only">{{ cell.label }}</label>
+              <select id="ov-{{ row.key }}-{{ cell.action }}" name="{{ cell.name }}" class="select h-9 text-xs"
+                      x-model="v['{{ row.key }}']['{{ cell.action }}']" @change="onChange('{{ row.key }}', '{{ cell.action }}')">
+                <option value="inherit" {% if cell.value == "inherit" %}selected{% endif %} x-text="'Herdar (' + (inherited['{{ row.key }}']['{{ cell.action }}'] ? 'sim' : 'não') + ')'">Herdar ({% if cell.inherited %}sim{% else %}não{% endif %})</option>
+                <option value="allow" {% if cell.value == "allow" %}selected{% endif %}>Permitir</option>
+                <option value="deny" {% if cell.value == "deny" %}selected{% endif %}>Negar</option>
+              </select>
+              <p class="text-[11px]" :class="final('{{ row.key }}', '{{ cell.action }}') ? 'font-medium text-emerald-600' : 'text-slate-400'"
+                 x-text="final('{{ row.key }}', '{{ cell.action }}') ? 'Resultado: sim' : 'Resultado: não'"></p>
+            </div>
+            {% else %}
+            <span class="hidden text-center text-slate-300 xl:block" aria-hidden="true">—</span>
+            {% endif %}
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="card-footer flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <button type="submit" class="btn btn-outline" form="clear-overrides">{% icon "undo-2" %} Remover todas as exceções</button>
+          <button type="submit" class="btn btn-primary">{% icon "save" %} Salvar exceções</button>
+        </div>
+      </form>
+      <form id="clear-overrides" method="post" action="{{ user_save_url }}" hidden data-confirm="Remover todas as exceções de {{ selected_user.name }}? O usuário volta a seguir as permissões do papel.">{% csrf_token %}<input type="hidden" name="clear" value="1"></form>
+      {{ override_config|json_script:"override-config" }}
+      {% elif not selected_missing %}
+      <div class="card">{% empty_state icon="user-cog" title="Escolha um usuário" description="Selecione um coordenador ou cabo acima para ver e editar as exceções de permissão dele." %}{% endempty_state %}</div>
+      {% endif %}
+    </div>
+
+    <aside class="card h-fit">
+      <div class="card-header">
+        <h3 class="card-title">Quem tem exceções</h3>
+        <p class="card-description">Usuários que diferem do padrão do papel.</p>
+      </div>
+      {% if users_with_overrides %}
+      <ul class="divide-y divide-slate-100">
+        {% for item in users_with_overrides %}
+        <li class="flex items-center gap-3 px-5 py-3 {% if not item.user.is_active %}opacity-60{% endif %}">
+          {% avatar item.user.name %}
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-medium text-slate-900">{{ item.user.name }}</p>
+            <p class="text-xs text-slate-500">{{ item.user.role|role_label }} · {{ item.count }} exceç{{ item.count|pluralize:"ão,ões" }}</p>
+          </div>
+          <a class="btn btn-outline btn-sm" href="{% url 'team:permissions' %}?usuario={{ item.user.pk }}#excecoes">Editar</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="card-body text-sm text-slate-500">Ninguém tem exceções: todos seguem as permissões do papel.</p>
+      {% endif %}
+    </aside>
+  </div>
+</section>
+
+{{ perm_config|json_script:"perm-config" }}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/team/permissions.js' %}"></script>{% endblock %}

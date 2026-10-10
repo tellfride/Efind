@@ -1,0 +1,55 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Dashboards · E-Find{% endblock %}
+
+{% block content %}
+{% page_header title="Dashboards" description="Vários painéis para acompanhar a campanha: use os modelos da equipe ou monte o seu." %}
+  {% if can_create %}<a class="btn btn-primary" href="{% url 'dashboards:create' %}">{% icon "plus" %} Novo dashboard</a>{% endif %}
+{% endpage_header %}
+
+{% if network_hint %}
+  <p class="mb-4 inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">{% icon "users" "size-3.5" %} Os painéis mostram somente os dados da sua rede</p>
+{% endif %}
+
+{% if not dashboards %}
+  <section class="card">
+    {% if can_create_defaults %}
+      {% empty_state icon="layout-grid" title="Sua campanha ainda não tem dashboards" description="Crie os dashboards padrão (visão geral, equipe, território e comunicação) ou comece de um painel em branco." %}
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <form method="post" action="{% url 'dashboards:create_defaults' %}">{% csrf_token %}<button type="submit" class="btn btn-primary">{% icon "wand-sparkles" %} Criar dashboards padrão</button></form>
+          {% if can_create %}<a class="btn btn-outline" href="{% url 'dashboards:create' %}">{% icon "plus" %} Começar em branco</a>{% endif %}
+        </div>
+      {% endempty_state %}
+    {% else %}
+      {% empty_state icon="layout-grid" title="Nenhum dashboard disponível" description="Quando o administrador compartilhar dashboards, eles aparecem aqui." %}
+        {% if can_create %}<a class="btn btn-primary" href="{% url 'dashboards:create' %}">{% icon "plus" %} Novo dashboard</a>{% endif %}
+      {% endempty_state %}
+    {% endif %}
+  </section>
+{% else %}
+  {% if shared_dashboards %}
+    <section class="mb-8" aria-labelledby="dash-shared">
+      <h2 id="dash-shared" class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase">Da campanha</h2>
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {% for d in shared_dashboards %}{% include "dashboards/_card.html" %}{% endfor %}
+      </div>
+    </section>
+  {% endif %}
+  {% if my_dashboards %}
+    <section aria-labelledby="dash-mine">
+      <h2 id="dash-mine" class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase">Meus dashboards</h2>
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {% for d in my_dashboards %}{% include "dashboards/_card.html" %}{% endfor %}
+      </div>
+    </section>
+  {% elif can_create %}
+    <section aria-labelledby="dash-mine">
+      <h2 id="dash-mine" class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase">Meus dashboards</h2>
+      <div class="card">
+        {% empty_state icon="chart-column" title="Você ainda não criou nenhum dashboard" description="Comece de um modelo (ou em branco) e escolha os widgets que importam para você." %}
+          <a class="btn btn-primary" href="{% url 'dashboards:create' %}">{% icon "plus" %} Novo dashboard</a>
+        {% endempty_state %}
+      </div>
+    </section>
+  {% endif %}
+{% endif %}
+{% endblock %}

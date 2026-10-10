@@ -1,0 +1,84 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}Testar conexão · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Testar a conexão" description=connection.name %}
+  <a class="btn btn-outline" href="{% url 'whatsapp:connections' %}">{% icon "arrow-left" %} Voltar à lista</a>
+{% endpage_header %}
+
+{% include "whatsapp/_steps.html" %}
+
+<div class="mx-auto max-w-3xl space-y-6">
+  {# ------------------------------------------------------------ Teste de conexão #}
+  <section class="card" x-data="waConnectionTest" data-url="{% url 'whatsapp:api_test_connection' connection.pk %}"
+           data-status="{{ connection.status }}" data-status-label="{{ connection.get_status_display }}" data-status-tone="{{ status_tone }}"
+           data-error="{{ connection.last_error }}">
+    {% csrf_token %}
+    <div class="card-header">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="card-title">Testar conexão</h2>
+          <p class="card-description">Verifica com {{ definition.label }} se as credenciais estão corretas.</p>
+        </div>
+        <span class="badge shrink-0" :class="'badge-' + tone" x-text="statusLabel">{{ connection.get_status_display }}</span>
+      </div>
+    </div>
+    <div class="card-body space-y-4">
+      <div x-cloak x-show="message" class="alert" :class="ok ? 'alert-success' : 'alert-danger'" :role="ok ? 'status' : 'alert'" x-text="message"></div>
+      {% if connection.last_error and connection.status != "CONNECTED" %}
+      <div x-show="!message" class="alert alert-danger" role="alert"><p class="font-semibold">Último erro</p><p class="mt-1 opacity-90">{{ connection.last_error }}</p></div>
+      {% endif %}
+      {% if is_sandbox %}
+      <p class="text-sm text-slate-600">O simulador está sempre pronto: o teste confirma que a conexão pode ser usada nos disparos, sem enviar nenhuma mensagem real.</p>
+      {% else %}
+      <p class="text-sm text-slate-600">A conexão só passa a “Conectado” (e pode ser usada em disparos) depois de um teste bem-sucedido.</p>
+      {% endif %}
+      <button type="button" class="btn btn-primary" @click="run()" :disabled="loading">
+        <span x-show="!loading">{% icon "zap" %}</span><span x-cloak x-show="loading">{% icon "loader-circle" "size-4 animate-spin" %}</span>
+        <span x-text="loading ? 'Testando…' : 'Testar conexão'">Testar conexão</span>
+      </button>
+    </div>
+  </section>
+
+  {# ------------------------------------------------------------ Mensagem de teste #}
+  <section class="card" x-data="waMessageTest" data-url="{% url 'whatsapp:api_send_test_message' connection.pk %}">
+    {% csrf_token %}
+    <div class="card-header">
+      <h2 class="card-title">Mensagem de teste <span class="text-sm font-normal text-slate-500">(opcional)</span></h2>
+      <p class="card-description">
+        {% if is_sandbox %}Simula o envio de uma mensagem. Nada é enviado de verdade.{% else %}Envie uma mensagem para um número seu e confirme se ela chega no WhatsApp.{% endif %}
+      </p>
+    </div>
+    <form class="card-body space-y-4" x-ref="form" @submit.prevent="send()" novalidate>
+      {% if allow_template %}
+      {% alert "info" %}A Meta só entrega texto livre a quem escreveu para o seu número nas últimas 24 horas. Para o primeiro teste, marque a opção do template <strong>hello_world</strong>.{% endalert %}
+      {% endif %}
+      <div class="space-y-1.5">
+        <label for="{{ test_form.to.id_for_label }}" class="label">Número de destino<span class="ml-0.5 text-red-500">*</span></label>
+        {{ test_form.to }}
+        <p x-cloak x-show="errors.to" class="field-error" role="alert" x-text="errors.to"></p>
+        <p class="field-hint" x-show="!errors.to">Use um número que você controla ou de quem aceitou receber mensagens.</p>
+      </div>
+      <div class="space-y-1.5">
+        <label for="{{ test_form.text.id_for_label }}" class="label">Mensagem</label>
+        {{ test_form.text }}
+        <p x-cloak x-show="errors.text" class="field-error" role="alert" x-text="errors.text"></p>
+      </div>
+      {% if allow_template %}
+      <label class="flex items-start gap-2 text-sm text-slate-700">{{ test_form.use_template }} <span>{{ test_form.use_template.label }}</span></label>
+      {% endif %}
+      <div x-cloak x-show="message" class="alert" :class="ok ? 'alert-success' : 'alert-danger'" :role="ok ? 'status' : 'alert'" x-text="message"></div>
+      <button type="submit" class="btn btn-whatsapp" :disabled="loading">
+        <span x-show="!loading">{% icon "send" %}</span><span x-cloak x-show="loading">{% icon "loader-circle" "size-4 animate-spin" %}</span>
+        <span x-text="loading ? 'Enviando…' : 'Enviar mensagem de teste'">Enviar mensagem de teste</span>
+      </button>
+    </form>
+  </section>
+
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    <a class="btn btn-outline" href="{% url 'whatsapp:connection_webhook' connection.pk %}">{% icon "arrow-left" %} Voltar ao webhook</a>
+    <a class="btn btn-primary" href="{% url 'whatsapp:connections' %}">{% icon "check" %} Concluir</a>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/whatsapp/wizard.js' %}"></script>{% endblock %}

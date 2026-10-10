@@ -1,0 +1,25 @@
+{% extends "voters/_public_base.html" %}
+{% block title %}Obrigado! · {{ campaign.ballot_name }}{% endblock %}
+
+{% block public_content %}
+<div class="card p-6 text-center sm:p-8">
+  <div class="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">{% icon "circle-check" "size-9" %}</div>
+  <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">{% if updated %}Seus dados foram atualizados{% else %}Cadastro realizado!{% endif %}</h1>
+  <p class="mt-2 text-sm text-slate-600">
+    {% if updated %}
+      Obrigado por manter seu cadastro em dia. Se você marcou a opção de receber mensagens, ela foi registrada.
+    {% else %}
+      Obrigado por fazer parte da campanha de <strong>{{ campaign.ballot_name }}</strong>. Você receberá novidades pelos canais que autorizou.
+    {% endif %}
+  </p>
+
+  <div class="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-4 text-left">
+    <h2 class="text-base font-semibold text-slate-900">Compartilhe com seus amigos</h2>
+    <p class="mt-1 text-sm text-slate-600">Convide quem pensa como você. Cada pessoa que se cadastrar pelo seu convite ajuda a campanha{% if reg.owner_first_name %} de {{ reg.owner_first_name }}{% endif %} a crescer.</p>
+    <a href="{{ reg.share_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg mt-4 w-full">Compartilhar no WhatsApp</a>
+    <button type="button" class="btn btn-outline mt-2 w-full" data-copy="{{ reg.url }}">{% icon "copy" %} Copiar link</button>
+  </div>
+
+  <p class="mt-6 text-xs text-slate-500">Quer parar de receber mensagens? Responda <strong>SAIR</strong> a qualquer mensagem da campanha.</p>
+</div>
+{% endblock %}

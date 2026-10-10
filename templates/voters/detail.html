@@ -1,0 +1,116 @@
+{% extends "layouts/shell.html" %}
+{% block title %}{{ voter.name }} · Eleitores · E-Find{% endblock %}
+{% block content %}
+{% page_header title=voter.name description=subtitle %}
+  <a class="btn btn-outline" href="{% url 'voters:list' %}">{% icon "arrow-left" %} Voltar</a>
+  <a class="btn btn-whatsapp" href="{{ voter.wa_url }}" target="_blank" rel="noopener noreferrer">{% icon "message-circle" %} Abrir no WhatsApp</a>
+  {% if perms.eleitores.edit %}<a class="btn btn-primary" href="{% url 'voters:edit' voter_id=voter.pk %}">{% icon "pencil" %} Editar</a>{% endif %}
+{% endpage_header %}
+
+<div class="grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Dados do eleitor</h2></div>
+      <dl class="card-body grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
+        <div><dt class="text-slate-500">WhatsApp</dt><dd class="font-medium tabular-nums">{{ voter.phone|phone }}</dd></div>
+        <div><dt class="text-slate-500">E-mail</dt><dd class="font-medium break-all">{{ voter.email|default:"—" }}</dd></div>
+        <div><dt class="text-slate-500">Nascimento</dt><dd class="font-medium">{% if voter.birth_date %}{{ voter.birth_date|brdate }}{% if age is not None %} <span class="font-normal text-slate-500">({{ age }} anos)</span>{% endif %}{% else %}—{% endif %}</dd></div>
+        <div><dt class="text-slate-500">Gênero</dt><dd class="font-medium">{% if voter.gender %}{{ voter.get_gender_display }}{% else %}—{% endif %}</dd></div>
+        <div><dt class="text-slate-500">Nível de apoio</dt><dd class="mt-0.5">{% if voter.support_label %}{% badge voter.support_label voter.support_tone %}{% else %}<span class="font-medium">Não classificado</span>{% endif %}</dd></div>
+        <div><dt class="text-slate-500">Tags</dt><dd class="mt-0.5 flex flex-wrap gap-1.5">{% for tag in voter.tags|tags_list %}<span class="chip">{{ tag }}</span>{% empty %}<span class="font-medium">—</span>{% endfor %}</dd></div>
+        {% if voter.notes %}<div class="sm:col-span-2"><dt class="text-slate-500">Observações</dt><dd class="whitespace-pre-line">{{ voter.notes }}</dd></div>{% endif %}
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="card-header flex items-start justify-between gap-3">
+        <h2 class="card-title">Endereço e título</h2>
+        {% badge voter.geo_label voter.geo_tone %}
+      </div>
+      <dl class="card-body grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
+        <div><dt class="text-slate-500">CEP</dt><dd class="font-medium tabular-nums">{{ voter.cep|cep|default:"—" }}</dd></div>
+        <div><dt class="text-slate-500">Logradouro</dt><dd class="font-medium">{% if voter.street %}{{ voter.street }}{% if voter.number %}, {{ voter.number }}{% endif %}{% if voter.complement %} · {{ voter.complement }}{% endif %}{% else %}—{% endif %}</dd></div>
+        <div><dt class="text-slate-500">Bairro</dt><dd class="font-medium">{{ voter.neighborhood|default:"—" }}</dd></div>
+        <div><dt class="text-slate-500">Cidade / UF</dt><dd class="font-medium">{% if voter.city %}{{ voter.city }}{% if voter.state %} / {{ voter.state }}{% endif %}{% else %}—{% endif %}</dd></div>
+        <div><dt class="text-slate-500">Zona eleitoral</dt><dd class="font-medium">{{ voter.electoral_zone|default:"—" }}</dd></div>
+        <div><dt class="text-slate-500">Seção eleitoral</dt><dd class="font-medium">{{ voter.electoral_section|default:"—" }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Histórico de mensagens</h2><p class="card-description">Últimos disparos de WhatsApp enviados a este eleitor.</p></div>
+      {% if history %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">Disparo</th><th scope="col">Situação</th><th scope="col">Enviada em</th></tr></thead>
+          <tbody>
+            {% for m in history %}
+            <tr>
+              <td>{{ m.broadcast.name }}</td>
+              <td>{% badge m.status_label m.status_tone %}</td>
+              <td class="whitespace-nowrap text-slate-500">{{ m.sent_at|brdatetime }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="card-body text-sm text-slate-500">Nenhuma mensagem enviada a este eleitor até agora.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">WhatsApp e consentimento</h2></div>
+      <div class="card-body space-y-4 text-sm">
+        <div class="flex items-center gap-2">
+          {% badge voter.wa_label voter.wa_tone %}
+          {% if voter.wa_status == "APTO" %}<span class="text-slate-500">pode receber disparos</span>{% endif %}
+        </div>
+        <dl class="space-y-3">
+          <div><dt class="text-slate-500">Consentimento LGPD</dt><dd class="font-medium">{% if voter.consent_at %}{{ voter.consent_at|brdatetime }}{% else %}Não registrado{% endif %}</dd></div>
+          {% if voter.consent_ip %}<div><dt class="text-slate-500">IP do consentimento</dt><dd class="font-medium tabular-nums">{{ voter.consent_ip }}</dd></div>{% endif %}
+          {% if voter.opt_out_at %}<div><dt class="text-slate-500">Descadastrado em</dt><dd class="font-medium">{{ voter.opt_out_at|brdatetime }}</dd></div>{% endif %}
+          {% if voter.consent_text %}<div><dt class="text-slate-500">Texto aceito</dt><dd class="mt-1 rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">{{ voter.consent_text }}</dd></div>{% endif %}
+        </dl>
+        {% if voter.opt_out_at %}
+          {% alert "info" %}Para voltar a receber mensagens, o eleitor precisa se cadastrar novamente por um link de cadastro e aceitar o WhatsApp. Não é possível reativar pelo painel.{% endalert %}
+        {% elif perms.eleitores.edit %}
+          <form method="post" action="{% url 'voters:opt_out' voter_id=voter.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline btn-sm" data-confirm="Descadastrar este eleitor dos disparos de WhatsApp? Ele só volta a receber mensagens se se cadastrar de novo por um link.">{% icon "ban" %} Descadastrar do WhatsApp</button>
+          </form>
+          <p class="field-hint">O descadastro é permanente no painel: o eleitor só volta a receber mensagens se se cadastrar de novo por um link.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Cadastro</h2></div>
+      <div class="card-body space-y-3 text-sm">
+        <p>Cadastrado por <strong>{{ registrar.name }}</strong> em {{ voter.created_at|brdatetime }} via {{ voter.source_label }}.</p>
+        {% if registrar_form %}
+        <form method="post" action="{% url 'voters:change_registrar' voter_id=voter.pk %}" class="space-y-2">
+          {% csrf_token %}
+          {% field registrar_form.registered_by label="Transferir para" %}
+          <button type="submit" class="btn btn-outline btn-sm" data-confirm="Transferir este eleitor para outro membro da equipe?">{% icon "handshake" %} Transferir</button>
+        </form>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if perms.eleitores.delete %}
+    <section class="card border-red-200">
+      <div class="card-header"><h2 class="card-title text-red-700">Excluir eleitor</h2><p class="card-description">Remove todos os dados deste eleitor de forma definitiva (direito à eliminação, LGPD art. 18).</p></div>
+      <div class="card-body">
+        <form method="post" action="{% url 'voters:delete' voter_id=voter.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm" data-confirm="Excluir DEFINITIVAMENTE este eleitor? Esta ação não pode ser desfeita.">{% icon "trash-2" %} Excluir definitivamente</button>
+        </form>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

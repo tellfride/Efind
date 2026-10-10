@@ -1,0 +1,35 @@
+<div class="flex h-full flex-col bg-slate-900 text-slate-300">
+  <div class="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 px-5">
+    {% include "components/logo.html" with css="text-white" %}
+    {% if is_super_admin %}<span class="rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-amber-300 uppercase">Super</span>{% endif %}
+  </div>
+
+  {% if campaign %}
+  <div class="mx-3 mt-4 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+    {% if campaign.logo_url %}
+      <img src="{{ campaign.logo_url }}" alt="" class="size-9 shrink-0 rounded-md bg-white object-contain">
+    {% else %}
+      <span class="flex size-9 shrink-0 items-center justify-center rounded-md text-sm font-bold text-white" style="background-color: {{ campaign.primary_color }}">{% if campaign.ballot_number %}{{ campaign.ballot_number|slice:":2" }}{% else %}{{ campaign.ballot_name|slice:":1" }}{% endif %}</span>
+    {% endif %}
+    <div class="min-w-0">
+      <p class="truncate text-sm font-semibold text-white">{{ campaign.ballot_name }}</p>
+      <p class="truncate text-xs text-slate-400">{% if campaign.ballot_number %}{{ campaign.ballot_number }}{% endif %}{% if campaign.ballot_number and campaign.party %} · {% endif %}{{ campaign.party }}</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <nav class="mt-4 flex-1 space-y-6 overflow-y-auto px-3 pb-6 scrollbar-thin" aria-label="Menu principal">
+    {% for section in nav_sections %}
+    <div>
+      <p class="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">{{ section.title }}</p>
+      <ul class="space-y-0.5">
+        {% for item in section.items %}
+        <li><a href="{{ item.href }}" class="nav-link" {% if item.active %}aria-current="page"{% endif %}>{% icon item.icon "size-[18px]" %}{{ item.label }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </nav>
+
+  <div class="border-t border-white/10 p-3 text-[11px] text-slate-500">Dados tratados conforme a LGPD · <span class="text-slate-400">efind.com.br</span></div>
+</div>

@@ -1,0 +1,36 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Candidatos / campanhas · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Candidatos / campanhas" description="Cada campanha é um candidato com equipe, eleitores e dados totalmente isolados." %}
+  <a class="btn btn-primary" href="{% url 'superadmin:campaign_create' %}">{% icon "plus" %} Nova campanha</a>
+{% endpage_header %}
+
+<form method="get" class="card mb-4 p-4" role="search">
+  <div class="grid gap-3 sm:grid-cols-[1fr_14rem_auto] sm:items-end">
+    <div class="space-y-1.5">
+      <label for="{{ form.q.id_for_label }}" class="label">Buscar</label>
+      <input type="search" name="q" id="{{ form.q.id_for_label }}" value="{{ form.q.value|default:'' }}" maxlength="100" class="input" placeholder="Candidato, nome de urna, partido ou cidade">
+    </div>
+    {% field form.status %}
+    <div class="flex gap-2">
+      <button type="submit" class="btn btn-primary">{% icon "search" %} Buscar</button>
+      {% if filtered %}<a class="btn btn-ghost" href="{% url 'superadmin:campaigns' %}">{% icon "rotate-ccw" %} Limpar</a>{% endif %}
+    </div>
+  </div>
+</form>
+
+<section class="card">
+  {% if campaigns %}
+    {% include "superadmin/_campaign_rows.html" %}
+    <div class="border-t border-slate-100 px-4">{% pagination page_obj %}</div>
+  {% elif filtered %}
+    {% empty_state icon="search-x" title="Nenhuma campanha encontrada" description="Ajuste a busca ou o filtro de status." %}
+      <a class="btn btn-outline" href="{% url 'superadmin:campaigns' %}">Limpar filtros</a>
+    {% endempty_state %}
+  {% else %}
+    {% empty_state icon="shield-check" title="Nenhuma campanha ainda" description="Crie a primeira campanha para entregar o acesso ao administrador do candidato." %}
+      <a class="btn btn-primary" href="{% url 'superadmin:campaign_create' %}">{% icon "plus" %} Nova campanha</a>
+    {% endempty_state %}
+  {% endif %}
+</section>
+{% endblock %}

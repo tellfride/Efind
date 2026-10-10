@@ -1,0 +1,37 @@
+{% load static %}<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}E-Find{% endblock %}</title>
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block head %}{% endblock %}
+  {# app.js precisa carregar antes do Alpine (registra os componentes em alpine:init) #}
+  <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
+</head>
+<body class="min-h-screen font-sans" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  {% block body %}{% endblock %}
+
+  {# Toasts (mensagens do Django + HX-Trigger "toast") #}
+  <div x-data="toasts" class="pointer-events-none fixed top-4 right-0 left-0 z-[1100] flex flex-col items-end gap-2 px-4 sm:left-auto sm:w-96" aria-live="polite">
+    <template x-for="t in items" :key="t.id">
+      <div class="pointer-events-auto flex w-full items-start gap-3 rounded-lg border px-4 py-3 shadow-lg"
+           :class="{
+             'border-emerald-200 bg-emerald-50 text-emerald-900': t.level === 'success',
+             'border-red-200 bg-red-50 text-red-900': t.level === 'error',
+             'border-amber-200 bg-amber-50 text-amber-900': t.level === 'warning',
+             'border-sky-200 bg-sky-50 text-sky-900': t.level === 'info'
+           }" x-transition>
+        <p class="flex-1 text-sm" x-text="t.message"></p>
+        <button type="button" class="text-lg leading-none opacity-60 hover:opacity-100" @click="dismiss(t.id)" aria-label="Fechar">&times;</button>
+      </div>
+    </template>
+  </div>
+  {% for message in messages %}<div data-toast data-level="{{ message.level_tag }}" hidden>{{ message }}</div>{% endfor %}
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,61 @@
+{% load messaging_tags %}
+{# Região atualizada a cada 5 s (HTMX) enquanto houver disparo agendado ou em andamento na página #}
+<div id="broadcast-live" {% if has_live %}hx-get="{{ refresh_url }}" hx-trigger="every 5s" hx-swap="outerHTML"{% endif %}>
+  {% if broadcasts %}
+  <div class="card overflow-hidden">
+    <ul class="divide-y divide-slate-100">
+      {% for b in broadcasts %}
+      <li>
+        <a href="/painel/mensagens/disparos/{{ b.pk }}/" class="block px-4 py-4 transition-colors hover:bg-slate-50 sm:px-5">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate font-semibold text-slate-900">{{ b.name }}</p>
+              <p class="mt-0.5 truncate text-xs text-slate-500">
+                {% if b.template %}{{ b.template.name }}{% else %}Modelo excluído{% endif %}
+                · {% if b.connection %}{{ b.connection.name }}{% else %}Conexão excluída{% endif %}
+                {% if is_admin and b.created_by %}· por {{ b.created_by.name }}{% endif %}
+              </p>
+            </div>
+            <div class="shrink-0">{% broadcast_badge b.status %}</div>
+          </div>
+
+          <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              {% if b.total_shown %}
+              <div class="mb-1 flex justify-between text-xs text-slate-500">
+                <span>{{ b.stats.processed|num }} de {{ b.total_shown|num }} processadas</span>
+                <span class="tabular-nums">{{ b.progress_pct|pct:0 }}</span>
+              </div>
+              {% progress b.stats.processed b.total_shown b.progress_tone %}
+              {% elif b.status == "SCHEDULED" %}
+              <p class="text-xs text-slate-500">{% icon "clock" "mr-1 inline size-3.5" %}Agendado para {{ b.scheduled_at|brdatetime }}. As mensagens são preparadas no horário.</p>
+              {% else %}
+              <p class="text-xs text-slate-500">Sem destinatários.</p>
+              {% endif %}
+            </div>
+            <dl class="grid grid-cols-4 gap-x-5 text-xs text-slate-500">
+              <div><dt>Total</dt><dd class="text-sm font-semibold text-slate-900 tabular-nums">{{ b.total_shown|num }}</dd></div>
+              <div><dt>Enviadas</dt><dd class="text-sm font-semibold text-slate-900 tabular-nums">{{ b.stats.sent|num }}</dd></div>
+              <div><dt>Entregues</dt><dd class="text-sm font-semibold text-slate-900 tabular-nums">{% if b.stats.sent %}{{ b.delivery_rate|pct:0 }}{% else %}—{% endif %}</dd></div>
+              <div><dt>Lidas</dt><dd class="text-sm font-semibold text-slate-900 tabular-nums">{% if b.stats.delivered %}{{ b.read_rate|pct:0 }}{% else %}—{% endif %}</dd></div>
+            </dl>
+          </div>
+          <p class="mt-2 text-xs text-slate-400">
+            {% if b.started_at %}Iniciado em {{ b.started_at|brdatetime }}{% elif b.scheduled_at %}Agendado para {{ b.scheduled_at|brdatetime }}{% else %}Criado em {{ b.created_at|brdatetime }}{% endif %}
+            {% if b.stats.failed %}· <span class="text-red-600">{{ b.stats.failed|num }} falha{{ b.stats.failed|pluralize }}</span>{% endif %}
+          </p>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="mt-2">{% pagination page_obj %}</div>
+  {% else %}
+  <div class="card">
+    {% empty_state icon="search-x" title="Nenhum disparo com esta situação" description="Escolha outra situação ou limpe o filtro para ver todos os disparos." %}
+      <a class="btn btn-outline" href="/painel/mensagens/disparos/">Limpar filtro</a>
+    {% endempty_state %}
+  </div>
+  {% endif %}
+  {% if has_live %}<p class="mt-3 text-center text-xs text-slate-400">{% icon "refresh-cw" "mr-1 inline size-3" %}Atualizando automaticamente a cada 5 segundos.</p>{% endif %}
+</div>

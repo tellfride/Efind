@@ -1,0 +1,43 @@
+{% comment %}Nó da hierarquia (recursivo). Variáveis: node (TreeNode).{% endcomment %}
+{% with row=node.row %}
+<li x-data="{ open: true }" @team-tree.window="open = $event.detail">
+  <div class="flex items-start gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm {% if not row.is_active %}opacity-60{% endif %}">
+    {% if node.has_children %}
+    <button type="button" class="btn btn-ghost btn-icon btn-sm mt-0.5 shrink-0" @click="open = !open" :aria-expanded="open" aria-label="Expandir ou recolher {{ row.name }}">
+      <span class="inline-flex transition-transform" :class="open ? 'rotate-90' : ''">{% icon "chevron-right" %}</span>
+    </button>
+    {% else %}
+    <span class="mt-0.5 hidden size-9 shrink-0 sm:block" aria-hidden="true"></span>
+    {% endif %}
+    {% avatar row.name "mt-0.5" %}
+    <div class="min-w-0 flex-1">
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <a class="link max-w-full truncate" href="{% url 'team:detail' row.id %}">{{ row.name }}</a>
+        {% badge row.role_label row.role_tone %}
+        {% if row.is_self %}<span class="text-xs text-slate-500">(você)</span>{% endif %}
+        {% if not row.is_active %}{% badge "Inativo" "gray" %}{% endif %}
+      </div>
+      <p class="mt-0.5 text-xs text-slate-500">
+        {{ row.voters_total|num }} eleitor{{ row.voters_total|pluralize:"es" }}
+        {% if node.has_children %}· {{ node.network_total|num }} na rede{% endif %}
+        {% if row.region %}· {{ row.region }}{% endif %}
+      </p>
+      {% if row.goal %}
+      <div class="mt-2 flex items-center gap-2">
+        <div class="min-w-0 flex-1">{% progress row.voters_total row.goal row.goal_tone %}</div>
+        <span class="shrink-0 text-xs font-medium tabular-nums text-slate-600">{{ row.goal_percent|pct:0 }} da meta ({{ row.goal|num }})</span>
+      </div>
+      {% endif %}
+    </div>
+    <div class="shrink-0 text-right">
+      <p class="text-lg leading-tight font-bold tabular-nums text-slate-900">{{ row.voters_total|num }}</p>
+      <p class="text-[11px] text-slate-500">{{ row.voters_7d|num }} em 7 dias</p>
+    </div>
+  </div>
+  {% if node.has_children %}
+  <ul x-show="open" x-cloak x-transition.opacity class="mt-2 ml-4 space-y-2 border-l border-slate-200 pl-3 sm:ml-5 sm:pl-5">
+    {% for child in node.children %}{% include "team/_tree_node.html" with node=child %}{% endfor %}
+  </ul>
+  {% endif %}
+</li>
+{% endwith %}

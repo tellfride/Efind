@@ -1,0 +1,82 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Meu perfil · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Meu perfil" description="Seus dados de acesso e informações da conta." %}{% endpage_header %}
+
+<div class="grid gap-6 lg:grid-cols-2">
+  <div class="space-y-6">
+    <section class="card">
+      <form method="post">
+        {% csrf_token %}<input type="hidden" name="action" value="profile">
+        <div class="card-header"><h2 class="card-title">Dados pessoais</h2></div>
+        <div class="card-body space-y-4">
+          {% if profile_form.non_field_errors %}<div class="alert alert-danger">{{ profile_form.non_field_errors.0 }}</div>{% endif %}
+          {% field profile_form.name %}
+          <div class="space-y-1.5">
+            <label class="label" for="profile-email">E-mail</label>
+            <input id="profile-email" class="input" value="{{ request.user.email }}" disabled>
+            <p class="field-hint">Para alterar o e-mail de acesso, fale com o administrador.</p>
+          </div>
+          {% field profile_form.phone %}
+        </div>
+        <div class="card-footer"><button type="submit" class="btn btn-primary">Salvar</button></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <form method="post">
+        {% csrf_token %}<input type="hidden" name="action" value="password">
+        <div class="card-header">
+          <h2 class="card-title">Alterar senha</h2>
+          <p class="card-description">Ao trocar a senha, as sessões abertas em outros aparelhos são encerradas.</p>
+        </div>
+        <div class="card-body space-y-4">
+          {% field password_form.current_password %}
+          {% field password_form.new_password %}
+          {% field password_form.confirm_password %}
+        </div>
+        <div class="card-footer"><button type="submit" class="btn btn-primary">Alterar senha</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Conta</h2></div>
+      <dl class="card-body grid grid-cols-3 gap-y-3 text-sm">
+        <dt class="text-slate-500">Papel</dt><dd class="col-span-2 font-medium">{{ request.user.role|role_label }}</dd>
+        {% if campaign %}
+        <dt class="text-slate-500">Campanha</dt><dd class="col-span-2 font-medium">{{ campaign.ballot_name }}{% if campaign.ballot_number %} · {{ campaign.ballot_number }}{% endif %}</dd>
+        {% endif %}
+        {% if parent %}<dt class="text-slate-500">Responsável</dt><dd class="col-span-2 font-medium">{{ parent.name }}</dd>{% endif %}
+        {% if request.user.region %}<dt class="text-slate-500">Região</dt><dd class="col-span-2 font-medium">{{ request.user.region }}</dd>{% endif %}
+        <dt class="text-slate-500">Último acesso</dt><dd class="col-span-2">{{ request.user.last_login|brdatetime }}</dd>
+      </dl>
+    </section>
+
+    {% if registration_link %}
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Meu link de cadastro</h2>
+        <p class="card-description">Cada eleitor que se cadastrar por este link fica vinculado a você.</p>
+      </div>
+      <div class="card-body space-y-3">
+        <input class="input" readonly value="{{ registration_link }}" onclick="this.select()">
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="btn btn-outline btn-sm" data-copy="{{ registration_link }}">{% icon "copy" %} Copiar link</button>
+          {% if can_my_link %}<a class="btn btn-outline btn-sm" href="/painel/meu-link/">{% icon "qr-code" %} Ver QR Code</a>{% endif %}
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Meus dados e privacidade</h2></div>
+      <div class="card-body space-y-2 text-sm text-slate-600">
+        <p>Seus dados de acesso são usados apenas para operar o sistema e ficam registrados na trilha de auditoria da campanha (acessos, alterações e exportações), conforme a LGPD.</p>
+        <p>Dúvidas ou pedidos sobre seus dados: <a class="link" href="mailto:contato@efind.com.br">contato@efind.com.br</a>. Veja a <a class="link" href="/privacidade/">Política de privacidade</a>.</p>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

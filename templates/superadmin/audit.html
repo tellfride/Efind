@@ -1,0 +1,102 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Auditoria da plataforma · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Auditoria da plataforma" description="Registro de ações em todas as campanhas. Dados pessoais de eleitores nunca são exibidos." %}{% endpage_header %}
+
+<form method="get" class="card mb-4 p-4" role="search" aria-label="Filtros da auditoria">
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_10rem_10rem_auto] lg:items-end">
+    {% field form.campaign %}
+    {% field form.action %}
+    {% field form.start %}
+    {% field form.end %}
+    <div class="flex gap-2">
+      <button type="submit" class="btn btn-primary">{% icon "filter" %} Filtrar</button>
+      {% if filtered %}<a class="btn btn-ghost" href="{% url 'superadmin:audit' %}">{% icon "rotate-ccw" %} Limpar</a>{% endif %}
+    </div>
+  </div>
+</form>
+
+<section class="card">
+  {% if rows %}
+    {# Celular: cartões #}
+    <ul class="divide-y divide-slate-100 md:hidden">
+      {% for row in rows %}
+      <li class="space-y-1 px-4 py-3">
+        <div class="flex items-start justify-between gap-2">
+          <p class="font-medium text-slate-900">{{ row.action_label }}</p>
+          <time class="shrink-0 text-xs text-slate-500" datetime="{{ row.created_at|date:'c' }}">{{ row.created_at|brdatetime }}</time>
+        </div>
+        <p class="text-xs text-slate-500">
+          {% if row.campaign %}<a class="link" href="{% url 'superadmin:campaign_detail' row.campaign.pk %}">{{ row.campaign.ballot_name }}</a>{% else %}Plataforma{% endif %}
+          · {% if row.user %}{{ row.user.name }}{% else %}Sistema / visitante{% endif %}
+        </p>
+        {% if row.entity or row.ip %}
+        <p class="text-xs text-slate-500">
+          {% if row.entity %}{{ row.entity }}{% if row.entity_short_id %} <span class="font-mono">#{{ row.entity_short_id }}</span>{% endif %}{% endif %}
+          {% if row.entity and row.ip %}·{% endif %}
+          {% if row.ip %}IP {{ row.ip }}{% endif %}
+        </p>
+        {% endif %}
+        {% if row.details_text %}
+        <details class="text-xs">
+          <summary class="cursor-pointer text-brand-700 hover:underline">Ver detalhes</summary>
+          <pre class="mt-1 max-h-60 overflow-auto rounded-lg bg-slate-50 p-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-all text-slate-700">{{ row.details_text }}</pre>
+        </details>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    {# Desktop: tabela #}
+    <div class="table-wrap hidden md:block">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Data e hora</th>
+            <th>Campanha</th>
+            <th>Usuário</th>
+            <th>Ação</th>
+            <th>Entidade</th>
+            <th>IP</th>
+            <th>Detalhes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr class="align-top">
+            <td class="whitespace-nowrap"><time datetime="{{ row.created_at|date:'c' }}">{{ row.created_at|brdatetime }}</time></td>
+            <td>
+              {% if row.campaign %}<a class="link block max-w-48 truncate" href="{% url 'superadmin:campaign_detail' row.campaign.pk %}">{{ row.campaign.ballot_name }}</a>{% else %}<span class="text-slate-500">Plataforma</span>{% endif %}
+            </td>
+            <td>
+              {% if row.user %}
+                <span class="block max-w-44 truncate">{{ row.user.name }}</span>
+                <span class="text-xs text-slate-500">{{ row.user_role_label }}</span>
+              {% else %}<span class="text-slate-500">Sistema / visitante</span>{% endif %}
+            </td>
+            <td class="font-medium text-slate-900">{{ row.action_label }}</td>
+            <td>{% if row.entity %}{{ row.entity }}{% if row.entity_short_id %} <span class="font-mono text-xs text-slate-500">#{{ row.entity_short_id }}</span>{% endif %}{% else %}—{% endif %}</td>
+            <td class="whitespace-nowrap">{{ row.ip|default:"—" }}</td>
+            <td class="min-w-40">
+              {% if row.details_text %}
+              <details class="text-xs">
+                <summary class="cursor-pointer text-brand-700 hover:underline">Ver detalhes</summary>
+                <pre class="mt-1 max-h-60 w-72 max-w-full overflow-auto rounded-lg bg-slate-50 p-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-all text-slate-700">{{ row.details_text }}</pre>
+              </details>
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="border-t border-slate-100 px-4">{% pagination page_obj %}</div>
+  {% elif filtered %}
+    {% empty_state icon="search-x" title="Nenhum registro encontrado" description="Nenhum evento corresponde aos filtros escolhidos." %}
+      <a class="btn btn-outline" href="{% url 'superadmin:audit' %}">Limpar filtros</a>
+    {% endempty_state %}
+  {% else %}
+    {% empty_state icon="history" title="Nenhum registro ainda" description="As ações da plataforma e das campanhas aparecerão aqui." %}{% endempty_state %}
+  {% endif %}
+</section>
+{% endblock %}

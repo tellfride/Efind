@@ -1,0 +1,53 @@
+{# Cartão de um dashboard na listagem. Contexto: d (anotado por services.annotate_dashboard). #}
+<article class="card flex flex-col">
+  <div class="card-body flex-1">
+    <h3 class="text-base font-semibold text-slate-900"><a class="hover:text-brand-700 hover:underline" href="{% url 'dashboards:detail' d.pk %}">{{ d.name }}</a></h3>
+    {% if d.description %}<p class="mt-1 text-sm text-slate-500">{{ d.description }}</p>{% endif %}
+    <div class="mt-3 flex flex-wrap gap-1.5">
+      {% if d.is_campaign_default %}{% badge "Padrão da campanha" "brand" %}{% endif %}
+      {% if d.is_my_default %}{% badge "Meu padrão" "green" %}{% endif %}
+      {% if d.shared %}{% badge "Compartilhado" "blue" %}{% else %}{% badge "Só eu vejo" "gray" %}{% endif %}
+    </div>
+    <p class="mt-3 text-xs text-slate-500">
+      {{ d.widget_count }} widget{{ d.widget_count|pluralize }} ·
+      {% if d.is_mine %}criado por você{% elif d.owner %}criado por {{ d.owner.name }}{% else %}da campanha{% endif %} ·
+      atualizado em {{ d.updated_at|brdate }}
+    </p>
+  </div>
+  <div class="card-footer justify-between">
+    <div class="flex items-center gap-2">
+      <a class="btn btn-outline btn-sm" href="{% url 'dashboards:detail' d.pk %}">{% icon "eye" %} Abrir</a>
+      {% if d.can_edit %}<a class="btn btn-secondary btn-sm" href="{% url 'dashboards:edit' d.pk %}">{% icon "pencil" %} Editar</a>{% endif %}
+    </div>
+    {% if d.can_duplicate or d.can_set_my_default or d.can_delete %}
+      <div x-data="dropdown" @click.outside="close()" @keydown.escape.window="close()" class="relative">
+        <button type="button" @click="toggle()" class="btn btn-ghost btn-icon btn-sm" aria-haspopup="menu" :aria-expanded="open" aria-label="Mais ações de {{ d.name }}">{% icon "ellipsis" %}</button>
+        <div x-cloak x-show="open" x-transition class="absolute right-0 bottom-full z-30 mb-2 w-60 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg" role="menu">
+          {% if d.can_duplicate %}
+            <form method="post" action="{% url 'dashboards:duplicate' d.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50" role="menuitem">{% icon "copy" %} Duplicar</button>
+            </form>
+          {% endif %}
+          {% if d.can_set_my_default %}
+            <form method="post" action="{% url 'dashboards:toggle_default' d.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'dashboards:list' %}">
+              <button type="submit" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
+                {% if d.is_my_default %}{% icon "x" %} Remover como meu padrão{% else %}{% icon "star" %} Definir como meu padrão{% endif %}
+              </button>
+            </form>
+          {% endif %}
+          {% if d.can_delete %}
+            <div class="my-1 h-px bg-slate-100"></div>
+            <form method="post" action="{% url 'dashboards:delete' d.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50" role="menuitem"
+                      data-confirm="Excluir o dashboard “{{ d.name }}”? Esta ação não pode ser desfeita.">{% icon "trash-2" %} Excluir</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</article>

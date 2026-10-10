@@ -1,0 +1,117 @@
+{% extends "portal/_legal.html" %}
+{% block title %}Termos de uso · E-Find{% endblock %}
+{% block head %}<meta name="description" content="Regras de uso do E-Find: contatos com consentimento, conformidade com a legislação eleitoral e responsabilidades das campanhas.">{% endblock %}
+
+{% block legal_heading %}Termos de uso{% endblock %}
+{% block legal_intro %}Estas regras valem para todas as campanhas e usuários do E-Find. Elas existem para proteger os eleitores, as campanhas e a própria plataforma. Ao usar o E-Find, você declara que leu e concorda com estes termos.{% endblock %}
+
+{% block legal_toc %}
+<li><a href="#servico">O serviço</a></li>
+<li><a href="#contas">Contas e acesso</a></li>
+<li><a href="#consentimento">Somente contatos com consentimento</a></li>
+<li><a href="#legislacao">Legislação eleitoral</a></li>
+<li><a href="#proibicoes">Usos proibidos</a></li>
+<li><a href="#campanhas">Responsabilidades da campanha</a></li>
+<li><a href="#plataforma">Responsabilidades do E-Find</a></li>
+<li><a href="#suspensao">Suspensão e encerramento</a></li>
+<li><a href="#propriedade">Propriedade intelectual</a></li>
+<li><a href="#alteracoes">Alterações e foro</a></li>
+<li><a href="#contato">Contato</a></li>
+{% endblock %}
+
+{% block legal_body %}
+<section id="servico">
+  <h2>1. O serviço</h2>
+  <p>O E-Find é uma plataforma de gestão de campanha eleitoral que oferece cadastro de eleitores por link e QR Code, equipe com hierarquia e permissões, mapa por bairro, dashboards, modelos de mensagem, disparos de WhatsApp por provedores oficiais e trilha de auditoria. Cada candidato ou candidata utiliza um ambiente próprio e isolado dos demais.</p>
+  <p>O tratamento de dados pessoais segue a <a href="/privacidade/">Política de privacidade</a>, que integra estes termos.</p>
+</section>
+
+<section id="contas">
+  <h2>2. Contas e acesso</h2>
+  <ul>
+    <li>As campanhas são criadas pela equipe do E-Find. O administrador da campanha cria e gerencia os coordenadores e cabos eleitorais e define o que cada nível pode ver e fazer.</li>
+    <li>Cada pessoa deve usar apenas a própria conta, manter a senha em sigilo e não compartilhá-la. Atos praticados com a sua conta são de sua responsabilidade.</li>
+    <li>Pessoas que deixam a equipe devem ter o acesso desativado imediatamente pelo administrador ou coordenador responsável.</li>
+    <li>Avise-nos sem demora em caso de suspeita de acesso indevido: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</li>
+  </ul>
+</section>
+
+<section id="consentimento">
+  <h2>3. Somente contatos com consentimento</h2>
+  <p>A comunicação política pela plataforma é permitida <strong>somente para pessoas que consentiram</strong>, de forma livre, informada e inequívoca, em receber contato da campanha. Para disparos de WhatsApp, é necessário um aceite próprio e separado.</p>
+  <ul>
+    <li>O E-Find registra data, hora, IP e texto do consentimento e bloqueia disparos a quem não consentiu ou pediu descadastro.</li>
+    <li>Toda comunicação deve permitir o descadastramento (por exemplo, respondendo SAIR) e a campanha deve respeitá-lo imediatamente e, no máximo, em até 48 horas, conforme o art. 57-G da Lei nº 9.504/1997.</li>
+    <li>Pedidos de acesso, correção ou exclusão de dados feitos por titulares devem ser atendidos pela campanha nos termos da LGPD.</li>
+  </ul>
+</section>
+
+<section id="legislacao">
+  <h2>4. Legislação eleitoral</h2>
+  <p>A campanha deve usar o E-Find em conformidade com a Lei nº 9.504/1997 (Lei das Eleições), com as resoluções do Tribunal Superior Eleitoral sobre propaganda eleitoral, em especial a Resolução TSE nº 23.610/2019 e suas alterações, e com a Lei nº 13.709/2018 (LGPD). Isso inclui, entre outros pontos:</p>
+  <ul>
+    <li>respeitar os períodos e as formas permitidos de propaganda e identificar o responsável pelo conteúdo;</li>
+    <li>não realizar disparo em massa sem consentimento nem por ferramentas não fornecidas pelo provedor do aplicativo ou contrárias aos seus termos de uso;</li>
+    <li>não praticar propaganda irregular, desinformação ou discurso de ódio, e observar as regras sobre conteúdo sintético e uso de inteligência artificial.</li>
+  </ul>
+  <p>O E-Find não substitui a assessoria jurídica da campanha: a interpretação e o cumprimento das normas eleitorais são de responsabilidade de cada candidato, partido ou federação.</p>
+</section>
+
+<section id="proibicoes">
+  <h2>5. Usos proibidos</h2>
+  <p>É proibido usar o E-Find para:</p>
+  <ul>
+    <li>enviar mensagens a pessoas que não consentiram ou que pediram descadastro;</li>
+    <li>importar, cadastrar ou utilizar <strong>listas de contatos compradas, alugadas, raspadas da internet</strong> ou obtidas sem base legal;</li>
+    <li>conectar <strong>ferramentas não oficiais de WhatsApp</strong> (por exemplo, disparadores, automação de WhatsApp Web, APIs não oficiais, chips descartáveis ou múltiplos números para burlar bloqueios). O E-Find aceita apenas a API oficial do WhatsApp (Meta) e parceiros oficiais;</li>
+    <li>revender, ceder ou compartilhar dados de eleitores com terceiros sem base legal ou fora da finalidade informada;</li>
+    <li>tentar acessar dados de outras campanhas, burlar permissões, explorar vulnerabilidades ou sobrecarregar a plataforma;</li>
+    <li>publicar conteúdo ilícito, difamatório, discriminatório ou que viole direitos de terceiros;</li>
+    <li>cadastrar dados de terceiros sem que a pessoa tenha dado ciência e consentimento.</li>
+  </ul>
+</section>
+
+<section id="campanhas">
+  <h2>6. Responsabilidades da campanha</h2>
+  <ul>
+    <li>A campanha é a <strong>controladora dos dados</strong> dos eleitores que cadastra e responde pela licitude da coleta, pela base legal, pelo conteúdo das mensagens e pelo atendimento aos direitos dos titulares.</li>
+    <li>Cabe ao administrador definir permissões com o princípio do menor privilégio, revisar a equipe periodicamente e orientar cabos eleitorais sobre o uso correto dos dados.</li>
+    <li>A campanha deve manter atualizados o texto de consentimento e o contato do encarregado/controlador exibidos no formulário público.</li>
+    <li>Exportações de dados são registradas na auditoria; os arquivos exportados passam a ser de responsabilidade de quem os baixou.</li>
+    <li>As contas e credenciais dos provedores de WhatsApp (Meta, Twilio, 360dialog) são contratadas e pagas pela campanha, que também deve cumprir os termos desses provedores.</li>
+  </ul>
+</section>
+
+<section id="plataforma">
+  <h2>7. Responsabilidades do E-Find</h2>
+  <ul>
+    <li>Manter medidas técnicas e organizacionais de segurança descritas na Política de privacidade e tratar os dados conforme as instruções da campanha.</li>
+    <li>Empenhar-se em manter o serviço disponível. Manutenções, falhas de provedores externos (como o WhatsApp) ou eventos fora do nosso controle podem causar indisponibilidades, e a entrega das mensagens depende dos provedores.</li>
+    <li>O E-Find não garante resultado eleitoral nem a entrega de todas as mensagens e não responde por decisões tomadas pela campanha com base nos dados exibidos, nem por danos decorrentes de uso em desacordo com estes termos.</li>
+  </ul>
+</section>
+
+<section id="suspensao">
+  <h2>8. Suspensão e encerramento</h2>
+  <p>Podemos <strong>suspender ou encerrar</strong> uma campanha, uma conta ou o acesso a um recurso, com ou sem aviso prévio conforme a gravidade, quando houver indício de abuso, inclusive: envio sem consentimento, uso de listas compradas ou de ferramentas não oficiais, tentativa de burlar o descadastro, violação de segurança, ordem judicial ou da Justiça Eleitoral, ou descumprimento destes termos.</p>
+  <p>Enquanto a campanha estiver suspensa, o formulário público de cadastro e os disparos ficam indisponíveis. A campanha pode solicitar a exportação e a eliminação dos seus dados ao encerrar o uso, observadas as obrigações legais de guarda.</p>
+</section>
+
+<section id="propriedade">
+  <h2>9. Propriedade intelectual</h2>
+  <p>O E-Find, sua marca, interface e código pertencem aos seus titulares. A contratação concede à campanha apenas o direito de uso da plataforma enquanto o acesso estiver ativo. Os dados e o conteúdo (como logo, textos e modelos de mensagem) inseridos pela campanha continuam sendo dela.</p>
+</section>
+
+<section id="alteracoes">
+  <h2>10. Alterações e foro</h2>
+  <p>Podemos alterar estes termos; a data da última atualização está no topo desta página e mudanças relevantes serão comunicadas aos administradores das campanhas. O uso continuado após a atualização significa concordância com a nova versão.</p>
+  <p>Estes termos são regidos pelas leis da República Federativa do Brasil. Fica eleito o foro da comarca da sede do E-Find para dirimir controvérsias, ressalvadas as hipóteses em que a lei determine foro diverso.</p>
+</section>
+
+<section id="contato">
+  <h2>11. Contato</h2>
+  <p>Para dúvidas, denúncias de uso indevido ou solicitações: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
+</section>
+{% endblock %}
+
+{% block legal_other %}a <a class="font-medium text-brand-600 hover:underline" href="/privacidade/">Política de privacidade</a>{% endblock %}

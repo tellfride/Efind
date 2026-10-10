@@ -1,0 +1,66 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}{% if mode == "edit" %}Editar eleitor{% else %}Novo eleitor{% endif %} · E-Find{% endblock %}
+{% block content %}
+{% if mode == "edit" %}
+  {% page_header title="Editar eleitor" description=voter.name %}
+    <a class="btn btn-outline" href="{% url 'voters:detail' voter_id=voter.pk %}">{% icon "arrow-left" %} Voltar</a>
+  {% endpage_header %}
+{% else %}
+  {% page_header title="Novo eleitor" description="Cadastro manual. O eleitor fica vinculado a quem o cadastrou." %}
+    <a class="btn btn-outline" href="{% url 'voters:list' %}">{% icon "arrow-left" %} Voltar</a>
+  {% endpage_header %}
+{% endif %}
+
+<form method="post" class="mx-auto max-w-3xl space-y-6" data-voter-form>
+  {% csrf_token %}
+  {% if form.non_field_errors %}{% alert "danger" %}{{ form.non_field_errors.0 }}{% endalert %}{% endif %}
+  {% if duplicate %}
+    {% alert "warning" title="Telefone já cadastrado" %}Já existe um eleitor com este WhatsApp na sua rede: <a class="link" href="{% url 'voters:detail' voter_id=duplicate.pk %}">{{ duplicate.name }}</a>.{% endalert %}
+  {% endif %}
+
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Dados do eleitor</h2></div>
+    <div class="card-body">{% include "voters/_data_fields.html" %}</div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Classificação</h2><p class="card-description">Uso interno da equipe; o eleitor não vê estas informações.</p></div>
+    <div class="card-body space-y-4">
+      {% field form.support_level %}
+      {% field form.tags %}
+      {% field form.notes %}
+    </div>
+  </section>
+
+  {% if mode == "create" %}
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Cadastro e consentimento</h2></div>
+    <div class="card-body space-y-4">
+      {% if "registered_by" in form.fields %}{% field form.registered_by %}{% endif %}
+      <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <label class="flex items-start gap-3 text-sm leading-snug text-slate-700">
+          <span class="mt-0.5">{{ form.consent }}</span>
+          <span>{{ form.consent.label }}<span class="ml-0.5 text-red-500">*</span></span>
+        </label>
+        {% if form.consent.errors %}<p class="field-error" role="alert">{{ form.consent.errors.0 }}</p>{% endif %}
+        <label class="flex items-start gap-3 text-sm leading-snug text-slate-700">
+          <span class="mt-0.5">{{ form.whatsapp_opt_in }}</span>
+          <span>{{ form.whatsapp_opt_in.label }}</span>
+        </label>
+      </div>
+      <p class="field-hint">Registramos a data, o IP e quem declarou o consentimento. Sem a autorização de WhatsApp o eleitor não recebe disparos.</p>
+    </div>
+  </section>
+  {% else %}
+  <p class="field-hint">O consentimento do eleitor e o descadastro do WhatsApp não são alterados nesta tela.</p>
+  {% endif %}
+
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    <a class="btn btn-outline" href="{% if mode == 'edit' %}{% url 'voters:detail' voter_id=voter.pk %}{% else %}{% url 'voters:list' %}{% endif %}">Cancelar</a>
+    <button type="submit" class="btn btn-primary" data-submit data-submit-label="Salvando...">{% icon "save" %} {% if mode == "edit" %}Salvar alterações{% else %}Cadastrar eleitor{% endif %}</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/voters/forms.js' %}" defer></script>{% endblock %}

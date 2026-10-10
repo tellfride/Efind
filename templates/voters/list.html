@@ -1,0 +1,118 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}Eleitores · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Eleitores" description="Cadastros da sua rede, com situação de consentimento para WhatsApp." %}
+  {% if perms.eleitores.export %}<a class="btn btn-outline" href="{% url 'voters:export' %}{% if export_query %}?{{ export_query }}{% endif %}">{% icon "download" %} Exportar CSV</a>{% endif %}
+  {% if perms.eleitores.create %}
+    <a class="btn btn-outline" href="{% url 'voters:import' %}">{% icon "upload" %} Importar</a>
+    <a class="btn btn-primary" href="{% url 'voters:create' %}">{% icon "user-plus" %} Novo eleitor</a>
+  {% endif %}
+{% endpage_header %}
+
+{% if failed_geo %}
+<div class="mb-4">
+  {% alert "warning" title="Alguns eleitores não foram localizados no mapa" %}
+    <p>O endereço informado não foi encontrado. Você pode tentar novamente (por exemplo, depois de corrigir um CEP).</p>
+    <form method="post" action="{% url 'voters:retry_geo' %}" class="mt-2">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline btn-sm">{% icon "map-pin" %} Tentar localizar novamente ({{ failed_geo|num }})</button>
+    </form>
+  {% endalert %}
+</div>
+{% endif %}
+
+<div class="mb-4" data-voter-filters data-sort="{{ sort }}">{% voter_filters filters filter_options %}</div>
+
+<div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+  <p class="text-sm text-slate-600">
+    <strong class="text-slate-900">{{ total|num }}</strong> eleitor{{ total|pluralize:",es" }} encontrado{{ total|pluralize }}
+    <span class="mx-1 text-slate-300">·</span>
+    <strong class="text-emerald-700">{{ messageable|num }}</strong> apto{{ messageable|pluralize }} a WhatsApp
+  </p>
+  <label class="flex items-center gap-2 text-sm text-slate-600">
+    <span class="shrink-0">Ordenar por</span>
+    <select class="select w-auto" x-data @change="window.location = $event.target.value" aria-label="Ordenar eleitores">
+      {% for key, label in sort_options %}<option value="{% qs ordem=key page='' %}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </label>
+</div>
+
+{% if total == 0 %}
+<div class="card">
+  {% if has_filters %}
+    {% empty_state icon="search-x" title="Nenhum eleitor encontrado" description="Nenhum cadastro corresponde aos filtros aplicados. Tente ampliar a busca." %}
+      <a class="btn btn-outline" href="{% url 'voters:list' %}">Limpar filtros</a>
+    {% endempty_state %}
+  {% else %}
+    {% empty_state icon="users-round" title="Nenhum eleitor cadastrado ainda" description="Compartilhe seu link ou QR Code, cadastre manualmente ou importe uma lista." %}
+      {% if perms.meu_link.view %}<a class="btn btn-primary" href="{% url 'voters:my_link' %}">{% icon "qr-code" %} Ver meu link</a>{% endif %}
+      {% if perms.eleitores.create %}<a class="btn btn-outline" href="{% url 'voters:create' %}">{% icon "user-plus" %} Novo eleitor</a>{% endif %}
+    {% endempty_state %}
+  {% endif %}
+</div>
+{% else %}
+
+{# Desktop: tabela #}
+<div class="card hidden overflow-hidden md:block">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Nome</th>
+          <th scope="col">WhatsApp</th>
+          <th scope="col">Bairro / cidade</th>
+          <th scope="col">Cadastrado por</th>
+          <th scope="col">Apoio</th>
+          <th scope="col">Situação WhatsApp</th>
+          <th scope="col">Cadastro</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in voters %}
+        <tr>
+          <td class="max-w-64"><a class="link block truncate" href="{% url 'voters:detail' voter_id=v.pk %}">{{ v.name }}</a></td>
+          <td class="whitespace-nowrap">
+            <span class="tabular-nums">{{ v.phone|phone }}</span>
+            <a class="ml-1 inline-flex align-middle text-emerald-600 hover:text-emerald-700" href="{{ v.wa_url }}" target="_blank" rel="noopener noreferrer" aria-label="Abrir conversa no WhatsApp com {{ v.name }}">{% icon "message-circle" "size-4" %}</a>
+          </td>
+          <td>{% if v.neighborhood %}{{ v.neighborhood }}{% if v.city %}<span class="text-slate-400"> · {{ v.city }}</span>{% endif %}{% elif v.city %}{{ v.city }}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+          <td class="whitespace-nowrap">{{ v.registered_by.name }}</td>
+          <td>{% if v.support_label %}{% badge v.support_label v.support_tone %}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+          <td>{% badge v.wa_label v.wa_tone %}</td>
+          <td class="whitespace-nowrap text-slate-500">{{ v.created_at|brdate }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# Celular: cartões #}
+<ul class="space-y-3 md:hidden">
+  {% for v in voters %}
+  <li class="card p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <a class="link block truncate text-base" href="{% url 'voters:detail' voter_id=v.pk %}">{{ v.name }}</a>
+        <p class="mt-0.5 text-sm text-slate-600 tabular-nums">{{ v.phone|phone }}</p>
+      </div>
+      <a class="btn btn-whatsapp btn-icon shrink-0" href="{{ v.wa_url }}" target="_blank" rel="noopener noreferrer" aria-label="Abrir conversa no WhatsApp com {{ v.name }}">{% icon "message-circle" "size-4" %}</a>
+    </div>
+    <p class="mt-2 text-sm text-slate-500">
+      {% if v.neighborhood %}{{ v.neighborhood }}{% if v.city %} · {{ v.city }}{% endif %}{% elif v.city %}{{ v.city }}{% else %}Sem endereço{% endif %}
+    </p>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      {% if v.support_label %}{% badge v.support_label v.support_tone %}{% endif %}
+      {% badge v.wa_label v.wa_tone %}
+    </div>
+    <p class="mt-3 text-xs text-slate-400">Cadastrado por {{ v.registered_by.name }} em {{ v.created_at|brdate }}</p>
+  </li>
+  {% endfor %}
+</ul>
+
+{% pagination page_obj %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/voters/list.js' %}" defer></script>{% endblock %}

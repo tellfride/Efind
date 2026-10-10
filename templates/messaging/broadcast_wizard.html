@@ -1,0 +1,266 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}Novo disparo · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Novo disparo" description="Escolha a mensagem, defina o público e revise antes de enviar." %}
+  <a class="btn btn-outline" href="{{ list_url }}">{% icon "arrow-left" %} Voltar</a>
+{% endpage_header %}
+
+{% if not has_templates %}
+<div class="card">
+  {% empty_state icon="message-square-text" title="Crie um modelo de mensagem primeiro" description="Todo disparo usa um modelo com o texto que os eleitores vão receber." %}
+    {% if can_create_template %}<a class="btn btn-primary" href="/painel/mensagens/modelos/novo/">{% icon "plus" %} Criar modelo</a>{% else %}<p class="text-sm text-slate-500">Peça a um administrador para criar um modelo.</p>{% endif %}
+  {% endempty_state %}
+</div>
+{% else %}
+{{ wizard_config|json_script:"wizard-config" }}
+<div x-data='broadcastWizard(JSON.parse(document.getElementById("wizard-config").textContent))' x-cloak class="space-y-6">
+
+  {# Etapas #}
+  <nav aria-label="Etapas do disparo">
+    <ol class="flex items-center gap-2">
+      <template x-for="(label, i) in steps" :key="i">
+        <li class="flex min-w-0 items-center gap-2" :class="i < steps.length - 1 ? 'flex-1' : ''">
+          <button type="button" @click="go(i)" class="flex min-w-0 items-center gap-2 text-left" :class="i <= furthest ? 'cursor-pointer' : 'cursor-default'" :aria-current="i === step ? 'step' : null" :disabled="i > furthest">
+            <span class="flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                  :class="i === step ? 'bg-brand-600 text-white' : (i < step ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500')" x-text="i < step ? '✓' : i + 1"></span>
+            <span class="truncate text-sm font-medium" :class="i === step ? 'text-slate-900' : 'hidden text-slate-500 sm:inline'" x-text="label"></span>
+          </button>
+          <span x-show="i < steps.length - 1" class="h-px flex-1 bg-slate-200" aria-hidden="true"></span>
+        </li>
+      </template>
+    </ol>
+  </nav>
+
+  <div x-show="errors.__all__" class="alert alert-danger" role="alert"><span x-text="errors.__all__"></span></div>
+
+  {# ------------------------------------------------------------ 1. Mensagem #}
+  <section x-show="step === 0" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Mensagem</h2><p class="card-description">Dê um nome ao disparo e escolha o texto que será enviado.</p></div>
+      <div class="card-body space-y-4">
+        <div class="space-y-1.5">
+          <label for="wz-name" class="label">Nome do disparo<span class="ml-0.5 text-red-500">*</span></label>
+          <input id="wz-name" type="text" class="input" maxlength="120" autocomplete="off" x-model="form.name" @input="delete errors.name" placeholder="Ex.: Convite para a caminhada de sábado" :aria-invalid="errors.name ? 'true' : null">
+          <p class="field-error" x-show="errors.name" x-text="errors.name" role="alert"></p>
+          <p class="field-hint" x-show="!errors.name">Só para você identificar; o eleitor não vê este nome.</p>
+        </div>
+        <div class="space-y-1.5">
+          <label for="wz-template" class="label">Modelo de mensagem<span class="ml-0.5 text-red-500">*</span></label>
+          <select id="wz-template" class="select" x-model="form.template" @change="delete errors.template" :aria-invalid="errors.template ? 'true' : null">
+            <option value="">Selecione um modelo</option>
+            {% for t in wizard_config.templates %}<option value="{{ t.id }}">{{ t.name }} · {{ t.category }}</option>{% endfor %}
+          </select>
+          <p class="field-error" x-show="errors.template" x-text="errors.template" role="alert"></p>
+        </div>
+        <template x-if="template">
+          <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+            <p><span class="font-medium text-slate-800" x-text="template.typeLabel"></span> · <span x-text="template.category"></span></p>
+            <p x-show="template.providerTemplateName" class="mt-1">Template aprovado: <span class="font-mono text-xs" x-text="template.providerTemplateName"></span></p>
+            <a x-show="canViewTemplates" class="link mt-2 inline-block text-xs" :href="urls.templates + template.id + '/'" target="_blank" rel="noopener">Ver ou editar o modelo</a>
+          </div>
+        </template>
+        <p x-show="!template" class="text-sm text-slate-500">Escolha um modelo para ver a pré-visualização.</p>
+      </div>
+    </div>
+    <aside class="min-w-0">
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">Pré-visualização</h2><p class="card-description">Com dados de exemplo.</p></div>
+        <div class="card-body">{% include "messaging/_phone_mock.html" with ref="tplPreview" %}</div>
+      </section>
+    </aside>
+  </section>
+
+  {# ------------------------------------------------------------ 2. Público #}
+  <section x-show="step === 1" class="space-y-4">
+    <div x-ref="filters"
+         @submit.prevent="onFiltersChanged()"
+         @input.debounce.400ms="onFiltersChanged()"
+         @change="onFiltersChanged()"
+         @ms-change="onFiltersChanged()"
+         @click="onFilterClick($event)">
+      {% voter_filters filters filter_options action="#" hide=filter_hide submit_label="Atualizar contagem" %}
+    </div>
+    <p class="text-xs text-slate-500">Os filtros mostram apenas eleitores da sua rede. Sem filtros, o disparo vai para todos os eleitores aptos da sua rede.</p>
+
+    <div x-show="errors.filters" class="alert alert-danger" role="alert"><span x-text="errors.filters"></span></div>
+
+    <section class="card" aria-live="polite">
+      <div class="card-body">
+        <div x-show="audienceLoading && !audience" class="space-y-2" aria-busy="true">
+          <div class="skeleton h-9 w-40"></div>
+          <div class="skeleton h-4 w-72 max-w-full"></div>
+        </div>
+        <div x-show="audienceError" class="alert alert-danger" role="alert"><span x-text="audienceError"></span></div>
+        <template x-if="audience">
+          <div class="space-y-4" :class="audienceLoading ? 'opacity-60' : ''">
+            <div class="flex items-center gap-4">
+              <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">{% icon "users-round" "size-6" %}</div>
+              <div>
+                <p class="text-3xl font-bold tracking-tight text-slate-900 tabular-nums" x-text="fmt(audience.eligible)"></p>
+                <p class="text-sm text-slate-600" x-text="audience.eligible === 1 ? 'eleitor vai receber a mensagem' : 'eleitores vão receber a mensagem'"></p>
+              </div>
+            </div>
+            <ul class="space-y-1.5 text-sm text-slate-600">
+              <li><span x-text="voters(audience.total_matching)"></span> <span x-text="audience.total_matching === 1 ? 'corresponde' : 'correspondem'"></span> aos filtros.</li>
+              <li x-show="audience.without_opt_in > 0" class="flex items-start gap-2 text-amber-700">{% icon "triangle-alert" "mt-0.5 size-4 shrink-0" %}<span><span x-text="voters(audience.without_opt_in)"></span> não autorizaram WhatsApp e não receberão.</span></li>
+              <li x-show="audience.opted_out > 0" class="flex items-start gap-2 text-amber-700">{% icon "user-x" "mt-0.5 size-4 shrink-0" %}<span><span x-text="voters(audience.opted_out)"></span> pediram para sair e não receberão.</span></li>
+            </ul>
+            <div x-show="audience.eligible === 0" class="alert alert-warning" role="status">Nenhum eleitor deste público pode receber mensagens. Ajuste os filtros para continuar.</div>
+          </div>
+        </template>
+      </div>
+    </section>
+  </section>
+
+  {# ------------------------------------------------------------ 3. Envio #}
+  <section x-show="step === 2" class="grid gap-6 lg:grid-cols-2">
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Conexão de WhatsApp</h2><p class="card-description">Por qual número as mensagens serão enviadas.</p></div>
+      <div class="card-body space-y-4">
+        {% if not has_connections %}
+        {% alert "warning" title="Nenhuma conexão ativa" %}
+          Para enviar, conecte uma conta oficial do WhatsApp (ou o Simulador, para testes).
+          {% if can_view_whatsapp %}<div class="mt-3"><a class="btn btn-outline btn-sm" href="/painel/whatsapp/">{% icon "plug-zap" %} Configurar conexão</a></div>{% else %}<p class="mt-2">Peça a um administrador para configurar a conexão.</p>{% endif %}
+        {% endalert %}
+        {% else %}
+        <div class="space-y-1.5">
+          <label for="wz-connection" class="label">Conexão<span class="ml-0.5 text-red-500">*</span></label>
+          <select id="wz-connection" class="select" x-model="form.connection" :aria-invalid="errors.connection ? 'true' : null">
+            <option value="">Selecione uma conexão</option>
+            {% for c in wizard_config.connections %}<option value="{{ c.id }}">{{ c.name }} · {{ c.providerLabel }}{% if c.isDefault %} (padrão){% endif %}</option>{% endfor %}
+          </select>
+          <p class="field-error" x-show="errors.connection" x-text="errors.connection" role="alert"></p>
+          <p class="field-hint" x-show="connection && !errors.connection">Limite desta conexão: <span x-text="fmt(connection.rate)"></span> mensagens por minuto.</p>
+        </div>
+        <div x-show="templateBlocked" class="alert alert-danger" role="alert">
+          <p class="font-semibold">Este modelo não pode ser enviado por esta conexão</p>
+          <p class="mt-1 text-sm">A API oficial só permite enviar mensagens iniciadas pela campanha com um template aprovado, e o modelo escolhido ainda não tem o nome do template aprovado. Informe o nome no modelo ou escolha outra conexão (como o Simulador, para testes).</p>
+          <a x-show="canViewTemplates" class="btn btn-outline btn-sm mt-3" :href="template ? urls.templates + template.id + '/' : '#'" target="_blank" rel="noopener">Editar o modelo</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Velocidade e horário</h2></div>
+      <div class="card-body space-y-5">
+        <div class="space-y-1.5">
+          <label for="wz-rate" class="label">Mensagens por minuto<span class="ml-0.5 text-red-500">*</span></label>
+          <input id="wz-rate" type="number" inputmode="numeric" class="input sm:w-40" min="1" :max="rateMax" step="1" x-model="form.rate" @input="delete errors.rate_per_minute" :aria-invalid="(!rateValid || errors.rate_per_minute) ? 'true' : null">
+          <p class="field-error" x-show="errors.rate_per_minute" x-text="errors.rate_per_minute" role="alert"></p>
+          <p class="field-error" x-show="!errors.rate_per_minute && form.rate !== '' && !rateValid" x-text="'Use um número inteiro de 1 a ' + fmt(rateMax) + '.'" role="alert"></p>
+          <p class="field-hint">Enviar devagar reduz o risco de bloqueio do número pelo WhatsApp.</p>
+        </div>
+
+        <fieldset class="space-y-3">
+          <legend class="label">Quando enviar</legend>
+          <label class="flex cursor-pointer items-start gap-2 text-sm text-slate-700">
+            <input type="radio" name="wz-mode" class="mt-0.5" value="now" :checked="form.mode === 'now'" @change="pickMode('now')">
+            <span><span class="font-medium">Enviar agora</span><span class="block text-slate-500">Começa assim que você confirmar.</span></span>
+          </label>
+          <label class="flex cursor-pointer items-start gap-2 text-sm text-slate-700">
+            <input type="radio" name="wz-mode" class="mt-0.5" value="schedule" :checked="form.mode === 'schedule'" @change="pickMode('schedule')">
+            <span><span class="font-medium">Agendar</span><span class="block text-slate-500">Escolha a data e a hora (horário de Brasília).</span></span>
+          </label>
+          <div x-show="form.mode === 'schedule'" class="space-y-1.5 pl-6">
+            <label for="wz-when" class="label">Data e hora</label>
+            <input id="wz-when" type="datetime-local" class="input sm:w-64" :min="minSchedule" x-model="form.scheduledAt" @input="delete errors.scheduled_at" :aria-invalid="(scheduleError || errors.scheduled_at) ? 'true' : null">
+            <p class="field-error" x-show="errors.scheduled_at || (form.scheduledAt && scheduleError)" x-text="errors.scheduled_at || scheduleError" role="alert"></p>
+          </div>
+          <p class="field-error" x-show="errors.mode" x-text="errors.mode" role="alert"></p>
+        </fieldset>
+      </div>
+    </div>
+  </section>
+
+  {# ------------------------------------------------------------ 4. Revisão #}
+  <section x-show="step === 3" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div class="min-w-0 space-y-6">
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Resumo</h2><p class="card-description">Confira antes de enviar.</p></div>
+        <div class="card-body">
+          <div x-show="reviewLoading && !review" class="space-y-2" aria-busy="true"><div class="skeleton h-5 w-64 max-w-full"></div><div class="skeleton h-5 w-48"></div><div class="skeleton h-5 w-56"></div></div>
+          <div x-show="reviewError" class="alert alert-danger" role="alert"><span x-text="reviewError"></span></div>
+          <dl class="grid grid-cols-3 gap-y-3 text-sm" x-show="review">
+            <dt class="text-slate-500">Nome</dt><dd class="col-span-2 font-medium break-words" x-text="form.name"></dd>
+            <dt class="text-slate-500">Modelo</dt><dd class="col-span-2" x-text="template ? template.name : '—'"></dd>
+            <dt class="text-slate-500">Conexão</dt><dd class="col-span-2" x-text="connection ? connection.name + ' · ' + connection.providerLabel : '—'"></dd>
+            <dt class="text-slate-500">Destinatários</dt>
+            <dd class="col-span-2 font-semibold" x-text="review ? voters(review.eligible) : '—'"></dd>
+            <dt class="text-slate-500">Velocidade</dt><dd class="col-span-2" x-text="'até ' + fmt(form.rate) + ' por minuto'"></dd>
+            <dt class="text-slate-500">Duração estimada</dt><dd class="col-span-2" x-text="review ? review.duration_label : '—'"></dd>
+            <dt class="text-slate-500">Quando</dt><dd class="col-span-2" x-text="whenLabel"></dd>
+            <dt class="text-slate-500">Filtros</dt>
+            <dd class="col-span-2">
+              <p x-show="!review || review.filters_summary.length === 0" class="text-slate-600">Todos os eleitores aptos da sua rede.</p>
+              <ul class="space-y-0.5" x-show="review && review.filters_summary.length > 0">
+                <template x-for="item in (review ? review.filters_summary : [])" :key="item.label">
+                  <li><span class="text-slate-500" x-text="item.label + ': '"></span><span x-text="item.value"></span></li>
+                </template>
+              </ul>
+            </dd>
+          </dl>
+          <p x-show="review && (review.without_opt_in > 0 || review.opted_out > 0)" class="mt-4 text-sm text-amber-700">
+            <span x-text="voters(review ? review.without_opt_in + review.opted_out : 0)"></span> do público não receberão por falta de autorização ou descadastro.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Consentimento e legislação eleitoral</h2></div>
+        <div class="card-body space-y-4">
+          <div class="alert alert-warning text-sm" role="note">
+            <p class="font-semibold">Atenção às regras do TSE (Res. 23.610/2019)</p>
+            <ul class="mt-1 list-disc space-y-0.5 pl-5">
+              <li>É vedado o disparo em massa sem consentimento do destinatário.</li>
+              <li>Identifique a campanha na mensagem (nome do candidato).</li>
+              <li>Ofereça ao eleitor a opção de descadastro (por exemplo, responder SAIR).</li>
+            </ul>
+          </div>
+          <label class="flex cursor-pointer items-start gap-2 text-sm text-slate-800">
+            <input type="checkbox" class="checkbox mt-0.5" x-model="form.consent" @change="delete errors.consent">
+            <span>Confirmo que todos os destinatários consentiram em receber mensagens desta campanha e que o conteúdo respeita a legislação eleitoral.</span>
+          </label>
+          <p class="field-error" x-show="errors.consent" x-text="errors.consent" role="alert"></p>
+        </div>
+      </div>
+    </div>
+
+    <aside class="min-w-0">
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">Exemplos de mensagens</h2><p class="card-description" x-text="review && review.samples.length ? 'Como até 3 destinatários vão receber.' : 'Pré-visualização do texto.'"></p></div>
+        <div class="card-body">{% include "messaging/_phone_mock.html" with ref="samples" %}</div>
+      </section>
+    </aside>
+  </section>
+
+  {# Navegação #}
+  <div class="flex items-center justify-between gap-3 border-t border-slate-200 pt-4">
+    <button type="button" class="btn btn-outline" @click="back()" x-show="step > 0">{% icon "arrow-left" %} Voltar</button>
+    <span x-show="step === 0"></span>
+    <button type="button" class="btn btn-primary" @click="next()" :disabled="!stepValid(step)" x-show="step < 3">Avançar {% icon "arrow-right" %}</button>
+    <button type="submit" form="wizard-form" class="btn btn-whatsapp btn-lg" :disabled="!allValid() || submitting" x-show="step === 3">
+      {% icon "send" %} <span x-text="submitting ? 'Enviando...' : (form.mode === 'now' ? 'Iniciar disparo' : 'Agendar disparo')"></span>
+    </button>
+  </div>
+
+  {# Formulário real: campos ocultos preenchidos pelo estado do assistente #}
+  <form id="wizard-form" method="post" class="hidden" @submit="submitting = true">
+    {% csrf_token %}
+    <input type="hidden" name="name" :value="form.name">
+    <input type="hidden" name="template" :value="form.template">
+    <input type="hidden" name="connection" :value="form.connection">
+    <input type="hidden" name="rate_per_minute" :value="form.rate">
+    <input type="hidden" name="mode" :value="form.mode">
+    <input type="hidden" name="scheduled_at" :value="form.mode === 'schedule' ? form.scheduledAt : ''">
+    <input type="hidden" name="filters" :value="JSON.stringify(form.filters)">
+    <input type="hidden" name="consent" value="on" :disabled="!form.consent">
+  </form>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/messaging/whatsapp-format.js' %}"></script>
+<script src="{% static 'js/messaging/broadcast-wizard.js' %}"></script>
+{% endblock %}

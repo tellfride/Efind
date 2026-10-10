@@ -1,0 +1,291 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}Mapa · E-Find{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/leaflet/MarkerCluster.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/leaflet/MarkerCluster.Default.css' %}">
+  <link rel="stylesheet" href="{% static 'css/mapview.css' %}">
+{% endblock %}
+
+{% block content %}
+{% page_header title="Mapa territorial" description="Veja onde estão os eleitores da sua rede: por bairro, ponto a ponto ou por concentração." %}{% endpage_header %}
+
+{# Filtros: recolhidos no celular, sempre visíveis no desktop #}
+<div x-data="mapFilters" class="mb-4">
+  <button type="button" class="btn btn-outline w-full justify-between lg:hidden" @click="open = !open" :aria-expanded="open ? 'true' : 'false'" aria-controls="map-filters">
+    <span class="inline-flex items-center gap-2">
+      {% icon "sliders-horizontal" %} Filtros
+      {% if active_filters %}<span class="badge badge-brand">{{ active_filters }}</span>{% endif %}
+    </span>
+    {% icon "chevron-down" "size-4 transition-transform" %}
+  </button>
+  <div id="map-filters" x-show="visible" x-cloak :class="open && !desktop ? 'mt-3' : ''">
+    {% voter_filters filters filter_options hide=hide_filters %}
+  </div>
+</div>
+
+<div x-data="territorialMap" class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
+
+  {# ------------------------------------------------------------------ Mapa #}
+  <section class="card overflow-hidden" aria-label="Mapa dos eleitores">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 p-3">
+      <div class="map-seg" role="radiogroup" aria-label="Modo de visualização">
+        <button type="button" role="radio" class="map-seg-btn" :aria-checked="mode === 'bairros' ? 'true' : 'false'" @click="setMode('bairros')">{% icon "circle-dot" %} Bairros</button>
+        <button type="button" role="radio" class="map-seg-btn" :aria-checked="mode === 'pontos' ? 'true' : 'false'" @click="setMode('pontos')">{% icon "map-pin" %} Pontos</button>
+        <button type="button" role="radio" class="map-seg-btn" :aria-checked="mode === 'calor' ? 'true' : 'false'" @click="setMode('calor')">{% icon "flame" %} Calor</button>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="map-seg" role="radiogroup" aria-label="Mapa base">
+          <button type="button" role="radio" class="map-seg-btn" :aria-checked="basemap === 'ruas' ? 'true' : 'false'" @click="setBasemap('ruas')">{% icon "layers" %} Ruas</button>
+          <button type="button" role="radio" class="map-seg-btn" :aria-checked="basemap === 'claro' ? 'true' : 'false'" @click="setBasemap('claro')">Claro</button>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" @click="recenter()" :disabled="!hasBounds" title="Enquadrar todos os eleitores no mapa">{% icon "locate-fixed" %} Centralizar</button>
+      </div>
+    </div>
+
+    {# Erro com dados antigos na tela #}
+    <div x-show="error && loaded" x-cloak class="border-b border-red-100 bg-red-50 px-4 py-2 text-sm text-red-900" role="alert">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span x-text="error"></span>
+        <button type="button" class="btn btn-outline btn-sm" @click="reload()">{% icon "refresh-cw" %} Tentar novamente</button>
+      </div>
+    </div>
+
+    {# Amostra de pontos (limite do servidor) #}
+    <p x-show="truncated && mode !== 'bairros'" x-cloak class="flex items-start gap-2 border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-900">
+      {% icon "info" "mt-0.5 size-3.5 shrink-0" %}
+      <span>Exibindo uma amostra de <span x-text="fmt(pointsShown)"></span> dos <span x-text="fmt(totals.with_geo)"></span> eleitores localizados. Use os filtros para detalhar uma região.</span>
+    </p>
+
+    <div x-ref="mapArea" class="efind-map-area relative isolate" role="region" aria-label="Mapa" :aria-busy="loading ? 'true' : 'false'">
+      <div x-ref="map" class="efind-map absolute inset-0"></div>
+
+      {# Carregando (primeira vez) #}
+      <div x-show="loading && !loaded" class="absolute inset-0 z-[1000]" aria-hidden="true">
+        <div class="skeleton absolute inset-0 rounded-none"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-medium text-slate-600 shadow-md">{% icon "loader-circle" "size-4 animate-spin" %} Carregando o mapa...</span>
+        </div>
+      </div>
+
+      {# Atualizando (dados já exibidos) #}
+      <div x-show="loading && loaded" x-cloak class="absolute top-3 right-3 z-[1000] inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-md" role="status">
+        {% icon "loader-circle" "size-3.5 animate-spin" %} Atualizando...
+      </div>
+
+      {# Erro sem dados #}
+      <div x-show="error && !loaded" x-cloak class="absolute inset-0 z-[1000] flex items-center justify-center bg-slate-50 p-4" role="alert">
+        <div class="max-w-sm rounded-xl border border-slate-200 bg-white shadow-sm">
+          {% empty_state icon="triangle-alert" title="Mapa indisponível" description="Não conseguimos carregar os dados agora." %}
+            <p class="mb-3 text-xs text-red-600" x-text="error"></p>
+            <button type="button" class="btn btn-outline btn-sm" @click="reload()">{% icon "refresh-cw" %} Tentar novamente</button>
+          {% endempty_state %}
+        </div>
+      </div>
+
+      {# Nenhum eleitor localizado #}
+      <div x-show="isEmpty" x-cloak class="absolute inset-0 z-[1000] flex items-center justify-center bg-slate-50/70 p-4 backdrop-blur-[1px]">
+        <div class="max-w-sm rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex flex-col items-center justify-center px-6 py-10 text-center">
+            <div class="mb-4 flex size-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">{% icon "map" "size-6" %}</div>
+            <h3 class="text-base font-semibold text-slate-900">Nenhum eleitor com localização para os filtros selecionados</h3>
+            <p class="mt-1 max-w-sm text-sm text-slate-500" x-text="emptyDescription"></p>
+          </div>
+        </div>
+      </div>
+
+      {# Legenda #}
+      <div x-show="loaded && totals.with_geo > 0" x-cloak class="map-legend">
+        <button type="button" class="flex w-full items-center justify-between gap-3 px-3 py-2 font-semibold text-slate-700" @click="legendOpen = !legendOpen" :aria-expanded="legendOpen ? 'true' : 'false'">
+          <span x-text="legendTitle"></span>
+          {% icon "chevron-down" "size-3.5 text-slate-400" %}
+        </button>
+        <div x-show="legendOpen" class="border-t border-slate-100 px-3 pt-2 pb-3">
+          <div x-show="mode === 'bairros'">
+            <ul class="space-y-1">
+              <template x-for="b in legendBins" :key="b.min + '-' + b.max">
+                <li class="flex items-center gap-2">
+                  <span class="map-legend-swatch" :style="'background-color:' + b.color" aria-hidden="true"></span>
+                  <span class="text-slate-600 tabular-nums" x-text="b.label"></span>
+                </li>
+              </template>
+            </ul>
+            <p class="mt-2 max-w-40 text-[11px] text-slate-500">Tamanho do círculo proporcional ao total.</p>
+          </div>
+          <ul x-show="mode === 'pontos'" class="space-y-1.5">
+            <li class="flex items-center gap-2"><span class="map-legend-swatch" style="background-color:#4f46e5" aria-hidden="true"></span><span class="text-slate-600">Eleitor</span></li>
+            <li class="flex items-center gap-2"><span class="map-legend-swatch" style="background-color:#818cf8" aria-hidden="true"></span><span class="text-slate-600">Grupo próximo (toque para ampliar)</span></li>
+          </ul>
+          <div x-show="mode === 'calor'">
+            <div class="h-2 w-36 rounded-full" :style="'background:' + heatGradientCss" aria-hidden="true"></div>
+            <div class="mt-1 flex w-36 justify-between text-[11px] text-slate-500"><span>Menor</span><span>Maior</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="flex items-start gap-2 border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
+      {% icon "shield-check" "mt-0.5 size-3.5 shrink-0 text-slate-400" %}
+      As coordenadas são aproximadas (nível de CEP/logradouro), e não do endereço exato, para proteger a privacidade dos eleitores.
+    </p>
+  </section>
+
+  {# ------------------------------------------------------------------ Painel lateral #}
+  <aside class="space-y-4" aria-label="Resumo do mapa">
+
+    {# Esqueleto da primeira carga #}
+    <div x-show="!loaded && !error" class="space-y-3" aria-hidden="true">
+      <div class="skeleton h-24 rounded-xl"></div>
+      <div class="skeleton h-24 rounded-xl"></div>
+      <div class="skeleton h-72 rounded-xl"></div>
+    </div>
+
+    <div x-show="loaded" x-cloak class="space-y-4">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium text-slate-500">No mapa</p>
+              <p class="mt-1 text-2xl font-bold tracking-tight text-slate-900 tabular-nums" x-text="fmt(totals.with_geo)"></p>
+            </div>
+            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">{% icon "map-pin" "size-5" %}</div>
+          </div>
+          <p class="mt-2 text-xs text-slate-500"><span x-text="coveragePct"></span> de <span x-text="fmt(totals.voters)"></span> eleitores</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium text-slate-500">Sem localização</p>
+              <p class="mt-1 text-2xl font-bold tracking-tight text-slate-900 tabular-nums" x-text="fmt(totals.without_geo)"></p>
+            </div>
+            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">{% icon "map-pinned" "size-5" %}</div>
+          </div>
+          <p class="mt-2 text-xs text-slate-500">Sem CEP ou ainda não localizados</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium text-slate-500">Aproximados</p>
+              <p class="mt-1 text-2xl font-bold tracking-tight text-slate-900 tabular-nums" x-text="fmt(totals.approximate)"></p>
+            </div>
+            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-600">{% icon "crosshair" "size-5" %}</div>
+          </div>
+          <p class="mt-2 text-xs text-slate-500">Localizados pelo bairro ou cidade</p>
+        </div>
+      </div>
+
+      {# Ranking de bairros #}
+      <section class="card" aria-labelledby="map-ranking-title">
+        <div class="card-header gap-3">
+          <div class="flex items-center justify-between gap-2">
+            <h2 id="map-ranking-title" class="card-title">Ranking de bairros</h2>
+            <span class="badge badge-brand" x-text="fmt(neighborhoods.length)"></span>
+          </div>
+          <div class="relative" x-show="neighborhoods.length > 0">
+            {% icon "search" "pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" %}
+            <input type="search" class="input pl-9" placeholder="Buscar bairro..." aria-label="Buscar bairro no ranking" x-model.debounce.150ms="query" autocomplete="off">
+          </div>
+        </div>
+        <p x-show="neighborhoods.length === 0" class="px-5 py-6 text-center text-sm text-slate-500">Nenhum bairro com eleitores localizados.</p>
+        <p x-show="neighborhoods.length > 0 && rankingAll.length === 0" class="px-5 py-6 text-center text-sm text-slate-500">Nenhum bairro encontrado para a busca.</p>
+        <ul x-show="ranking.length > 0" class="max-h-[440px] divide-y divide-slate-100 overflow-y-auto scrollbar-thin">
+          <template x-for="item in ranking" :key="item.n.key">
+            <li>
+              <button type="button" @click="focusNeighborhood(item.n.key)" :aria-current="selectedKey === item.n.key ? 'true' : null" title="Ver no mapa"
+                      class="w-full px-5 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
+                      :class="selectedKey === item.n.key ? 'bg-brand-50/70' : ''">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-medium" :class="item.n.known ? 'text-slate-900' : 'text-slate-500 italic'">
+                      <span class="mr-1.5 text-xs text-slate-400 not-italic tabular-nums" x-text="item.rank + '.'"></span><span x-text="item.n.name"></span>
+                    </p>
+                    <p class="truncate text-xs text-slate-500" x-show="item.n.city" x-text="item.n.city"></p>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    <p class="text-sm font-semibold text-slate-900 tabular-nums" x-text="fmt(item.n.count)"></p>
+                    <p class="text-xs text-slate-500 tabular-nums" x-text="sharePct(item.n.count)"></p>
+                  </div>
+                </div>
+                <div class="progress mt-2 h-1.5" aria-hidden="true"><div class="progress-bar progress-brand" :style="'width:' + barWidth(item.n.count) + '%'"></div></div>
+              </button>
+            </li>
+          </template>
+        </ul>
+        <p x-show="rankingAll.length > ranking.length" x-cloak class="border-t border-slate-100 px-5 py-2.5 text-xs text-slate-500">
+          Mostrando <span x-text="fmt(ranking.length)"></span> de <span x-text="fmt(rankingAll.length)"></span> bairros. Use a busca para encontrar os demais.
+        </p>
+      </section>
+
+      {# Bairros sem localização #}
+      <section class="card" x-show="withoutGeo.length > 0" x-cloak>
+        <div class="card-header">
+          <h2 class="card-title">Bairros sem localização</h2>
+          <p class="card-description"><span x-text="fmt(withoutGeoSum)"></span> eleitor(es) em bairros que ainda não têm coordenadas e por isso não aparecem no mapa.</p>
+        </div>
+        <ul class="divide-y divide-slate-100" :class="showAllWithoutGeo ? 'max-h-[360px] overflow-y-auto scrollbar-thin' : ''">
+          <template x-for="item in withoutGeoVisible" :key="item.key">
+            <li class="flex items-center justify-between gap-3 px-5 py-2.5">
+              <div class="min-w-0">
+                <p class="truncate text-sm" :class="item.known ? 'text-slate-800' : 'text-slate-500 italic'" x-text="item.name"></p>
+                <p class="truncate text-xs text-slate-500" x-show="item.city" x-text="item.city"></p>
+              </div>
+              <span class="shrink-0 text-sm font-semibold text-slate-900 tabular-nums" x-text="fmt(item.count)"></span>
+            </li>
+          </template>
+        </ul>
+        <div class="border-t border-slate-100 px-5 py-2.5" x-show="withoutGeo.length > 8">
+          <button type="button" class="text-sm font-medium text-brand-600 hover:text-brand-700" @click="showAllWithoutGeo = !showAllWithoutGeo" :aria-expanded="showAllWithoutGeo ? 'true' : 'false'">
+            <span x-text="showAllWithoutGeo ? 'Mostrar menos' : 'Mostrar todos (' + fmt(withoutGeo.length) + ')'"></span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    {# ADMIN: fila de geocodificação da campanha #}
+    {% if is_admin and geo_queue %}
+    <section class="card">
+      <form method="post" action="{% url 'mapview:geocode_pending' %}" x-data="{ busy: false }" @submit="busy = true">
+        {% csrf_token %}
+        <input type="hidden" name="qs" value="{{ filter_query }}">
+        <div class="card-header">
+          <h2 class="card-title flex items-center gap-2">{% icon "map-pinned" "size-4 text-brand-600" %} Localização pendente</h2>
+          <p class="card-description">Eleitores da campanha aguardando localização pelo CEP ou cuja busca falhou.</p>
+        </div>
+        <div class="card-body space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="rounded-lg bg-slate-50 px-3 py-2">
+              <p class="text-xs text-slate-500">Na fila</p>
+              <p class="text-xl font-bold text-slate-900 tabular-nums">{{ geo_queue.pending|num }}</p>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-3 py-2">
+              <p class="text-xs text-slate-500">Não localizados</p>
+              <p class="text-xl font-bold text-slate-900 tabular-nums">{{ geo_queue.failed|num }}</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500">
+            {% if geo_queue.total %}A localização roda automaticamente em segundo plano. O botão processa até 15 eleitores agora e devolve à fila os que falharam.{% else %}Todos os eleitores com endereço já foram processados.{% endif %}
+          </p>
+        </div>
+        <div class="card-footer">
+          <button type="submit" class="btn btn-primary w-full" {% if not geo_queue.total %}disabled{% endif %} :disabled="busy">
+            <span x-show="!busy" class="inline-flex items-center gap-2">{% icon "refresh-cw" %} Localizar pendentes agora</span>
+            <span x-show="busy" x-cloak class="inline-flex items-center gap-2">{% icon "loader-circle" "animate-spin" %} Localizando... pode levar até 30 s</span>
+          </button>
+        </div>
+      </form>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+
+{{ map_config|json_script:"map-config" }}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+  <script src="{% static 'vendor/leaflet/leaflet.markercluster.js' %}"></script>
+  <script src="{% static 'vendor/leaflet/leaflet-heat.js' %}"></script>
+  <script src="{% static 'js/mapview/map.js' %}"></script>
+{% endblock %}

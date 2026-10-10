@@ -1,0 +1,309 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}{{ member.name }} · Equipe · E-Find{% endblock %}
+{% block content %}
+<div x-data="{ panel: '{% if edit_open %}edit{% elif delete_open %}delete{% endif %}' }">
+
+  {# ---------------------------------------------------------------- Cabeçalho #}
+  <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="flex min-w-0 items-center gap-3">
+      <a class="btn btn-ghost btn-icon shrink-0" href="{% url 'team:list' %}" aria-label="Voltar para a equipe">{% icon "arrow-left" "size-5" %}</a>
+      {% avatar member.name "size-12 text-base" %}
+      <div class="min-w-0">
+        <h1 class="truncate text-2xl font-bold tracking-tight text-slate-900">{{ member.name }}</h1>
+        <div class="mt-1 flex flex-wrap items-center gap-1.5">
+          {% if member.role == "ADMIN" %}{% badge member.role|role_label "purple" %}{% elif member.role == "COORDENADOR" %}{% badge member.role|role_label "blue" %}{% else %}{% badge member.role|role_label "gray" %}{% endif %}
+          {% if member.is_active %}{% badge "Ativo" "green" %}{% else %}{% badge "Inativo" "gray" %}{% endif %}
+          {% if is_self %}<span class="text-xs text-slate-500">(você)</span>{% endif %}
+          {% if member.region %}<span class="text-xs text-slate-500">· {{ member.region }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if show_edit or show_regenerate or show_delete %}
+    <div class="flex flex-wrap items-center gap-2">
+      {% if show_edit %}<button type="button" class="btn btn-primary" @click="panel = 'edit'; $nextTick(() => document.getElementById('id_name') && document.getElementById('id_name').focus())">{% icon "pencil" %} Editar</button>{% endif %}
+      {% if show_active_toggle or show_reset_password or show_regenerate or show_delete %}
+      <div x-data="dropdown" @click.outside="close()" @keydown.escape.window="close()" class="relative">
+        <button type="button" class="btn btn-outline" @click="toggle()" aria-haspopup="menu" :aria-expanded="open">Mais ações {% icon "chevron-down" %}</button>
+        <div x-cloak x-show="open" x-transition class="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg" role="menu">
+          {% if show_active_toggle %}
+          {% if member.is_active %}
+          <form method="post" action="{% url 'team:deactivate' member.pk %}" data-confirm="Desativar {{ member.name }}? Ele não conseguirá mais entrar e o link de cadastro dele será suspenso.">{% csrf_token %}
+            <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">{% icon "user-x" %} Desativar acesso</button>
+          </form>
+          {% else %}
+          <form method="post" action="{% url 'team:activate' member.pk %}">{% csrf_token %}
+            <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">{% icon "user-check" %} Reativar acesso</button>
+          </form>
+          {% endif %}
+          {% endif %}
+          {% if show_reset_password %}
+          <form method="post" action="{% url 'team:reset_password' member.pk %}" data-confirm="Gerar uma nova senha provisória para {{ member.name }}? A senha atual deixa de funcionar e as sessões abertas dele são encerradas.">{% csrf_token %}
+            <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">{% icon "key-round" %} Redefinir senha</button>
+          </form>
+          {% endif %}
+          {% if show_regenerate %}
+          <form method="post" action="{% url 'team:regenerate_link' member.pk %}" data-confirm="Gerar um novo link de cadastro? O link e o QR Code atuais (inclusive os já impressos ou enviados) deixam de funcionar.">{% csrf_token %}
+            <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">{% icon "refresh-cw" %} Gerar novo link de cadastro</button>
+          </form>
+          {% endif %}
+          {% if show_delete %}
+          <div class="my-1 h-px bg-slate-100"></div>
+          <button type="button" role="menuitem" @click="close(); panel = 'delete'; $nextTick(() => document.getElementById('painel-excluir').scrollIntoView({ behavior: 'smooth' }))" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">{% icon "trash-2" %} Excluir membro…</button>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if is_last_admin %}
+  <div class="mb-6">{% alert "info" %}Este é o único administrador ativo da campanha: ele não pode ser desativado, excluído nem ter o papel alterado. Cadastre outro administrador antes, se precisar.{% endalert %}</div>
+  {% endif %}
+  {% if not member.is_active %}
+  <div class="mb-6">{% alert "warning" %}Este membro está desativado: não consegue entrar no sistema e o link de cadastro dele está suspenso.{% endalert %}</div>
+  {% endif %}
+
+  {# ---------------------------------------------------------------- Editar #}
+  {% if edit_form %}
+  <section x-show="panel === 'edit'" x-cloak class="card mb-6">
+    <form method="post" action="{% url 'team:update' member.pk %}" x-data="memberForm(JSON.parse(document.getElementById('edit-config').textContent))">
+      {% csrf_token %}
+      <div class="card-header">
+        <h2 class="card-title">Editar dados</h2>
+        <p class="card-description">{% if edit_form.fields.email %}Como administrador, você também pode alterar o e-mail de acesso, o papel e o responsável.{% else %}Você pode alterar nome, telefone, meta e região deste cabo.{% endif %}</p>
+      </div>
+      <div class="card-body">{% include "team/_member_fields.html" with form=edit_form %}</div>
+      <div class="card-footer flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button type="button" class="btn btn-outline" @click="panel = ''">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar alterações</button>
+      </div>
+    </form>
+  </section>
+  {{ edit_config|json_script:"edit-config" }}
+  {% endif %}
+
+  {# ---------------------------------------------------------------- Excluir #}
+  {% if delete_form %}
+  <section id="painel-excluir" x-show="panel === 'delete'" x-cloak class="card mb-6 border-red-200">
+    <form method="post" action="{% url 'team:delete' member.pk %}" data-confirm="Excluir {{ member.name }} definitivamente? Esta ação não pode ser desfeita.">
+      {% csrf_token %}
+      <div class="card-header">
+        <h2 class="card-title text-red-700">Excluir {{ member.name }}</h2>
+        <p class="card-description">Ação definitiva: o acesso e o link de cadastro deste membro deixam de existir. Os eleitores nunca são apagados por aqui.</p>
+      </div>
+      <div class="card-body space-y-4">
+        {% if delete_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ delete_form.non_field_errors.0 }}</div>{% endif %}
+
+        {% if delete_form.needs_transfer %}
+        {% alert "warning" %}Este membro cadastrou <strong>{{ delete_form.voters_count|num }} eleitor{{ delete_form.voters_count|pluralize:"es" }}</strong>. Escolha quem passa a ser o responsável por {{ delete_form.voters_count|pluralize:"ele,eles" }}.{% endalert %}
+        <div class="space-y-1.5">
+          <label for="delete-transfer-to" class="label">Transferir os eleitores para<span class="ml-0.5 text-red-500">*</span></label>
+          <select id="delete-transfer-to" name="transfer_to" class="select" required {% if delete_form.transfer_to.errors %}aria-invalid="true"{% endif %}>
+            <option value="">Selecione…</option>
+            {% for u in delete_form.transfer_options %}<option value="{{ u.pk }}" {% if delete_form.transfer_to.value|stringformat:"s" == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.name }} · {{ u.role|role_label }}</option>{% endfor %}
+          </select>
+          {% if delete_form.transfer_to.errors %}<p class="field-error" role="alert">{{ delete_form.transfer_to.errors.0 }}</p>{% endif %}
+          {% if not delete_form.transfer_options %}<p class="field-error">Não há outro membro ativo disponível para receber os eleitores. Ative ou cadastre outro membro antes de excluir.</p>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if delete_form.needs_new_parent %}
+        {% alert "warning" %}Há <strong>{{ delete_form.children_count|num }} membro{{ delete_form.children_count|pluralize }}</strong> abaixo deste usuário. Escolha o novo responsável {% if delete_form.children_count == 1 %}dele{% else %}deles{% endif %}.{% endalert %}
+        <div class="space-y-1.5">
+          <label for="delete-new-parent" class="label">Novo responsável<span class="ml-0.5 text-red-500">*</span></label>
+          <select id="delete-new-parent" name="new_parent" class="select" required {% if delete_form.new_parent.errors %}aria-invalid="true"{% endif %}>
+            <option value="">Selecione…</option>
+            {% for u in delete_form.new_parent_options %}<option value="{{ u.pk }}" {% if delete_form.new_parent.value|stringformat:"s" == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.name }} · {{ u.role|role_label }}</option>{% endfor %}
+          </select>
+          {% if delete_form.new_parent.errors %}<p class="field-error" role="alert">{{ delete_form.new_parent.errors.0 }}</p>{% endif %}
+          {% if not delete_form.new_parent_options %}<p class="field-error">Não há outro responsável ativo disponível. Cadastre ou reative um antes de excluir.</p>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if not delete_form.needs_transfer and not delete_form.needs_new_parent %}
+        <p class="text-sm text-slate-600">Este membro não tem eleitores cadastrados nem membros vinculados.</p>
+        {% endif %}
+      </div>
+      <div class="card-footer flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button type="button" class="btn btn-outline" @click="panel = ''">Cancelar</button>
+        <button type="submit" class="btn btn-danger">{% icon "trash-2" %} Excluir membro</button>
+      </div>
+    </form>
+  </section>
+  {% endif %}
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    {# ============================================================ Coluna principal #}
+    <div class="space-y-6 lg:col-span-2">
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {% if can_see_voters %}
+        {% stat_card "Eleitores cadastrados" stats.total|num icon="users-round" tone="brand" hint="ver na lista" href=voters_url %}
+        {% else %}
+        {% stat_card "Eleitores cadastrados" stats.total|num icon="users-round" tone="brand" %}
+        {% endif %}
+        {% stat_card "Hoje" stats.today|num icon="calendar" tone="green" %}
+        {% stat_card "Últimos 7 dias" stats.d7|num icon="trending-up" tone="blue" %}
+        {% stat_card "Últimos 30 dias" stats.d30|num icon="chart-line" tone="purple" %}
+      </div>
+
+      {# Meta #}
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">Meta de cadastros</h2></div>
+        <div class="card-body">
+          {% if member.goal %}
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <p class="text-2xl font-bold tabular-nums text-slate-900">{{ stats.total|num }} <span class="text-base font-medium text-slate-500">de {{ member.goal|num }}</span></p>
+            <p class="text-sm font-semibold text-slate-700">{{ goal_percent|pct:0 }}</p>
+          </div>
+          <div class="mt-3">{% progress stats.total member.goal goal_tone %}</div>
+          <p class="mt-2 text-sm text-slate-500">
+            {% if goal_remaining == 1 %}Falta 1 cadastro para bater a meta.{% elif goal_remaining %}Faltam {{ goal_remaining|num }} cadastros para bater a meta.{% else %}Meta batida. Parabéns!{% endif %}
+          </p>
+          {% else %}
+          <p class="text-sm text-slate-500">Nenhuma meta definida para este membro.{% if show_edit %} Use “Editar” para definir uma.{% endif %}</p>
+          {% endif %}
+        </div>
+      </section>
+
+      {# Bairros #}
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Principais bairros</h2>
+          <p class="card-description">Onde estão os eleitores cadastrados por este membro.</p>
+        </div>
+        <div class="card-body">
+          {% if neighborhoods %}
+          <ol class="space-y-3">
+            {% for n in neighborhoods %}
+            <li>
+              <div class="mb-1 flex items-center justify-between gap-3 text-sm">
+                <span class="min-w-0 truncate text-slate-700">{{ forloop.counter }}. {{ n.name }}</span>
+                <span class="shrink-0 font-semibold tabular-nums text-slate-900">{{ n.count|num }}</span>
+              </div>
+              {% progress n.count neighborhoods.0.count "brand" %}
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p class="text-sm text-slate-500">Ainda não há eleitores com bairro informado.</p>
+          {% endif %}
+        </div>
+      </section>
+
+      {# Últimos cadastros #}
+      {% if can_see_voters %}
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">Últimos cadastros</h2><p class="card-description">Os 10 eleitores mais recentes registrados por este membro.</p></div>
+        {% if recent_voters %}
+        <ul class="divide-y divide-slate-100">
+          {% for v in recent_voters %}
+          <li class="flex items-center justify-between gap-3 px-5 py-3">
+            <div class="min-w-0">
+              <a class="link block truncate" href="/painel/eleitores/{{ v.id }}/">{{ v.name }}</a>
+              <p class="truncate text-xs text-slate-500">{% if v.neighborhood %}{{ v.neighborhood }}{% else %}Bairro não informado{% endif %}</p>
+            </div>
+            <span class="shrink-0 text-xs text-slate-500">{{ v.created_at|brdatetime }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="card-body text-sm text-slate-500">Nenhum eleitor cadastrado ainda.</p>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      {# Equipe vinculada #}
+      {% if children %}
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">{% if member.role == "COORDENADOR" %}Cabos eleitorais{% else %}Equipe direta{% endif %}</h2></div>
+        <ul class="divide-y divide-slate-100">
+          {% for item in children %}
+          <li class="px-5 py-3 {% if not item.member.is_active %}opacity-60{% endif %}">
+            <div class="flex items-center gap-3">
+              {% avatar item.member.name %}
+              <div class="min-w-0 flex-1">
+                <a class="link block truncate" href="{% url 'team:detail' item.member.pk %}">{{ item.member.name }}</a>
+                <p class="text-xs text-slate-500">{{ item.member.role|role_label }}{% if not item.member.is_active %} · inativo{% endif %}</p>
+              </div>
+              <p class="shrink-0 text-right text-sm font-semibold tabular-nums">{{ item.voters|num }} <span class="block text-[11px] font-normal text-slate-500">eleitor{{ item.voters|pluralize:"es" }}</span></p>
+            </div>
+            {% if item.member.goal %}
+            <div class="mt-2 flex items-center gap-2 pl-11">
+              <div class="min-w-0 flex-1">{% progress item.voters item.member.goal item.goal_tone %}</div>
+              <span class="shrink-0 text-xs tabular-nums text-slate-600">{{ item.goal_percent|pct:0 }}</span>
+            </div>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% elif member.role == "COORDENADOR" %}
+      <section class="card">{% empty_state icon="users" title="Nenhum cabo eleitoral ainda" description="Os cabos cadastrados abaixo deste coordenador aparecem aqui." %}{% endempty_state %}</section>
+      {% endif %}
+    </div>
+
+    {# ============================================================ Coluna lateral #}
+    <div class="space-y-6">
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">Perfil</h2></div>
+        <dl class="card-body grid grid-cols-5 gap-y-3 text-sm">
+          <dt class="col-span-2 text-slate-500">Papel</dt><dd class="col-span-3 font-medium">{{ member.role|role_label }}</dd>
+          {% if member.role != "ADMIN" %}<dt class="col-span-2 text-slate-500">Responsável</dt><dd class="col-span-3 font-medium">{% if parent %}{{ parent.name }}{% else %}—{% endif %}</dd>{% endif %}
+          <dt class="col-span-2 text-slate-500">Região</dt><dd class="col-span-3">{% if member.region %}{{ member.region }}{% else %}—{% endif %}</dd>
+          <dt class="col-span-2 text-slate-500">Meta</dt><dd class="col-span-3">{% if member.goal %}{{ member.goal|num }} eleitores{% else %}Sem meta{% endif %}</dd>
+          <dt class="col-span-2 text-slate-500">E-mail</dt><dd class="col-span-3 break-all">{{ member.email }}</dd>
+          <dt class="col-span-2 text-slate-500">Telefone</dt>
+          <dd class="col-span-3">{% if member.phone %}{{ member.phone|phone }}{% else %}—{% endif %}</dd>
+          <dt class="col-span-2 text-slate-500">Cadastrado em</dt><dd class="col-span-3">{{ member.created_at|brdate }}</dd>
+          <dt class="col-span-2 text-slate-500">Último acesso</dt><dd class="col-span-3">{{ member.last_login|brdatetime }}</dd>
+          <dt class="col-span-2 text-slate-500">Status</dt><dd class="col-span-3">{% if member.is_active %}{% badge "Ativo" "green" %}{% else %}{% badge "Inativo" "gray" %}{% endif %}</dd>
+        </dl>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Link de cadastro</h2>
+          <p class="card-description">Eleitores cadastrados por este link ou QR Code ficam vinculados a {{ member.name }}.</p>
+        </div>
+        <div class="card-body space-y-3">
+          {% if member.is_active %}
+          <div class="mx-auto w-fit rounded-xl border border-slate-200 bg-white p-2">
+            <img src="{{ qr_data_url }}" alt="QR Code do link de cadastro de {{ member.name }}" width="192" height="192" class="size-48">
+          </div>
+          {% else %}
+          {% alert "warning" %}Link suspenso: o membro está desativado.{% endalert %}
+          {% endif %}
+          <input class="input" readonly value="{{ registration_link }}" onclick="this.select()" aria-label="Link de cadastro">
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="btn btn-outline btn-sm" data-copy="{{ registration_link }}">{% icon "copy" %} Copiar link</button>
+            {% if member.is_active %}<a class="btn btn-outline btn-sm" href="{{ qr_data_url }}" download="qr-cadastro-{{ member.invite_code }}.png">{% icon "download" %} Baixar QR Code</a>{% endif %}
+          </div>
+        </div>
+      </section>
+
+      {% if move_options %}
+      <section class="card">
+        <form method="post" action="{% url 'team:move' member.pk %}" data-confirm="Mover {{ member.name }} para o novo responsável?">
+          {% csrf_token %}
+          <div class="card-header">
+            <h2 class="card-title">Mover de responsável</h2>
+            <p class="card-description">Os eleitores dele passam a aparecer na rede do novo responsável.</p>
+          </div>
+          <div class="card-body">
+            <label for="move-parent" class="label">Novo responsável</label>
+            <select id="move-parent" name="parent" class="select mt-1.5" required>
+              {% for c in move_options %}<option value="{{ c.pk }}" {% if parent and c.pk == parent.pk %}selected{% endif %}>{{ c.name }} · {{ c.role|role_label }}{% if parent and c.pk == parent.pk %} (atual){% endif %}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="card-footer"><button type="submit" class="btn btn-outline">{% icon "handshake" %} Mover</button></div>
+        </form>
+      </section>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/team/member-form.js' %}"></script>{% endblock %}

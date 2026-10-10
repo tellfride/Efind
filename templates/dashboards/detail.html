@@ -1,0 +1,84 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}{% if is_home %}Início{% else %}{{ dashboard.name }}{% endif %} · E-Find{% endblock %}
+
+{% block content %}
+<div x-data="dashboardView">
+  <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div class="min-w-0">
+      {% if is_home %}
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Olá, {{ first_name|default:"bem-vindo" }}!</h1>
+        <p class="mt-1 text-sm text-slate-500">
+          {{ campaign.ballot_name }}{% if dashboard %} · {{ dashboard.name }}{% elif preview %} · {{ preview.name }}{% endif %}
+        </p>
+        {% if dashboard.description %}<p class="mt-0.5 text-sm text-slate-500">{{ dashboard.description }}</p>{% endif %}
+      {% else %}
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ dashboard.name }}</h1>
+        <p class="mt-1 text-sm text-slate-500">{{ campaign.ballot_name }}{% if dashboard.description %} · {{ dashboard.description }}{% endif %}</p>
+      {% endif %}
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        {% if network_hint %}
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">{% icon "users" "size-3.5" %} Mostrando dados da sua rede</span>
+        {% endif %}
+        {% if dashboard.is_campaign_default %}{% badge "Padrão da campanha" "brand" %}{% endif %}
+        {% if dashboard.is_my_default %}{% badge "Meu padrão" "green" %}{% endif %}
+        {% if dashboard and dashboard.shared and not dashboard.is_campaign_default %}{% badge "Compartilhado" "blue" %}{% endif %}
+        {% if dashboard and not dashboard.shared %}{% badge "Só eu vejo" "gray" %}{% endif %}
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      {% if dashboards %}
+        <div>
+          <label for="dash-select" class="sr-only">Escolher dashboard</label>
+          <select id="dash-select" class="select w-full min-w-0 sm:w-56" @change="window.location.href = $event.target.value">
+            {% for d in dashboards %}
+              <option value="{% url 'dashboards:detail' d.pk %}" {% if dashboard and d.pk == dashboard.pk %}selected{% endif %}>{{ d.name }}{% if d.is_campaign_default %} · padrão{% elif d.is_my_default %} · meu padrão{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+      <button type="button" class="btn btn-outline" @click="refresh()" :disabled="busy" aria-label="Atualizar dados">
+        <span :class="busy ? 'animate-spin' : ''">{% icon "refresh-cw" %}</span>
+        <span class="hidden sm:inline">Atualizar</span>
+      </button>
+      {% if can_edit %}
+        <a class="btn btn-primary" href="{% url 'dashboards:edit' dashboard.pk %}">{% icon "pencil" %} Personalizar</a>
+      {% elif can_personalize %}
+        <form method="post" action="{% url 'dashboards:duplicate' dashboard.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="then" value="edit">
+          <button type="submit" class="btn btn-primary" title="Cria uma cópia só sua para você personalizar">{% icon "pencil" %} Personalizar</button>
+        </form>
+      {% endif %}
+      {% if dashboards %}
+        <a class="btn btn-ghost" href="{% url 'dashboards:list' %}">{% icon "layout-grid" %} <span class="hidden sm:inline">Todos os dashboards</span><span class="sm:hidden">Todos</span></a>
+      {% endif %}
+    </div>
+  </div>
+
+  <p class="-mt-3 mb-4 min-h-4 text-xs text-slate-500 lg:text-right" aria-live="polite">
+    <span x-cloak x-show="failed" class="text-red-600" x-text="failed"></span>
+    <span x-cloak x-show="!failed && updated">Atualizado às <span x-text="updated"></span></span>
+  </p>
+
+  {% if preview %}
+    <div class="mb-4">
+      {% alert "info" title="Modelo de demonstração" %}Ainda não há dashboards disponíveis para você. Você está vendo o modelo “{{ preview.name }}” em modo de leitura. Peça ao administrador para criar ou compartilhar os dashboards da campanha.{% endalert %}
+    </div>
+  {% endif %}
+
+  <div data-dash-grid class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"></div>
+  <noscript>{% alert "warning" title="JavaScript desativado" %}Ative o JavaScript do navegador para ver os indicadores e gráficos deste painel.{% endalert %}</noscript>
+</div>
+
+{% include "dashboards/_icons.html" %}
+{{ dash_config|json_script:"dash-config" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'vendor/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/dashboards/widgets.js' %}"></script>
+<script src="{% static 'js/dashboards/board.js' %}"></script>
+<script src="{% static 'js/dashboards/viewer.js' %}"></script>
+{% endblock %}

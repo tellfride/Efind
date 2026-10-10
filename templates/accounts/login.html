@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Entrar · E-Find{% endblock %}
+{% block body %}
+<div class="grid min-h-screen lg:grid-cols-2">
+  <div class="relative hidden overflow-hidden bg-slate-900 lg:flex lg:flex-col lg:justify-between lg:p-12">
+    <div class="pointer-events-none absolute inset-0 opacity-40" style="background-image: radial-gradient(circle at 20% 20%, rgba(99,102,241,.45), transparent 40%), radial-gradient(circle at 80% 70%, rgba(37,211,102,.25), transparent 45%)"></div>
+    <div class="relative">{% include "components/logo.html" with css="text-white" %}</div>
+    <div class="relative max-w-md">
+      <h1 class="text-4xl leading-tight font-bold text-white">Sua campanha organizada, do cabo eleitoral ao candidato.</h1>
+      <ul class="mt-8 space-y-4 text-slate-300">
+        <li class="flex gap-3">{% icon "qr-code" "mt-0.5 size-5 shrink-0 text-brand-400" %}<span>Cadastro de eleitores por link e QR Code, vinculado a quem cadastrou</span></li>
+        <li class="flex gap-3">{% icon "map-pinned" "mt-0.5 size-5 shrink-0 text-brand-400" %}<span>Mapa por bairro a partir do CEP, com filtros</span></li>
+        <li class="flex gap-3">{% icon "send" "mt-0.5 size-5 shrink-0 text-brand-400" %}<span>Disparos de WhatsApp para quem consentiu, com modelos de mensagem</span></li>
+        <li class="flex gap-3">{% icon "circle-check" "mt-0.5 size-5 shrink-0 text-brand-400" %}<span>Permissões por nível: administrador, coordenador e cabo eleitoral</span></li>
+      </ul>
+    </div>
+    <p class="relative text-xs text-slate-500">© {% now "Y" %} E-Find · efind.com.br</p>
+  </div>
+
+  <div class="flex items-center justify-center px-4 py-12 sm:px-8">
+    <div class="w-full max-w-sm">
+      <div class="mb-8 lg:hidden">{% include "components/logo.html" %}</div>
+      <h2 class="text-2xl font-bold text-slate-900">Entrar no painel</h2>
+      <p class="mt-1 text-sm text-slate-500">Use o e-mail e a senha fornecidos pela sua coordenação.</p>
+
+      <form method="post" class="mt-8 space-y-5" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors.0 }}</div>{% endif %}
+        {% field form.email %}
+        {% field form.password %}
+        {{ form.next }}
+        <button type="submit" class="btn btn-primary btn-lg w-full">Entrar</button>
+      </form>
+      <p class="mt-8 text-center text-xs text-slate-400"><a class="hover:text-slate-600" href="/privacidade/">Privacidade</a> · <a class="hover:text-slate-600" href="/termos/">Termos de uso</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

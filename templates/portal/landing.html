@@ -1,0 +1,281 @@
+{% extends "layouts/public.html" %}
+{% comment %}
+Página inicial de efind.com.br. Sem imagens externas: ícones do kit, gradientes CSS e um painel ilustrativo feito com divs.
+Variáveis: cta_href, cta_label, contact_email.
+{% endcomment %}
+{% block title %}E-Find · Gestão de campanha eleitoral do cabo eleitoral ao candidato{% endblock %}
+
+{% block head %}
+<meta name="description" content="E-Find: cadastro de eleitores por link e QR Code, equipe com hierarquia e permissões, mapa por bairro a partir do CEP, dashboards e WhatsApp oficial — com LGPD e regras do TSE.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="E-Find · Organize sua campanha do cabo eleitoral ao candidato">
+<meta property="og:description" content="Cadastro por QR Code, equipe hierárquica, mapa por bairro e disparos de WhatsApp somente para quem consentiu.">
+{% endblock %}
+
+{% block content %}
+{# ------------------------------------------------------------------ Hero #}
+<section class="relative overflow-hidden bg-slate-950">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0" style="background-image: radial-gradient(60rem 30rem at 10% -10%, rgba(99,102,241,.35), transparent 60%), radial-gradient(40rem 26rem at 95% 20%, rgba(37,211,102,.16), transparent 60%), radial-gradient(50rem 30rem at 50% 120%, rgba(79,70,229,.30), transparent 60%)"></div>
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-[0.07]" style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%)"></div>
+
+  <div class="relative mx-auto grid w-full max-w-6xl items-center gap-14 px-4 pt-14 pb-24 sm:px-6 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:pt-24 lg:pb-32">
+    <div>
+      <p class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-brand-200">
+        {% icon "shield-check" "size-3.5" %} Em conformidade com a LGPD e as regras do TSE
+      </p>
+      <h1 class="mt-6 text-4xl leading-[1.08] font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+        Organize sua campanha <span class="bg-gradient-to-r from-brand-300 to-emerald-300 bg-clip-text text-transparent">do cabo eleitoral ao candidato</span>
+      </h1>
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
+        Cadastro de eleitores por link e QR Code, equipe com hierarquia e permissões, mapa por bairro a partir do CEP e comunicação pelo WhatsApp oficial — tudo em um só painel, pensado para o celular de quem está na rua.
+      </p>
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <a href="{{ cta_href }}" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 text-base font-semibold text-white shadow-lg shadow-brand-900/30 transition-colors hover:bg-brand-500 focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none">
+          {{ cta_label }} {% icon "arrow-right" "size-5" %}
+        </a>
+        <a href="mailto:{{ contact_email }}?subject=Quero%20conhecer%20o%20E-Find" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none">
+          {% icon "mail" "size-5" %} Fale conosco
+        </a>
+      </div>
+      <ul class="mt-10 grid gap-3 text-sm text-slate-300 sm:grid-cols-3">
+        <li class="flex items-center gap-2">{% icon "lock" "size-4 shrink-0 text-emerald-300" %} Campanhas isoladas</li>
+        <li class="flex items-center gap-2">{% icon "badge-check" "size-4 shrink-0 text-emerald-300" %} API oficial do WhatsApp</li>
+        <li class="flex items-center gap-2">{% icon "clipboard-list" "size-4 shrink-0 text-emerald-300" %} Consentimento registrado</li>
+      </ul>
+    </div>
+
+    {# Painel ilustrativo (decorativo, sem dados reais) #}
+    <div class="relative mx-auto w-full max-w-xl lg:max-w-none">
+      <div aria-hidden="true" class="relative select-none">
+        <div class="overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl shadow-brand-950/40 ring-1 ring-white/10">
+          <div class="flex items-center gap-1.5 border-b border-slate-200 bg-slate-100 px-3 py-2">
+            <span class="size-2.5 rounded-full bg-red-400"></span>
+            <span class="size-2.5 rounded-full bg-amber-400"></span>
+            <span class="size-2.5 rounded-full bg-emerald-400"></span>
+            <span class="ml-3 h-4 flex-1 truncate rounded bg-white px-1 text-[9px] leading-4 text-slate-400 sm:max-w-56">efind.com.br/painel</span>
+          </div>
+          <div class="flex">
+            <div class="hidden w-28 shrink-0 space-y-2 bg-slate-900 p-3 sm:block">
+              <div class="mb-4 flex items-center gap-1.5"><span class="size-4 rounded bg-brand-500"></span><span class="h-2 w-12 rounded bg-white/70"></span></div>
+              <div class="h-5 rounded bg-brand-600"></div>
+              <div class="h-5 rounded bg-white/5"></div>
+              <div class="h-5 rounded bg-white/5"></div>
+              <div class="h-5 rounded bg-white/5"></div>
+              <div class="h-5 rounded bg-white/5"></div>
+              <div class="h-5 rounded bg-white/5"></div>
+            </div>
+            <div class="min-w-0 flex-1 space-y-3 bg-slate-50 p-3 sm:p-4">
+              <div class="grid grid-cols-3 gap-2">
+                <div class="rounded-lg border border-slate-200 bg-white p-2 sm:p-2.5">
+                  <div class="flex items-center justify-between"><span class="text-[9px] font-medium text-slate-500 sm:text-[10px]">Eleitores</span><span class="hidden size-5 items-center justify-center rounded bg-brand-50 text-brand-600 sm:flex">{% icon "users-round" "size-3" %}</span></div>
+                  <p class="mt-1 text-sm font-bold text-slate-900 tabular-nums sm:text-base">12.480</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-white p-2 sm:p-2.5">
+                  <div class="flex items-center justify-between"><span class="text-[9px] font-medium text-slate-500 sm:text-[10px]">Hoje</span><span class="hidden size-5 items-center justify-center rounded bg-emerald-50 text-emerald-600 sm:flex">{% icon "trending-up" "size-3" %}</span></div>
+                  <p class="mt-1 text-sm font-bold text-slate-900 tabular-nums sm:text-base">+326</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-white p-2 sm:p-2.5">
+                  <div class="flex items-center justify-between"><span class="text-[9px] font-medium text-slate-500 sm:text-[10px]">Via QR</span><span class="hidden size-5 items-center justify-center rounded bg-amber-50 text-amber-600 sm:flex">{% icon "qr-code" "size-3" %}</span></div>
+                  <p class="mt-1 text-sm font-bold text-slate-900 tabular-nums sm:text-base">64%</p>
+                </div>
+              </div>
+
+              <div class="grid gap-2 sm:grid-cols-5">
+                <div class="rounded-lg border border-slate-200 bg-white p-2.5 sm:col-span-3">
+                  <p class="text-[10px] font-semibold text-slate-700">Cadastros por semana</p>
+                  <div class="mt-2 flex h-20 items-end gap-1 sm:h-24">
+                    <div class="h-[32%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[44%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[38%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[52%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[61%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[58%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[72%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[69%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[84%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[78%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-[92%] flex-1 rounded-t bg-brand-200"></div>
+                    <div class="h-full flex-1 rounded-t bg-brand-600"></div>
+                  </div>
+                </div>
+
+                <div class="relative overflow-hidden rounded-lg border border-slate-200 bg-white sm:col-span-2">
+                  <div class="absolute inset-0" style="background-color: #eef2f7; background-image: linear-gradient(115deg, transparent 46%, #ffffff 46%, #ffffff 50%, transparent 50%), linear-gradient(25deg, transparent 60%, #ffffff 60%, #ffffff 63%, transparent 63%), linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 18px 18px, 18px 18px"></div>
+                  <span class="absolute top-[22%] left-[18%] size-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-400/50 ring-2 ring-white/60"></span>
+                  <span class="absolute top-[30%] left-[52%] size-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-500/50 ring-2 ring-white/60"></span>
+                  <span class="absolute top-[58%] left-[30%] size-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/50 ring-2 ring-white/60"></span>
+                  <span class="absolute top-[64%] left-[68%] size-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400/60 ring-2 ring-white/60"></span>
+                  <span class="absolute top-[42%] left-[78%] size-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-300/60 ring-2 ring-white/60"></span>
+                  <span class="absolute top-[76%] left-[12%] size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-300/60 ring-2 ring-white/60"></span>
+                  <span class="absolute top-[30%] left-[52%] -translate-x-1/2 -translate-y-full text-brand-700">{% icon "map-pin" "size-5 fill-white" %}</span>
+                  <span class="absolute top-2 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 shadow-sm">Mapa por bairro</span>
+                  <div class="h-28 sm:h-full"></div>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-slate-200 bg-white p-2.5">
+                <p class="text-[10px] font-semibold text-slate-700">Metas da equipe</p>
+                <div class="mt-2 space-y-1.5">
+                  <div class="flex items-center gap-2"><span class="w-20 shrink-0 truncate text-[10px] text-slate-500">Equipe Centro</span><div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div class="h-full w-[92%] rounded-full bg-emerald-500"></div></div><span class="w-7 text-right text-[10px] font-semibold text-slate-600 tabular-nums">92%</span></div>
+                  <div class="flex items-center gap-2"><span class="w-20 shrink-0 truncate text-[10px] text-slate-500">Equipe Norte</span><div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div class="h-full w-[74%] rounded-full bg-emerald-500"></div></div><span class="w-7 text-right text-[10px] font-semibold text-slate-600 tabular-nums">74%</span></div>
+                  <div class="flex items-center gap-2"><span class="w-20 shrink-0 truncate text-[10px] text-slate-500">Equipe Leste</span><div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div class="h-full w-[58%] rounded-full bg-emerald-500"></div></div><span class="w-7 text-right text-[10px] font-semibold text-slate-600 tabular-nums">58%</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="absolute -bottom-5 -left-2 hidden w-60 rounded-xl border border-slate-200 bg-white p-3 shadow-xl sm:block lg:-left-8">
+          <div class="flex items-center gap-2.5">
+            <span class="flex size-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">{% icon "qr-code" "size-4" %}</span>
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-slate-900">Novo cadastro via QR Code</p>
+              <p class="truncate text-[11px] text-slate-500">Bairro Centro · vinculado ao cabo eleitoral</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="sr-only">Ilustração do painel do E-Find com indicadores de eleitores, gráfico de cadastros por semana, mapa por bairro e metas da equipe.</p>
+    </div>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ Como funciona #}
+<section id="como-funciona" class="scroll-mt-16 bg-white py-20 sm:py-24">
+  <div class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-sm font-semibold tracking-wide text-brand-600 uppercase">Como funciona</p>
+      <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Da rua ao painel em cinco passos</h2>
+      <p class="mt-4 text-base text-slate-600 sm:text-lg">Cada pessoa da equipe trabalha com o próprio link. Você acompanha tudo por bairro e por equipe, sem planilhas soltas.</p>
+    </div>
+    <ol class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+      <li class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+        <div class="flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">{% icon "user-plus" "size-5" %}</span><span class="text-sm font-bold text-brand-600 tabular-nums">01</span></div>
+        <h3 class="mt-4 text-base font-semibold text-slate-900">Cadastre a equipe</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">O administrador cria coordenadores e cabos eleitorais e define o que cada nível pode ver e fazer.</p>
+      </li>
+      <li class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+        <div class="flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">{% icon "qr-code" "size-5" %}</span><span class="text-sm font-bold text-brand-600 tabular-nums">02</span></div>
+        <h3 class="mt-4 text-base font-semibold text-slate-900">Cada cabo recebe seu link e QR Code</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Link pessoal e cartaz com QR Code para imprimir ou compartilhar. Todo cadastro fica vinculado a quem divulgou.</p>
+      </li>
+      <li class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+        <div class="flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">{% icon "smartphone" "size-5" %}</span><span class="text-sm font-bold text-brand-600 tabular-nums">03</span></div>
+        <h3 class="mt-4 text-base font-semibold text-slate-900">Eleitores se cadastram</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Formulário rápido no celular: o CEP preenche o endereço e o consentimento LGPD é registrado com data e hora.</p>
+      </li>
+      <li class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+        <div class="flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">{% icon "map-pinned" "size-5" %}</span><span class="text-sm font-bold text-brand-600 tabular-nums">04</span></div>
+        <h3 class="mt-4 text-base font-semibold text-slate-900">Acompanhe no mapa e nos dashboards</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Veja onde estão seus apoiadores por bairro, o desempenho de cada cabo e a evolução das metas.</p>
+      </li>
+      <li class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+        <div class="flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">{% icon "message-square-text" "size-5" %}</span><span class="text-sm font-bold text-brand-600 tabular-nums">05</span></div>
+        <h3 class="mt-4 text-base font-semibold text-slate-900">Comunique-se pelo WhatsApp oficial</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Modelos de mensagem com variáveis e disparos segmentados somente para quem aceitou receber.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ Recursos #}
+<section id="recursos" class="scroll-mt-16 bg-slate-50 py-20 sm:py-24">
+  <div class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-sm font-semibold tracking-wide text-brand-600 uppercase">Recursos</p>
+      <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Tudo o que a campanha precisa em um só lugar</h2>
+      <p class="mt-4 text-base text-slate-600 sm:text-lg">Ferramentas simples para a equipe de campo e visão estratégica para a coordenação.</p>
+    </div>
+    <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+        <span class="flex size-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">{% icon "layers" "size-5" %}</span>
+        <h3 class="mt-5 text-lg font-semibold text-slate-900">Hierarquia e permissões</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Administrador, coordenador e cabo eleitoral: cada um vê apenas a própria rede, com permissões por módulo definidas pelo administrador.</p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+        <span class="flex size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">{% icon "qr-code" "size-5" %}</span>
+        <h3 class="mt-5 text-lg font-semibold text-slate-900">Cadastro por QR Code</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Link e QR Code individuais, cartaz pronto para imprimir e a origem de cada cadastro registrada automaticamente.</p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+        <span class="flex size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">{% icon "map-pinned" "size-5" %}</span>
+        <h3 class="mt-5 text-lg font-semibold text-slate-900">Mapa por bairro via CEP</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">O CEP vira ponto no mapa. Filtre por bairro, cidade, cabo eleitoral e nível de apoio para planejar a ação de rua.</p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+        <span class="flex size-11 items-center justify-center rounded-xl bg-sky-50 text-sky-600">{% icon "layout-dashboard" "size-5" %}</span>
+        <h3 class="mt-5 text-lg font-semibold text-slate-900">Dashboards personalizáveis</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Monte painéis com os indicadores que importam: ranking da equipe, metas, crescimento diário e distribuição territorial.</p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+        <span class="flex size-11 items-center justify-center rounded-xl bg-green-50 text-green-600">{% icon "message-square-text" "size-5" %}</span>
+        <h3 class="mt-5 text-lg font-semibold text-slate-900">Disparos de WhatsApp com modelos</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Modelos com variáveis como nome e bairro, público segmentado por filtros e acompanhamento de entrega e leitura.</p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+        <span class="flex size-11 items-center justify-center rounded-xl bg-violet-50 text-violet-600">{% icon "history" "size-5" %}</span>
+        <h3 class="mt-5 text-lg font-semibold text-slate-900">Auditoria completa</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">Logins, alterações, exportações e disparos ficam registrados para a campanha prestar contas com segurança.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ Segurança e conformidade #}
+<section id="seguranca" class="relative scroll-mt-16 overflow-hidden bg-slate-950 py-20 sm:py-24">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0" style="background-image: radial-gradient(40rem 24rem at 85% 0%, rgba(99,102,241,.25), transparent 60%)"></div>
+  <div class="relative mx-auto w-full max-w-6xl px-4 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-sm font-semibold tracking-wide text-brand-300 uppercase">Segurança e conformidade</p>
+      <h2 class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Feito para respeitar o eleitor e a legislação eleitoral</h2>
+      <p class="mt-4 text-base text-slate-300 sm:text-lg">Comunicação política responsável protege a campanha. O E-Find nasceu com a LGPD e as resoluções do TSE como ponto de partida.</p>
+    </div>
+    <div class="mt-14 grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8">
+        <div class="flex items-center gap-3">
+          <span class="flex size-11 items-center justify-center rounded-xl bg-brand-500/20 text-brand-200">{% icon "lock" "size-5" %}</span>
+          <div><h3 class="text-lg font-semibold text-white">LGPD</h3><p class="text-sm text-slate-400">Lei nº 13.709/2018</p></div>
+        </div>
+        <ul class="mt-6 space-y-3 text-sm text-slate-300">
+          <li class="flex gap-2.5">{% icon "shield-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Consentimento explícito, com data, hora e texto aceito registrados</li>
+          <li class="flex gap-2.5">{% icon "shield-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Aceite de mensagens de WhatsApp separado e opcional</li>
+          <li class="flex gap-2.5">{% icon "shield-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Descadastro a qualquer momento — basta responder SAIR</li>
+          <li class="flex gap-2.5">{% icon "shield-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Isolamento entre campanhas e acesso limitado pela hierarquia</li>
+          <li class="flex gap-2.5">{% icon "shield-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Senhas protegidas por hash e credenciais de API criptografadas</li>
+          <li class="flex gap-2.5">{% icon "shield-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Trilha de auditoria de acessos, alterações e exportações</li>
+        </ul>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8">
+        <div class="flex items-center gap-3">
+          <span class="flex size-11 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-200">{% icon "vote" "size-5" %}</span>
+          <div><h3 class="text-lg font-semibold text-white">Justiça Eleitoral</h3><p class="text-sm text-slate-400">Lei das Eleições e resoluções do TSE</p></div>
+        </div>
+        <ul class="mt-6 space-y-3 text-sm text-slate-300">
+          <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Somente a API oficial do WhatsApp (Meta) e parceiros oficiais</li>
+          <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Envio apenas para eleitores que consentiram — sem listas compradas</li>
+          <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Mecanismo de descadastramento em toda comunicação (Lei nº 9.504/1997, art. 57-G)</li>
+          <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Sem disparadores não oficiais, chips descartáveis ou WhatsApp Web automatizado</li>
+        </ul>
+        <p class="mt-6 rounded-lg bg-white/5 px-3 py-2 text-xs text-slate-400">A responsabilidade pelo conteúdo e pelo período de propaganda é da campanha. Veja os <a href="/termos/" class="font-medium text-brand-200 underline-offset-2 hover:underline">termos de uso</a> e a <a href="/privacidade/" class="font-medium text-brand-200 underline-offset-2 hover:underline">política de privacidade</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ Chamada final #}
+<section class="bg-white py-20 sm:py-24">
+  <div class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+    <div class="relative overflow-hidden rounded-3xl bg-brand-600 px-6 py-12 text-center shadow-xl sm:px-12 sm:py-16">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0" style="background-image: radial-gradient(30rem 16rem at 0% 0%, rgba(255,255,255,.18), transparent 60%), radial-gradient(30rem 16rem at 100% 100%, rgba(37,211,102,.25), transparent 60%)"></div>
+      <div class="relative">
+        <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Pronto para organizar sua campanha?</h2>
+        <p class="mx-auto mt-4 max-w-xl text-base text-brand-100 sm:text-lg">Fale com a gente para criar o ambiente do seu candidato ou acesse o painel com o login enviado pela coordenação.</p>
+        <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <a href="{{ cta_href }}" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-6 text-base font-semibold text-brand-700 shadow-sm transition-colors hover:bg-brand-50">{{ cta_label }} {% icon "arrow-right" "size-5" %}</a>
+          <a href="mailto:{{ contact_email }}?subject=Quero%20conhecer%20o%20E-Find" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-white/30 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10">{% icon "mail" "size-5" %} {{ contact_email }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

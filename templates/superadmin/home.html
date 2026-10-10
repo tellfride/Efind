@@ -1,0 +1,40 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Visão geral · E-Find{% endblock %}
+{% block content %}
+{% url 'superadmin:campaigns' as campaigns_url %}
+{% page_header title="Visão geral da plataforma" description="Acompanhe as campanhas e o crescimento do E-Find." %}
+  <a class="btn btn-primary" href="{% url 'superadmin:campaign_create' %}">{% icon "plus" %} Nova campanha</a>
+{% endpage_header %}
+
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+  {% stat_card "Campanhas ativas" overview.campaigns_active|num icon="shield-check" tone="green" href=campaigns_url|add:"?status=ACTIVE" %}
+  {% stat_card "Campanhas suspensas" overview.campaigns_suspended|num icon="pause" tone="red" href=campaigns_url|add:"?status=SUSPENDED" %}
+  {% stat_card "Usuários de campanhas" overview.campaign_users|num icon="users" tone="blue" hint="Administradores, coordenadores e cabos" %}
+  {% stat_card "Eleitores cadastrados" overview.voters_total|num icon="users-round" tone="brand" hint="Em todas as campanhas" %}
+  {% stat_card "Cadastros em 7 dias" overview.voters_last7|num icon="calendar" tone="purple" hint="Novos eleitores na última semana" %}
+</div>
+
+<section class="card mt-6">
+  <div class="card-header gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="card-title">Campanhas recentes</h2>
+      <p class="card-description">As últimas campanhas criadas na plataforma.</p>
+    </div>
+    {% if overview.campaigns_total %}
+      <a class="link text-sm" href="{{ campaigns_url }}">Ver todas ({{ overview.campaigns_total|num }})</a>
+    {% endif %}
+  </div>
+  {% if overview.recent %}
+    {% include "superadmin/_campaign_rows.html" with campaigns=overview.recent %}
+  {% else %}
+    {% empty_state icon="shield-check" title="Nenhuma campanha ainda" description="Crie a primeira campanha para entregar o acesso ao administrador do candidato." %}
+      <a class="btn btn-primary" href="{% url 'superadmin:campaign_create' %}">{% icon "plus" %} Nova campanha</a>
+    {% endempty_state %}
+  {% endif %}
+</section>
+
+<p class="mt-4 flex items-start gap-2 text-xs text-slate-500">
+  {% icon "lock" "mt-0.5 size-3.5 shrink-0" %}
+  O super admin vê apenas números agregados das campanhas. Dados pessoais de eleitores ficam restritos a cada campanha (LGPD).
+</p>
+{% endblock %}

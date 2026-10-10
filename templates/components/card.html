@@ -1,0 +1,9 @@
+<section class="card {{ css }}">
+  {% if title %}
+  <div class="card-header">
+    <h2 class="card-title">{{ title }}</h2>
+    {% if description %}<p class="card-description">{{ description }}</p>{% endif %}
+  </div>
+  {% endif %}
+  {% if padding %}<div class="card-body">{{ content }}</div>{% else %}{{ content }}{% endif %}
+</section>

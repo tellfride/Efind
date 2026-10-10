@@ -1,0 +1,21 @@
+{# Aviso de conformidade (Res. TSE nº 23.610/2019). Variável opcional: compact (versão curta). #}
+<div class="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sky-900">
+  <div class="flex items-start gap-3">
+    {% icon "shield-check" "mt-0.5 size-5 shrink-0 text-sky-600" %}
+    <div class="min-w-0 space-y-1.5 text-sm">
+      <p class="font-semibold">Por que só APIs oficiais?</p>
+      <p>
+        A Resolução TSE nº 23.610/2019 (art. 28, IV, e art. 34) proíbe o disparo em massa de mensagens sem consentimento
+        e por ferramentas não fornecidas pelo provedor do aplicativo ou contrárias aos seus termos de uso.
+        Por isso o E-Find integra <strong>apenas</strong> a API oficial do WhatsApp Business (Meta Cloud API) e parceiros
+        oficiais da Meta (Twilio e 360dialog), além de um simulador para testes. Não há suporte a APIs não oficiais.
+      </p>
+      {% if not compact %}
+      <p>
+        Os disparos só alcançam eleitores que deram <strong>consentimento</strong> (LGPD) e aceitaram receber mensagens
+        por WhatsApp. Quem responder “SAIR” é descadastrado automaticamente.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,82 @@
+{% extends "layouts/shell.html" %}
+{% load messaging_tags %}
+{% block title %}Modelos de mensagem · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Modelos de mensagem" description="Textos prontos com variáveis do eleitor (nome, bairro, candidato...), usados nos disparos de WhatsApp." %}
+  {% if can_create %}<a class="btn btn-primary" href="/painel/mensagens/modelos/novo/">{% icon "plus" %} Novo modelo</a>{% endif %}
+{% endpage_header %}
+
+{% if total_in_campaign == 0 %}
+  <div class="card">
+    {% empty_state icon="message-square-text" title="Nenhum modelo criado ainda" description="Crie o primeiro texto para usar nos disparos. Você pode usar variáveis como o primeiro nome do eleitor e o nome do candidato." %}
+      {% if can_create %}<a class="btn btn-primary" href="/painel/mensagens/modelos/novo/">{% icon "plus" %} Criar modelo</a>{% endif %}
+    {% endempty_state %}
+  </div>
+{% else %}
+  <form method="get" class="card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+    <div class="flex-1 space-y-1.5">
+      <label for="tpl-q" class="label">Buscar</label>
+      <input id="tpl-q" type="search" name="q" value="{{ q }}" maxlength="100" class="input" placeholder="Nome ou texto do modelo">
+    </div>
+    <div class="space-y-1.5 sm:w-56">
+      <label for="tpl-cat" class="label">Categoria</label>
+      <select id="tpl-cat" name="categoria" class="select">
+        <option value="">Todas as categorias</option>
+        {% for value, label in categories %}<option value="{{ value }}" {% if value == category %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="flex gap-2">
+      <button type="submit" class="btn btn-primary">{% icon "search" %} Filtrar</button>
+      {% if q or category %}<a class="btn btn-ghost" href="/painel/mensagens/modelos/">Limpar</a>{% endif %}
+    </div>
+  </form>
+
+  {% if templates %}
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    {% for t in templates %}
+    <article class="card flex flex-col">
+      <div class="card-body flex-1 space-y-3">
+        <h2 class="truncate text-base font-semibold text-slate-900" title="{{ t.name }}">{{ t.name }}</h2>
+        <div class="flex flex-wrap gap-1.5">
+          {% badge t.get_category_display "brand" %}
+          {% badge t.get_type_display "gray" %}
+          {% if t.provider_template_name %}{% with label="Template aprovado: "|add:t.provider_template_name %}{% badge label "green" "max-w-full truncate" %}{% endwith %}{% endif %}
+        </div>
+        <p class="line-clamp-4 text-sm text-slate-600">{{ t.excerpt }}</p>
+      </div>
+      <div class="card-footer flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs text-slate-500">Atualizado em {{ t.updated_at|brdate }}</span>
+        <div class="flex items-center gap-1">
+          {% if can_broadcast %}<a class="btn btn-ghost btn-icon btn-sm" href="/painel/mensagens/disparos/novo/?modelo={{ t.pk }}" title="Usar em um disparo" aria-label="Usar o modelo {{ t.name }} em um disparo">{% icon "send" %}</a>{% endif %}
+          <a class="btn btn-ghost btn-icon btn-sm" href="/painel/mensagens/modelos/{{ t.pk }}/" title="{% if can_edit %}Editar{% else %}Ver{% endif %}" aria-label="{% if can_edit %}Editar{% else %}Ver{% endif %} o modelo {{ t.name }}">{% if can_edit %}{% icon "pencil" %}{% else %}{% icon "eye" %}{% endif %}</a>
+          {% if can_create %}
+          <form method="post" action="/painel/mensagens/modelos/{{ t.pk }}/duplicar/">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-icon btn-sm" title="Duplicar" aria-label="Duplicar o modelo {{ t.name }}">{% icon "copy" %}</button>
+          </form>
+          {% endif %}
+          {% if can_delete %}
+            {% if t.is_locked %}
+            <button type="button" class="btn btn-ghost btn-icon btn-sm cursor-not-allowed opacity-40" disabled title="Em uso por um disparo agendado, em andamento ou pausado" aria-label="Não é possível excluir: modelo em uso">{% icon "trash-2" "size-4 text-red-600" %}</button>
+            {% else %}
+            <form method="post" action="/painel/mensagens/modelos/{{ t.pk }}/excluir/">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-icon btn-sm" data-confirm="Excluir o modelo “{{ t.name }}”? Esta ação não pode ser desfeita." title="Excluir" aria-label="Excluir o modelo {{ t.name }}">{% icon "trash-2" "size-4 text-red-600" %}</button>
+            </form>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  <div class="mt-4">{% pagination page_obj %}</div>
+  {% else %}
+  <div class="card">
+    {% empty_state icon="search-x" title="Nenhum modelo encontrado" description="Nenhum modelo corresponde à busca ou à categoria escolhida." %}
+      <a class="btn btn-outline" href="/painel/mensagens/modelos/">Limpar filtros</a>
+    {% endempty_state %}
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

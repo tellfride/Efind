@@ -1,0 +1,58 @@
+{% comment %}Lista de campanhas (cartões no celular, tabela a partir de md). Espera `campaigns` (decoradas) com user_count/voter_count.{% endcomment %}
+<ul class="divide-y divide-slate-100 md:hidden">
+  {% for c in campaigns %}
+  <li>
+    <a href="{% url 'superadmin:campaign_detail' c.pk %}" class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50">
+      <span class="flex size-10 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white" style="background-color: {{ c.display_color }}" aria-hidden="true">{{ c.mark }}</span>
+      <span class="min-w-0 flex-1">
+        <span class="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span class="truncate font-medium text-slate-900">{{ c.ballot_name }}</span>
+          {% include "superadmin/_status_badge.html" %}
+        </span>
+        <span class="block truncate text-xs text-slate-500">{{ c.office_label }}{% if c.ballot_number %} · nº {{ c.ballot_number }}{% endif %}{% if c.party %} · {{ c.party }}{% endif %}</span>
+        <span class="block text-xs text-slate-500">{{ c.place }} · {{ c.user_count|num }} usuário{{ c.user_count|pluralize }} · {{ c.voter_count|num }} eleitor{{ c.voter_count|pluralize:"es" }}</span>
+      </span>
+      {% icon "chevron-right" "mt-2 size-4 shrink-0 text-slate-400" %}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+<div class="table-wrap hidden md:block">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Candidato</th>
+        <th>Cargo</th>
+        <th>Local</th>
+        <th>Status</th>
+        <th class="text-right">Usuários</th>
+        <th class="text-right">Eleitores</th>
+        <th>Criada em</th>
+        <th><span class="sr-only">Ações</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in campaigns %}
+      <tr>
+        <td>
+          <div class="flex items-center gap-3">
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white" style="background-color: {{ c.display_color }}" aria-hidden="true">{{ c.mark }}</span>
+            <div class="min-w-0">
+              <a href="{% url 'superadmin:campaign_detail' c.pk %}" class="block max-w-64 truncate font-medium text-slate-900 hover:text-brand-700">{{ c.ballot_name }}</a>
+              <p class="max-w-64 truncate text-xs text-slate-500">{% if c.ballot_number %}nº {{ c.ballot_number }}{% endif %}{% if c.ballot_number and c.party %} · {% endif %}{{ c.party }}{% if not c.ballot_number and not c.party %}{{ c.candidate_name }}{% endif %}</p>
+            </div>
+          </div>
+        </td>
+        <td>{{ c.office_label }}</td>
+        <td>{{ c.place }}</td>
+        <td>{% include "superadmin/_status_badge.html" %}</td>
+        <td class="text-right tabular-nums">{{ c.user_count|num }}</td>
+        <td class="text-right tabular-nums">{{ c.voter_count|num }}</td>
+        <td class="whitespace-nowrap">{{ c.created_at|brdate }}</td>
+        <td class="text-right"><a class="btn btn-outline btn-sm" href="{% url 'superadmin:campaign_detail' c.pk %}">Abrir {% icon "chevron-right" %}</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

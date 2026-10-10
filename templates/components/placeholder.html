@@ -1,0 +1,10 @@
+{% extends base_layout|default:"layouts/shell.html" %}
+{% block title %}{{ title }} · E-Find{% endblock %}
+{% block content %}
+<div class="{% if base_layout == 'layouts/public.html' %}mx-auto max-w-3xl px-4 py-10{% endif %}">
+  {% page_header title=title %}{% endpage_header %}
+  <div class="card">
+    {% empty_state icon="construction" title="Em construção" description="Este módulo está sendo implementado." %}{% endempty_state %}
+  </div>
+</div>
+{% endblock %}

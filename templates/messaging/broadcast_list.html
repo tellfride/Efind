@@ -1,0 +1,30 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Disparos · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Disparos" description="Envios de WhatsApp em massa, somente para eleitores que autorizaram receber mensagens." %}
+  {% if can_create %}<a class="btn btn-primary" href="/painel/mensagens/disparos/novo/">{% icon "plus" %} Novo disparo</a>{% endif %}
+{% endpage_header %}
+
+{% if total_in_scope == 0 %}
+  <div class="card">
+    {% empty_state icon="send" title="Nenhum disparo ainda" description="Crie um disparo para enviar uma mensagem a um grupo de eleitores que consentiram. Você escolhe o modelo, o público e o horário." %}
+      {% if can_create %}<a class="btn btn-primary" href="/painel/mensagens/disparos/novo/">{% icon "plus" %} Criar o primeiro disparo</a>{% endif %}
+    {% endempty_state %}
+  </div>
+{% else %}
+  <form method="get" class="card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+    <div class="space-y-1.5 sm:w-64">
+      <label for="bc-status" class="label">Situação</label>
+      <select id="bc-status" name="status" class="select" onchange="this.form.submit()">
+        <option value="">Todas ({{ total_in_scope }})</option>
+        {% for value, label, count in status_options %}<option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }} ({{ count }})</option>{% endfor %}
+      </select>
+    </div>
+    <noscript><button type="submit" class="btn btn-primary">Filtrar</button></noscript>
+    {% if status %}<a class="btn btn-ghost" href="/painel/mensagens/disparos/">Limpar filtro</a>{% endif %}
+    {% if not is_admin %}<p class="text-xs text-slate-500 sm:ml-auto">Você vê apenas os disparos que criou.</p>{% endif %}
+  </form>
+
+  {% include "messaging/_broadcast_list_live.html" %}
+{% endif %}
+{% endblock %}

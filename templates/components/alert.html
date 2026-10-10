@@ -1,0 +1,4 @@
+<div class="alert alert-{{ tone }}" role="{% if tone == 'danger' %}alert{% else %}status{% endif %}">
+  {% if title %}<p class="font-semibold">{{ title }}</p>{% endif %}
+  {% if content %}<div class="{% if title %}mt-1 {% endif %}opacity-90">{{ content }}</div>{% endif %}
+</div>

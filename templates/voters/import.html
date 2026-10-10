@@ -1,0 +1,158 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}Importar eleitores · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Importar eleitores" description="Envie um arquivo CSV ou cole a lista. Telefones já cadastrados são ignorados." %}
+  <a class="btn btn-outline" href="{% url 'voters:list' %}">{% icon "arrow-left" %} Voltar</a>
+{% endpage_header %}
+
+{{ import_config|json_script:"import-config" }}
+
+<form method="post" x-data="voterImport" x-cloak class="mx-auto max-w-5xl space-y-6" @submit="onSubmit($event)">
+  {% csrf_token %}
+  <input type="hidden" name="csv_text" :value="text">
+  <input type="hidden" name="mapping" :value="JSON.stringify(mapping)">
+  <input type="hidden" name="has_header" :value="hasHeader ? 'on' : ''">
+
+  {% if form.non_field_errors %}{% alert "danger" %}{{ form.non_field_errors.0 }}{% endalert %}{% endif %}
+
+  {# 1. Arquivo ou lista #}
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">1. Arquivo ou lista</h2>
+      <p class="card-description">Aceitamos CSV separado por ponto e vírgula, vírgula ou tabulação (como o Excel e o Google Planilhas exportam). Máximo de {{ max_rows|num }} linhas por importação.</p>
+    </div>
+    <div class="card-body space-y-4">
+      <div class="space-y-1.5">
+        <label class="label" for="import-file">Arquivo CSV</label>
+        <input id="import-file" type="file" accept=".csv,.txt,text/csv,text/plain" class="input" @change="onFile($event)">
+        <p class="field-hint" x-show="fileName" x-text="'Arquivo lido: ' + fileName"></p>
+      </div>
+      <div class="space-y-1.5">
+        <label class="label" for="import-text">Ou cole a lista aqui</label>
+        <textarea id="import-text" class="textarea font-mono text-xs" rows="6" spellcheck="false" x-model="text" @input.debounce.700ms="onPaste()" placeholder="nome;telefone;bairro&#10;Maria da Silva;(11) 98765-4321;Centro"></textarea>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" class="btn btn-outline btn-sm" @click="downloadSample()">{% icon "file-spreadsheet" %} Baixar modelo de planilha</button>
+        <button type="button" class="btn btn-ghost btn-sm" x-show="text" @click="reset()">{% icon "x" %} Limpar</button>
+        <span class="inline-flex items-center gap-2 text-sm text-slate-500" x-show="loading">{% icon "loader-circle" "size-4 animate-spin" %} Analisando...</span>
+      </div>
+      <p class="text-sm text-red-600" role="alert" x-show="error" x-text="error"></p>
+    </div>
+  </section>
+
+  {# 2. Colunas #}
+  <section class="card" x-show="analyzed && columns.length">
+    <div class="card-header">
+      <h2 class="card-title">2. Colunas</h2>
+      <p class="card-description">Conferimos os nomes das colunas automaticamente. Ajuste se algo estiver errado: Nome e Telefone são obrigatórios.</p>
+    </div>
+    <div class="card-body space-y-4">
+      <label class="flex items-center gap-2 text-sm text-slate-700">
+        <input type="checkbox" class="checkbox" :checked="hasHeader" @change="toggleHeader($event.target.checked)">
+        A primeira linha é o cabeçalho (nomes das colunas)
+      </label>
+      <div class="alert alert-warning" x-show="analyzed && analysis.missing_required.length" x-cloak>
+        Associe as colunas obrigatórias: <strong x-text="analysis.missing_required.join(', ')"></strong>.
+      </div>
+      <div class="alert alert-danger" x-show="analyzed && analysis.over_limit" x-cloak>
+        O arquivo tem <strong x-text="analysis.total_rows"></strong> linhas. O máximo por importação é {{ max_rows|num }}: divida o arquivo em partes menores.
+      </div>
+      <div class="table-wrap rounded-lg border border-slate-200">
+        <table class="table">
+          <thead><tr><th scope="col">Coluna do arquivo</th><th scope="col">Exemplo</th><th scope="col">Campo do E-Find</th></tr></thead>
+          <tbody>
+            <template x-for="c in columns" :key="c.index">
+              <tr>
+                <td class="font-medium text-slate-900" x-text="c.header"></td>
+                <td class="max-w-48 truncate text-slate-500" x-text="c.sample || '—'"></td>
+                <td class="min-w-48">
+                  <select class="select" :aria-label="'Campo para a coluna ' + c.header" @change="setMapping(c.index, $event.target.value)">
+                    <option value="" :selected="!mapping[c.index]">Ignorar esta coluna</option>
+                    <template x-for="f in fields" :key="f.key">
+                      <option :value="f.key" :selected="mapping[c.index] === f.key" :disabled="mapping.includes(f.key) && mapping[c.index] !== f.key" x-text="f.label + (f.required ? ' *' : '')"></option>
+                    </template>
+                  </select>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  {# 3. Pré-visualização #}
+  <section class="card" x-show="analyzed && !analysis.missing_required.length && !analysis.over_limit" x-cloak>
+    <div class="card-header">
+      <h2 class="card-title">3. Pré-visualização</h2>
+      <p class="card-description">Primeiras linhas do arquivo. A validação completa é refeita no servidor ao importar.</p>
+    </div>
+    <div class="card-body space-y-4">
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-3"><p class="text-xs text-emerald-800">Serão importados</p><p class="text-xl font-bold text-emerald-900 tabular-nums" x-text="analysis.summary.will_import"></p></div>
+        <div class="rounded-lg border border-red-200 bg-red-50 p-3"><p class="text-xs text-red-800">Linhas inválidas</p><p class="text-xl font-bold text-red-900 tabular-nums" x-text="analysis.summary.invalid"></p></div>
+        <div class="rounded-lg border border-amber-200 bg-amber-50 p-3"><p class="text-xs text-amber-800">Já cadastrados</p><p class="text-xl font-bold text-amber-900 tabular-nums" x-text="analysis.summary.already_registered"></p></div>
+        <div class="rounded-lg border border-amber-200 bg-amber-50 p-3"><p class="text-xs text-amber-800">Repetidos no arquivo</p><p class="text-xl font-bold text-amber-900 tabular-nums" x-text="analysis.summary.repeated_in_file"></p></div>
+      </div>
+      <p class="text-sm text-slate-500" x-show="analysis.summary.with_warnings > 0">
+        <span x-text="analysis.summary.with_warnings"></span> linha(s) têm campos opcionais inválidos: esses campos serão ignorados e o restante do cadastro é importado.
+      </p>
+      <div class="table-wrap rounded-lg border border-slate-200">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Linha</th>
+              <template x-for="label in analysis.fields_used" :key="label"><th scope="col" x-text="label"></th></template>
+              <th scope="col">Situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="r in analysis.preview" :key="r.row">
+              <tr>
+                <td class="tabular-nums text-slate-500" x-text="r.row"></td>
+                <template x-for="(cell, i) in r.cells" :key="i"><td class="max-w-48 truncate" x-text="cell || '—'"></td></template>
+                <td class="min-w-48">
+                  <span class="badge" :class="{ 'badge-green': r.status === 'ok', 'badge-red': r.status === 'invalid', 'badge-yellow': r.status === 'duplicate_file' || r.status === 'duplicate_campaign' }" x-text="r.status_label"></span>
+                  <template x-for="m in r.errors" :key="m"><p class="mt-1 text-xs text-red-600" x-text="m"></p></template>
+                  <template x-for="m in r.warnings" :key="m"><p class="mt-1 text-xs text-amber-700" x-text="m"></p></template>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  {# 4. Confirmação #}
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">4. Confirmação</h2>
+      <p class="card-description">Só importe contatos que autorizaram o uso dos dados. Esta declaração fica registrada junto com cada eleitor.</p>
+    </div>
+    <div class="card-body space-y-4">
+      {% if "registered_by" in form.fields %}
+        <div class="max-w-md">{% field form.registered_by label="Cadastrar em nome de" hint="Os eleitores importados ficam vinculados a este membro da equipe." %}</div>
+      {% endif %}
+      <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <label class="flex items-start gap-3 text-sm leading-snug text-slate-700">
+          <input type="checkbox" name="declaration" class="checkbox mt-0.5" required{% if form.declaration.value %} checked{% endif %}>
+          <span>Declaro que os eleitores desta lista consentiram com o tratamento de seus dados (LGPD).<span class="ml-0.5 text-red-500">*</span></span>
+        </label>
+        {% if form.declaration.errors %}<p class="field-error" role="alert">{{ form.declaration.errors.0 }}</p>{% endif %}
+        <label class="flex items-start gap-3 text-sm leading-snug text-slate-700">
+          <input type="checkbox" name="whatsapp_opt_in" class="checkbox mt-0.5"{% if form.whatsapp_opt_in.value %} checked{% endif %}>
+          <span>…e com o recebimento de mensagens de WhatsApp. <span class="text-slate-500">(opcional; sem isso os eleitores não entram nos disparos)</span></span>
+        </label>
+      </div>
+      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <a class="btn btn-outline" href="{% url 'voters:list' %}">Cancelar</a>
+        <button type="submit" class="btn btn-primary" :disabled="!canSubmit">{% icon "upload" %} <span x-text="submitLabel">Importar eleitores</span></button>
+      </div>
+    </div>
+  </section>
+</form>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/voters/import.js' %}"></script>{% endblock %}

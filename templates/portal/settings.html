@@ -1,0 +1,278 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% comment %}
+Configurações da campanha: identidade, formulário público e informações. Dois formulários independentes (campo `section`)
+compartilham um único componente Alpine (`portalSettings`, static/js/portal/settings.js) que alimenta a pré-visualização
+ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_view.
+{% endcomment %}
+{% block title %}Configurações · E-Find{% endblock %}
+
+{% block content %}
+{% page_header title="Configurações da campanha" description="Identidade visual, formulário público de cadastro e texto de consentimento (LGPD)." %}
+  <a class="btn btn-outline" href="{{ registration_path }}" target="_blank" rel="noopener">{% icon "external-link" %} Abrir meu formulário</a>
+{% endpage_header %}
+
+{% if not can_edit %}
+  <div class="mb-6">{% alert "info" title="Somente leitura" %}Você pode consultar as configurações, mas não tem permissão para alterá-las. Peça ao administrador da campanha.{% endalert %}</div>
+{% endif %}
+
+<div x-data="portalSettings" @input="readFields()" @change="readFields()" class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_23rem]">
+  <div class="min-w-0 space-y-6">
+
+    {# ---------------------------------------------------------------- a) Identidade #}
+    <section id="identidade" class="card scroll-mt-24">
+      <form method="post" action="{{ request.path }}" @submit="onSubmit($event, 'identity')">
+        {% csrf_token %}
+        <input type="hidden" name="section" value="identity">
+        <input type="hidden" name="logo_action" :value="logoAction" value="keep">
+        <input type="hidden" name="logo_data" :value="logoAction === 'replace' ? logoData : ''" value="">
+        <div class="card-header">
+          <h2 class="card-title">Identidade da campanha</h2>
+          <p class="card-description">Dados do candidato, cor e logo usados no painel e no formulário público.</p>
+        </div>
+        <fieldset class="contents" {% if not can_edit %}disabled{% endif %}>
+          <div class="card-body space-y-5">
+            {% if identity_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ identity_form.non_field_errors.0 }}</div>{% endif %}
+            <div class="grid gap-4 sm:grid-cols-2">
+              {% field identity_form.candidate_name css="sm:col-span-2" %}
+              {% field identity_form.ballot_name %}
+              {% field identity_form.ballot_number %}
+              {% field identity_form.party %}
+              {% field identity_form.office %}
+              {% field identity_form.election_year %}
+              {% field identity_form.voter_goal %}
+              {% field identity_form.city %}
+              {% field identity_form.state %}
+            </div>
+
+            {# Cor principal #}
+            <div class="space-y-1.5">
+              <label for="{{ identity_form.primary_color.id_for_label }}" class="label">Cor principal<span class="ml-0.5 text-red-500">*</span></label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="color-picker" x-ref="picker" value="{{ color_value }}" @input="onPicker($event)" aria-label="Escolher a cor principal"
+                       class="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-slate-300 bg-white p-1 disabled:cursor-not-allowed disabled:opacity-60">
+                <div class="w-full max-w-40">{{ identity_form.primary_color }}</div>
+                <span class="flex h-10 min-w-16 items-center justify-center rounded-lg px-3 text-sm font-semibold shadow-sm ring-1 ring-black/5" :style="`background-color:${color};color:${textColor}`" style="background-color:{{ color_value }};color:{{ color_text }}" aria-hidden="true">Aa</span>
+              </div>
+              {% if identity_form.primary_color.errors %}
+                <p class="field-error" role="alert">{{ identity_form.primary_color.errors.0 }}</p>
+              {% else %}
+                <p class="field-hint">Formato #RRGGBB. Usada nos botões e no cabeçalho do formulário público.</p>
+              {% endif %}
+            </div>
+
+            {# Logo #}
+            <div class="space-y-1.5">
+              <label for="logo-file" class="label">Logo da campanha</label>
+              <div class="flex flex-col gap-4 rounded-lg border border-dashed border-slate-300 p-4 sm:flex-row sm:items-center">
+                <div class="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200" style="background-color:#fff;background-image:linear-gradient(45deg,#f1f5f9 25%,transparent 25%),linear-gradient(-45deg,#f1f5f9 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f1f5f9 75%),linear-gradient(-45deg,transparent 75%,#f1f5f9 75%);background-position:0 0,0 8px,8px -8px,-8px 0;background-size:16px 16px">
+                  <template x-if="logoBusy"><span class="text-slate-400">{% icon "loader-circle" "size-6 animate-spin" %}</span></template>
+                  <template x-if="!logoBusy && logoUrl"><img :src="logoUrl" alt="Logo da campanha" class="size-full object-contain p-1.5"></template>
+                  <template x-if="!logoBusy && !logoUrl"><span class="flex size-full items-center justify-center text-2xl font-bold" :style="`background-color:${color};color:${textColor}`" x-text="initial" aria-hidden="true">{{ campaign.ballot_name|slice:":1"|upper }}</span></template>
+                </div>
+                <div class="min-w-0 flex-1 space-y-2">
+                  <p class="text-sm" :class="logoAction === 'keep' ? 'text-slate-600' : 'font-medium text-amber-700'" x-text="logoStatus" aria-live="polite">{% if saved_logo %}Logo atual cadastrado.{% else %}Nenhum logo enviado.{% endif %}</p>
+                  <p class="text-xs text-slate-500">PNG, JPEG ou WebP. A imagem é reduzida no seu navegador para até 512 px e otimizada para no máximo 300 KB. Prefira fundo transparente.</p>
+                  {% if can_edit %}
+                  <div class="flex flex-wrap gap-2">
+                    <input id="logo-file" x-ref="file" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" :disabled="logoBusy" @change="pickLogo($event)">
+                    <button type="button" class="btn btn-outline btn-sm" :disabled="logoBusy" @click="$refs.file.click()">
+                      {% icon "upload" %} <span x-text="logoUrl ? 'Trocar logo' : 'Enviar logo'">Enviar logo</span>
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm text-red-600 hover:bg-red-50 hover:text-red-700" x-cloak x-show="logoUrl && logoAction !== 'remove'" :disabled="logoBusy" @click="removeLogo()">{% icon "trash-2" %} Remover</button>
+                    <button type="button" class="btn btn-ghost btn-sm" x-cloak x-show="logoAction !== 'keep'" :disabled="logoBusy" @click="undoLogo()">{% icon "undo-2" %} Desfazer</button>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              <p class="field-error" x-cloak x-show="logoError" x-text="logoError" role="alert"></p>
+              {% if identity_form.logo_data.errors %}<p class="field-error" role="alert">{{ identity_form.logo_data.errors.0 }}</p>{% endif %}
+            </div>
+          </div>
+        </fieldset>
+        {% if can_edit %}
+        <div class="card-footer flex items-center justify-end gap-2">
+          <button type="submit" class="btn btn-primary" :disabled="logoBusy || saving === 'identity'">{% icon "save" %} Salvar identidade</button>
+        </div>
+        {% endif %}
+      </form>
+    </section>
+
+    {# ---------------------------------------------------------------- b) Formulário público #}
+    <section id="formulario" class="card scroll-mt-24">
+      <form method="post" action="{{ request.path }}" @submit="onSubmit($event, 'public_form')">
+        {% csrf_token %}
+        <input type="hidden" name="section" value="public_form">
+        <div class="card-header">
+          <h2 class="card-title">Formulário público de cadastro</h2>
+          <p class="card-description">Página aberta pelos eleitores ao acessar o link ou o QR Code de cada pessoa da equipe.</p>
+        </div>
+        <fieldset class="contents" {% if not can_edit %}disabled{% endif %}>
+          <div class="card-body space-y-6">
+            {% if public_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ public_form.non_field_errors.0 }}</div>{% endif %}
+
+            <div class="space-y-4">
+              {% field public_form.form_title %}
+              <div class="space-y-1.5">
+                <label for="{{ public_form.form_message.id_for_label }}" class="label">{{ public_form.form_message.label }}</label>
+                {{ public_form.form_message }}
+                {% if public_form.form_message.errors %}
+                  <p class="field-error" role="alert">{{ public_form.form_message.errors.0 }}</p>
+                {% else %}
+                  <p class="field-hint"><span x-text="formMessage.length">0</span>/{{ limits.form_message }} caracteres</p>
+                {% endif %}
+              </div>
+            </div>
+
+            {# Campos exibidos #}
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">Campos do cadastro</h3>
+              <p class="mt-1 text-sm text-slate-500">Nome completo e WhatsApp são sempre obrigatórios. Escolha o que mais pedir ao eleitor: quanto menos campos, maior a taxa de cadastro.</p>
+              <ul class="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200">
+                {% for row in mode_rows %}
+                <li class="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-slate-900" id="mode-label-{{ row.key }}">{{ row.label }}</p>
+                    <p class="text-xs text-slate-500">{{ row.description }}</p>
+                  </div>
+                  <div role="radiogroup" aria-labelledby="mode-label-{{ row.key }}" class="inline-flex shrink-0 rounded-lg bg-slate-100 p-0.5">
+                    {% for radio in row.field %}
+                    <label class="relative cursor-pointer">
+                      {{ radio.tag }}
+                      <span class="block rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors peer-checked:bg-white peer-checked:text-brand-700 peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500 peer-disabled:cursor-not-allowed peer-disabled:opacity-60">{{ radio.choice_label }}</span>
+                    </label>
+                    {% endfor %}
+                  </div>
+                  {% if row.field.errors %}<p class="field-error sm:basis-full" role="alert">{{ row.field.errors.0 }}</p>{% endif %}
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            {# Consentimento #}
+            <div class="space-y-3">
+              <div class="space-y-1.5">
+                <label for="{{ public_form.consent_text.id_for_label }}" class="label">{{ public_form.consent_text.label }}</label>
+                {{ public_form.consent_text }}
+                {% if public_form.consent_text.errors %}
+                  <p class="field-error" role="alert">{{ public_form.consent_text.errors.0 }}</p>
+                {% else %}
+                  <p class="field-hint">Em branco, vale o texto padrão exibido acima. Use <code class="rounded bg-slate-100 px-1 py-0.5 text-[11px]">{% verbatim %}{{candidato}}{% endverbatim %}</code> para inserir o nome de urna. <span x-text="consentText.length">0</span>/{{ limits.consent_text_max }} caracteres.</p>
+                {% endif %}
+              </div>
+              {% if can_edit %}
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" class="btn btn-outline btn-sm" x-cloak x-show="consentText.trim() !== ''" @click="restoreConsent()">{% icon "rotate-ccw" %} Restaurar texto padrão</button>
+              </div>
+              {% endif %}
+              <div class="alert alert-info text-xs">
+                <p class="font-semibold">Aceite de WhatsApp (separado e opcional)</p>
+                <p class="mt-1 opacity-90">O formulário sempre oferece um segundo aceite, não marcado previamente, para o eleitor receber mensagens da campanha por WhatsApp. Disparos só são feitos para quem marcou esse aceite e não pediu descadastro.</p>
+              </div>
+            </div>
+
+            {% field public_form.privacy_contact %}
+          </div>
+        </fieldset>
+        {% if can_edit %}
+        <div class="card-footer flex items-center justify-end gap-2">
+          <button type="submit" class="btn btn-primary" :disabled="saving === 'public_form'">{% icon "save" %} Salvar formulário</button>
+        </div>
+        {% endif %}
+      </form>
+    </section>
+
+    {# ---------------------------------------------------------------- c) Informações #}
+    <section id="informacoes" class="card scroll-mt-24">
+      <div class="card-header">
+        <h2 class="card-title">Informações da campanha</h2>
+        <p class="card-description">Dados definidos pela plataforma. Para alterá-los, fale com o suporte do E-Find.</p>
+      </div>
+      <dl class="card-body grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
+        <div><dt class="text-slate-500">Identificador (slug)</dt><dd class="mt-0.5 font-mono text-slate-900">{{ campaign.slug }}</dd></div>
+        <div><dt class="text-slate-500">Criada em</dt><dd class="mt-0.5 font-medium text-slate-900">{{ campaign.created_at|brdate }}</dd></div>
+        <div>
+          <dt class="text-slate-500">Situação</dt>
+          <dd class="mt-0.5">{% if campaign_active %}{% badge campaign_status_label "green" %}{% else %}{% badge campaign_status_label "red" %}{% endif %}</dd>
+        </div>
+        <div><dt class="text-slate-500">Cargo e ano</dt><dd class="mt-0.5 font-medium text-slate-900">{{ campaign.get_office_display }} · {{ campaign.election_year }}</dd></div>
+        <div class="sm:col-span-2">
+          <dt class="text-slate-500">Meu link de cadastro</dt>
+          <dd class="mt-1 flex flex-col gap-2 sm:flex-row">
+            <input class="input" readonly value="{{ registration_link }}" onclick="this.select()" aria-label="Meu link de cadastro">
+            <span class="flex shrink-0 gap-2">
+              <button type="button" class="btn btn-outline" data-copy="{{ registration_link }}">{% icon "copy" %} Copiar</button>
+              <a class="btn btn-outline" href="{{ registration_path }}" target="_blank" rel="noopener">{% icon "external-link" %} Abrir</a>
+            </span>
+          </dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  {# ---------------------------------------------------------------- Pré-visualização #}
+  <aside class="min-w-0 xl:sticky xl:top-24" aria-label="Pré-visualização do formulário público">
+    <div class="mb-2 flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-slate-900">Pré-visualização</h2>
+      <span class="text-xs text-slate-500">Atualiza enquanto você digita</span>
+    </div>
+    <div x-cloak class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm">
+      <div class="px-5 pt-6 pb-10" :style="`background-color:${color};color:${textColor}`" style="background-color:{{ color_value }};color:{{ color_text }}">
+        <div class="flex items-center gap-3">
+          <template x-if="logoUrl"><img :src="logoUrl" alt="" class="size-12 shrink-0 rounded-xl bg-white object-contain p-1 shadow-sm"></template>
+          <template x-if="!logoUrl"><span class="flex size-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold shadow-sm" :style="textColor === '#ffffff' ? 'background-color:rgba(255,255,255,.18)' : 'background-color:rgba(15,23,42,.08)'" x-text="initial" aria-hidden="true"></span></template>
+          <div class="min-w-0">
+            <p class="truncate text-base leading-tight font-bold" x-text="displayName"></p>
+            <p class="truncate text-xs opacity-80" x-show="subtitle" x-text="subtitle"></p>
+          </div>
+        </div>
+        <p class="mt-5 text-lg leading-snug font-bold break-words" x-text="previewTitle"></p>
+        <p class="mt-1.5 text-xs leading-relaxed break-words whitespace-pre-line opacity-90" x-show="formMessage.trim() !== ''" x-text="formMessage.trim()"></p>
+      </div>
+
+      <div class="-mt-6 px-3 pb-4">
+        <div class="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2"><p class="text-[11px] font-medium text-slate-600">Nome completo<span class="ml-0.5 text-red-500">*</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+            <div class="col-span-2"><p class="text-[11px] font-medium text-slate-600">WhatsApp<span class="ml-0.5 text-red-500">*</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+            <div class="col-span-2" x-show="shown('email')"><p class="text-[11px] font-medium text-slate-600">E-mail <span x-show="required('email')" class="text-red-500">*</span><span x-show="!required('email')" class="text-slate-400">(opcional)</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+            <div x-show="shown('birth_date')"><p class="text-[11px] font-medium text-slate-600">Nascimento <span x-show="required('birth_date')" class="text-red-500">*</span><span x-show="!required('birth_date')" class="text-slate-400">(opcional)</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+            <div x-show="shown('gender')"><p class="text-[11px] font-medium text-slate-600">Gênero <span x-show="required('gender')" class="text-red-500">*</span><span x-show="!required('gender')" class="text-slate-400">(opcional)</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+            <template x-if="shown('address')">
+              <div class="col-span-2 grid grid-cols-2 gap-3">
+                <div><p class="text-[11px] font-medium text-slate-600">CEP <span x-show="required('address')" class="text-red-500">*</span><span x-show="!required('address')" class="text-slate-400">(opcional)</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+                <div><p class="text-[11px] font-medium text-slate-600">Bairro <span x-show="required('address')" class="text-red-500">*</span><span x-show="!required('address')" class="text-slate-400">(opcional)</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+              </div>
+            </template>
+            <template x-if="shown('electoral')">
+              <div class="col-span-2 grid grid-cols-2 gap-3">
+                <div><p class="text-[11px] font-medium text-slate-600">Zona <span x-show="required('electoral')" class="text-red-500">*</span><span x-show="!required('electoral')" class="text-slate-400">(opcional)</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+                <div><p class="text-[11px] font-medium text-slate-600">Seção <span x-show="required('electoral')" class="text-red-500">*</span><span x-show="!required('electoral')" class="text-slate-400">(opcional)</span></p><div class="mt-1 h-7 rounded-md border border-slate-200 bg-white"></div></div>
+              </div>
+            </template>
+          </div>
+          <div class="space-y-2 border-t border-slate-100 pt-3">
+            <div class="flex gap-2">
+              <span class="mt-0.5 size-3.5 shrink-0 rounded border border-slate-300 bg-white" aria-hidden="true"></span>
+              <p class="line-clamp-5 text-[11px] leading-snug text-slate-600" x-text="consentPreview"></p>
+            </div>
+            <div class="flex gap-2">
+              <span class="mt-0.5 size-3.5 shrink-0 rounded border border-slate-300 bg-white" aria-hidden="true"></span>
+              <p class="text-[11px] leading-snug text-slate-600" x-text="optInText"></p>
+            </div>
+          </div>
+          <div class="flex h-9 items-center justify-center rounded-lg text-xs font-semibold shadow-sm" :style="`background-color:${color};color:${textColor}`" style="background-color:{{ color_value }};color:{{ color_text }}">Quero participar</div>
+          <p class="flex items-center justify-center gap-1 text-[10px] text-slate-400">{% icon "lock" "size-3" %} Dados protegidos pela LGPD</p>
+        </div>
+      </div>
+    </div>
+    <a class="btn btn-outline btn-sm mt-3 w-full" href="{{ registration_path }}" target="_blank" rel="noopener">{% icon "external-link" %} Abrir o formulário real em nova aba</a>
+    <p class="mt-2 text-xs text-slate-500">A pré-visualização reflete alterações ainda não salvas. O formulário real só muda depois de salvar.</p>
+  </aside>
+</div>
+
+{{ js_config|json_script:"portal-settings-config" }}
+{{ logo_state|json_script:"portal-logo-state" }}
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/portal/settings.js' %}"></script>{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% comment %}
+Layout do painel (menu lateral + barra superior). Páginas estendem e preenchem:
+  {% block title %}Eleitores · E-Find{% endblock %}
+  {% block content %}...{% endblock %}
+Variáveis: nav_sections, campaign, perms (context processor apps.core.context_processors.panel).
+{% endcomment %}
+
+{% block body %}
+<div x-data="{ mobileOpen: false }" class="min-h-screen">
+  {# Sidebar (desktop) #}
+  <aside class="no-print fixed inset-y-0 left-0 z-40 hidden w-64 lg:block">{% include "layouts/_sidebar.html" %}</aside>
+
+  {# Sidebar (celular) #}
+  <div x-cloak x-show="mobileOpen" class="no-print fixed inset-0 z-50 lg:hidden" @keydown.escape.window="mobileOpen = false">
+    <div class="absolute inset-0 bg-slate-900/60" @click="mobileOpen = false"></div>
+    <aside class="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-xl">
+      {% include "layouts/_sidebar.html" %}
+      <button type="button" @click="mobileOpen = false" class="absolute top-4 right-3 rounded-md p-1.5 text-slate-400 hover:bg-white/10 hover:text-white" aria-label="Fechar menu">{% icon "x" "size-5" %}</button>
+    </aside>
+  </div>
+
+  <div class="lg:pl-64">
+    <header class="no-print sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6">
+      <button type="button" @click="mobileOpen = true" class="rounded-md p-2 text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Abrir menu">{% icon "menu" "size-5" %}</button>
+      <div class="lg:hidden">{% include "components/logo.html" %}</div>
+      <div class="flex-1"></div>
+
+      <div x-data="dropdown" @click.outside="close()" @keydown.escape.window="close()" class="relative">
+        <button type="button" @click="toggle()" class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100" aria-haspopup="menu" :aria-expanded="open">
+          {% avatar request.user.name %}
+          <span class="hidden text-left sm:block">
+            <span class="block max-w-40 truncate text-sm font-medium text-slate-900">{{ request.user.name }}</span>
+            <span class="block text-xs text-slate-500">{{ request.user.role|role_label }}</span>
+          </span>
+          {% icon "chevron-down" "size-4 text-slate-400" %}
+        </button>
+        <div x-cloak x-show="open" x-transition class="absolute right-0 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg" role="menu">
+          <div class="px-3 py-2">
+            <p class="truncate text-sm font-medium text-slate-900">{{ request.user.name }}</p>
+            <p class="truncate text-xs text-slate-500">{{ request.user.email }}</p>
+          </div>
+          <div class="my-1 h-px bg-slate-100"></div>
+          <a href="{% if is_super_admin %}/super/perfil/{% else %}/painel/perfil/{% endif %}" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">{% icon "user-round" %} Meu perfil</a>
+          <form method="post" action="/logout/">
+            {% csrf_token %}
+            <button type="submit" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50" role="menuitem">{% icon "log-out" %} Sair</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

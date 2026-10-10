@@ -1,0 +1,40 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Campanha criada · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Campanha criada" description="Entregue as credenciais abaixo ao administrador do candidato." %}
+  <a class="btn btn-outline" href="{% url 'superadmin:campaign_detail' camp.pk %}">Abrir campanha {% icon "chevron-right" %}</a>
+{% endpage_header %}
+
+<div class="grid gap-6 lg:grid-cols-5">
+  <section class="card lg:col-span-3">
+    <div class="card-header">
+      <h2 class="card-title">Acesso do administrador</h2>
+      <p class="card-description">Exibido apenas agora.</p>
+    </div>
+    <div class="card-body">{% include "superadmin/_credentials.html" %}</div>
+  </section>
+
+  <section class="card h-fit lg:col-span-2">
+    <div class="card-body space-y-4">
+      <div class="flex items-center gap-3">
+        <span class="flex size-12 shrink-0 items-center justify-center rounded-xl text-base font-bold text-white" style="background-color: {{ camp.display_color }}" aria-hidden="true">{{ camp.mark }}</span>
+        <div class="min-w-0">
+          <p class="truncate text-base font-semibold text-slate-900">{{ camp.ballot_name }}</p>
+          <p class="truncate text-sm text-slate-500">{{ camp.candidate_name }}</p>
+        </div>
+      </div>
+      <dl class="grid grid-cols-3 gap-y-2 text-sm">
+        <dt class="text-slate-500">Cargo</dt><dd class="col-span-2">{{ camp.office_label }}</dd>
+        {% if camp.ballot_number %}<dt class="text-slate-500">Número</dt><dd class="col-span-2">{{ camp.ballot_number }}{% if camp.party %} · {{ camp.party }}{% endif %}</dd>{% endif %}
+        <dt class="text-slate-500">Local</dt><dd class="col-span-2">{{ camp.place }}</dd>
+        <dt class="text-slate-500">Eleição</dt><dd class="col-span-2">{{ camp.election_year }}</dd>
+        <dt class="text-slate-500">Identificador</dt><dd class="col-span-2 font-mono text-xs break-all">{{ camp.slug }}</dd>
+      </dl>
+      <div class="flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row lg:flex-col xl:flex-row">
+        <a class="btn btn-outline" href="{% url 'superadmin:campaign_create' %}">{% icon "plus" %} Criar outra campanha</a>
+        <a class="btn btn-ghost" href="{% url 'superadmin:campaigns' %}">Ver todas</a>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

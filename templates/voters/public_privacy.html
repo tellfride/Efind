@@ -1,0 +1,54 @@
+{% extends "voters/_public_base.html" %}
+{% block title %}Privacidade · {{ campaign.ballot_name }}{% endblock %}
+
+{% block public_content %}
+<article class="card space-y-5 p-5 text-sm leading-relaxed text-slate-700 sm:p-7">
+  <header>
+    <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Aviso de privacidade</h1>
+    <p class="mt-1 text-slate-500">Como a campanha de {{ campaign.ballot_name }} trata os seus dados pessoais.</p>
+  </header>
+
+  <section>
+    <h2 class="text-base font-semibold text-slate-900">Quem é o controlador dos dados</h2>
+    <p class="mt-1">O controlador é a campanha de <strong>{{ campaign.candidate_name }}</strong> ({{ campaign.ballot_name }}{% if campaign.ballot_number %}, {{ campaign.ballot_number }}{% endif %}{% if campaign.party %}, {{ campaign.party }}{% endif %}), candidato(a) a {{ brand.office_label }} nas eleições de {{ campaign.election_year }}.</p>
+    <p class="mt-1">Contato para assuntos de privacidade: {% if campaign.privacy_contact %}<strong>{{ campaign.privacy_contact }}</strong>{% else %}os canais oficiais de atendimento da campanha{% endif %}.</p>
+  </section>
+
+  <section>
+    <h2 class="text-base font-semibold text-slate-900">Quais dados coletamos</h2>
+    <p class="mt-1">Nome, telefone (WhatsApp) e, conforme o formulário, e-mail, data de nascimento, gênero, endereço, zona e seção eleitoral. Registramos também a data, o horário e o endereço IP do seu consentimento, e quem indicou o link de cadastro.</p>
+  </section>
+
+  <section>
+    <h2 class="text-base font-semibold text-slate-900">Para que usamos</h2>
+    <p class="mt-1">Comunicação política e organização da campanha: contato com apoiadores, convites para eventos, envio de informações e organização territorial da equipe. As mensagens de WhatsApp só são enviadas a quem marcou essa autorização.</p>
+  </section>
+
+  <section>
+    <h2 class="text-base font-semibold text-slate-900">Base legal</h2>
+    <p class="mt-1">Seu consentimento (LGPD, art. 7º, I e art. 11, I). Informações que revelam opinião política são dados pessoais sensíveis, por isso só são tratadas com o seu consentimento específico e destacado.</p>
+  </section>
+
+  <section>
+    <h2 class="text-base font-semibold text-slate-900">Por quanto tempo guardamos</h2>
+    <p class="mt-1">Até o fim do processo eleitoral ou até você pedir a exclusão, o que ocorrer primeiro.</p>
+  </section>
+
+  <section>
+    <h2 class="text-base font-semibold text-slate-900">Seus direitos (LGPD, art. 18)</h2>
+    <p class="mt-1">Você pode pedir a qualquer momento: confirmação de que tratamos seus dados, acesso, correção, anonimização ou eliminação, portabilidade, informação sobre compartilhamento e a revogação do consentimento. Escreva para o contato indicado acima.</p>
+  </section>
+
+  <section>
+    <h2 class="text-base font-semibold text-slate-900">Como parar de receber mensagens</h2>
+    <p class="mt-1">Responda <strong>SAIR</strong> a qualquer mensagem de WhatsApp da campanha e você será descadastrado dos próximos envios.</p>
+  </section>
+
+  <section>
+    <h2 class="text-base font-semibold text-slate-900">Operador</h2>
+    <p class="mt-1">A plataforma <strong>E-Find</strong> (efind.com.br) atua como operadora: armazena e processa os dados em nome da campanha, seguindo as instruções do controlador.</p>
+  </section>
+
+  <p class="pt-2"><a class="link" href="{% url 'voters:public_form' code=reg.code %}">&larr; Voltar ao cadastro</a></p>
+</article>
+{% endblock %}

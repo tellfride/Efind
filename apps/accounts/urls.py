@@ -1,0 +1,12 @@
+from django.urls import path
+
+from . import views
+
+app_name = "accounts"
+
+urlpatterns = [
+    path("login/", views.login_view, name="login"),
+    path("logout/", views.logout_view, name="logout"),
+    path("painel/perfil/", views.panel_profile, name="profile"),
+    path("super/perfil/", views.super_profile, name="super_profile"),
+]

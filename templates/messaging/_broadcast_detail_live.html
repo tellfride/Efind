@@ -1,0 +1,174 @@
+{% load messaging_tags %}
+{# Região atualizada a cada 5 s (HTMX) enquanto o disparo estiver agendado ou em andamento #}
+<div id="broadcast-live" class="space-y-6" {% if is_live %}hx-get="{{ refresh_url }}" hx-trigger="every 5s" hx-swap="outerHTML"{% endif %}>
+
+  {# Situação e ações #}
+  <section class="card">
+    <div class="card-body flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div class="min-w-0 space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+          {% broadcast_badge broadcast.status "text-sm" %}
+          {% if broadcast.status == "RUNNING" %}<span class="text-sm text-slate-500">Enviando mensagens{% if remaining_label %} · {{ remaining_label }} restantes{% endif %}</span>{% endif %}
+          {% if broadcast.status == "SCHEDULED" %}<span class="text-sm text-slate-500">Começa em {{ broadcast.scheduled_at|brdatetime }}</span>{% endif %}
+          {% if broadcast.status == "PAUSED" %}<span class="text-sm text-slate-500">Pausado: nenhuma mensagem sai até você retomar.</span>{% endif %}
+          {% if broadcast.status == "COMPLETED" %}<span class="text-sm text-slate-500">Concluído em {{ broadcast.finished_at|brdatetime }}</span>{% endif %}
+          {% if broadcast.status == "CANCELLED" %}<span class="text-sm text-slate-500">Cancelado em {{ broadcast.finished_at|brdatetime }}</span>{% endif %}
+          {% if broadcast.status == "FAILED" %}<span class="text-sm text-slate-500">Não foi possível iniciar este disparo. Veja a auditoria para o motivo.</span>{% endif %}
+        </div>
+        {% if is_live %}<p class="text-xs text-slate-400">{% icon "refresh-cw" "mr-1 inline size-3" %}Atualizando automaticamente a cada 5 segundos.</p>{% endif %}
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        {% if actions.pause %}
+        <form method="post" action="{{ list_url }}{{ broadcast.pk }}/acao/pause/">{% csrf_token %}
+          <button type="submit" class="btn btn-outline">{% icon "pause" %} Pausar</button>
+        </form>
+        {% endif %}
+        {% if actions.resume %}
+        <form method="post" action="{{ list_url }}{{ broadcast.pk }}/acao/resume/">{% csrf_token %}
+          <button type="submit" class="btn btn-primary">{% icon "play" %} Retomar</button>
+        </form>
+        {% endif %}
+        {% if actions.retry %}
+        <form method="post" action="{{ list_url }}{{ broadcast.pk }}/acao/retry/">{% csrf_token %}
+          <button type="submit" class="btn btn-outline" data-confirm="Reenviar {{ retryable }} mensage{{ retryable|pluralize:'m,ns' }} com falha?">{% icon "rotate-ccw" %} Reenviar falhas ({{ retryable|num }})</button>
+        </form>
+        {% endif %}
+        {% if can_process %}
+        <form method="post" action="{{ list_url }}{{ broadcast.pk }}/processar/">{% csrf_token %}
+          <button type="submit" class="btn btn-outline" title="Executa um ciclo da fila agora, sem esperar o worker">{% icon "zap" %} Processar fila agora</button>
+        </form>
+        {% endif %}
+        {% if actions.cancel %}
+        <form method="post" action="{{ list_url }}{{ broadcast.pk }}/acao/cancel/">{% csrf_token %}
+          <button type="submit" class="btn btn-danger" data-confirm="Cancelar este disparo? As mensagens que ainda estão na fila não serão enviadas.">{% icon "ban" %} Cancelar disparo</button>
+        </form>
+        {% endif %}
+        {% if actions.delete %}
+        <form method="post" action="{{ list_url }}{{ broadcast.pk }}/excluir/">{% csrf_token %}
+          <button type="submit" class="btn btn-ghost text-red-600" data-confirm="Excluir este disparo e o histórico de {{ total|num }} mensagens? Esta ação não pode ser desfeita.">{% icon "trash-2" %} Excluir</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {# Indicadores #}
+  <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
+    {% stat_card "Destinatários" total icon="users-round" tone="brand" %}
+    {% stat_card "Na fila" stats.queued icon="clock" tone="gray" %}
+    {% stat_card "Enviadas" stats.sent icon="send" tone="blue" %}
+    {% stat_card "Entregues" stats.delivered icon="circle-check" tone="green" hint=delivery_hint %}
+    {% stat_card "Lidas" stats.read icon="eye" tone="purple" hint=read_hint %}
+    {% stat_card "Falhas" stats.failed icon="circle-alert" tone="red" %}
+    {% stat_card "Ignoradas" stats.skipped icon="ban" tone="yellow" hint="Sem consentimento ou cancelado" %}
+  </div>
+
+  <section class="card">
+    <div class="card-body space-y-2">
+      <div class="flex flex-wrap justify-between gap-1 text-sm">
+        <span class="font-medium text-slate-700">Progresso</span>
+        <span class="text-slate-500 tabular-nums">{{ stats.processed|num }} de {{ total|num }} processadas ({{ progress_pct|pct:0 }})</span>
+      </div>
+      {% progress stats.processed total progress_tone %}
+      {% if stats.sent %}
+      <p class="text-xs text-slate-500">Taxa de entrega: {{ delivery_rate|pct }} das enviadas{% if stats.delivered %} · Taxa de leitura: {{ read_rate|pct }} das entregues{% endif %}.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+    {# Destinatários #}
+    <section class="card min-w-0 lg:order-1">
+      <div class="card-header flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="card-title">Destinatários</h2>
+          <p class="card-description">Situação de cada mensagem.</p>
+        </div>
+        <form method="get" class="flex items-center gap-2">
+          <label for="msg-status" class="sr-only">Filtrar por situação</label>
+          <select id="msg-status" name="status" class="select sm:w-48" onchange="this.form.submit()">
+            <option value="">Todas as situações</option>
+            {% for value, label in message_status_options %}<option value="{{ value }}" {% if value == status_filter %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          {% if status_filter %}<a class="btn btn-ghost btn-sm" href="{{ list_url }}{{ broadcast.pk }}/">Limpar</a>{% endif %}
+        </form>
+      </div>
+      {% if recipients %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th>Nome</th><th>Telefone</th><th>Situação</th><th>Enviada</th><th>Entregue</th><th>Lida</th><th>Erro</th></tr>
+          </thead>
+          <tbody>
+            {% for m in recipients %}
+            <tr>
+              <td class="max-w-48 truncate font-medium text-slate-900">{{ m.display_name }}</td>
+              <td class="whitespace-nowrap">{{ m.display_phone }}</td>
+              <td>{% message_badge m.status %}</td>
+              <td class="whitespace-nowrap">{{ m.sent_at|brdatetime }}</td>
+              <td class="whitespace-nowrap">{{ m.delivered_at|brdatetime }}</td>
+              <td class="whitespace-nowrap">{{ m.read_at|brdatetime }}</td>
+              <td class="max-w-56 text-xs text-slate-500">{{ m.error|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="px-4 pb-2">{% pagination page_obj %}</div>
+      {% elif status_filter %}
+        {% empty_state icon="search-x" title="Nenhuma mensagem com esta situação" description="Escolha outra situação para ver os destinatários." %}
+          <a class="btn btn-outline" href="{{ list_url }}{{ broadcast.pk }}/">Ver todos</a>
+        {% endempty_state %}
+      {% else %}
+        {% empty_state icon="inbox" title="Ainda não há destinatários" description=empty_hint %}{% endempty_state %}
+      {% endif %}
+    </section>
+
+    {# Mensagem e detalhes #}
+    <div class="space-y-6 lg:order-2">
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">Mensagem</h2><p class="card-description">Modelo com dados de exemplo.</p></div>
+        <div class="card-body">
+          {% if template_obj %}
+          <div class="rounded-xl bg-whatsapp-bg p-3">
+            <div class="ml-auto w-fit max-w-[95%] rounded-lg rounded-tr-none bg-whatsapp-bubble px-2.5 py-1.5 text-[13px] leading-snug text-slate-900 shadow-sm">
+              {% if preview_media %}<div class="mb-1.5 flex h-20 items-center justify-center rounded-md bg-slate-200/80 px-2 text-center text-xs font-medium text-slate-600">{{ preview_media }}</div>{% endif %}
+              <div class="break-words whitespace-pre-wrap">{{ preview_text|whatsapp }}</div>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-slate-500">Modelo: {% if perms.modelos.view %}<a class="link" href="/painel/mensagens/modelos/{{ template_obj.pk }}/">{{ template_obj.name }}</a>{% else %}{{ template_obj.name }}{% endif %}</p>
+          {% else %}
+          <p class="text-sm text-slate-500">O modelo usado neste disparo foi excluído. As mensagens já preparadas continuam registradas.</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">Detalhes</h2></div>
+        <dl class="card-body grid grid-cols-3 gap-y-3 text-sm">
+          <dt class="text-slate-500">Criado por</dt><dd class="col-span-2 font-medium">{% if broadcast.created_by %}{{ broadcast.created_by.name }}{% else %}Usuário removido{% endif %}</dd>
+          <dt class="text-slate-500">Criado em</dt><dd class="col-span-2">{{ broadcast.created_at|brdatetime }}</dd>
+          {% if broadcast.scheduled_at %}<dt class="text-slate-500">Agendado</dt><dd class="col-span-2">{{ broadcast.scheduled_at|brdatetime }}</dd>{% endif %}
+          <dt class="text-slate-500">Iniciado</dt><dd class="col-span-2">{{ broadcast.started_at|brdatetime }}</dd>
+          <dt class="text-slate-500">Concluído</dt><dd class="col-span-2">{{ broadcast.finished_at|brdatetime }}</dd>
+          <dt class="text-slate-500">Conexão</dt><dd class="col-span-2">{% if broadcast.connection %}{{ broadcast.connection.name }}{% else %}Conexão excluída{% endif %}</dd>
+          <dt class="text-slate-500">Velocidade</dt><dd class="col-span-2">até {{ broadcast.rate_per_minute|num }} por minuto</dd>
+        </dl>
+      </section>
+
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">Público</h2><p class="card-description">Somente eleitores que autorizaram WhatsApp.</p></div>
+        <div class="card-body">
+          {% if audience %}
+          <dl class="grid grid-cols-3 gap-y-2 text-sm">
+            {% for label, value in audience %}<dt class="text-slate-500">{{ label }}</dt><dd class="col-span-2 break-words">{{ value }}</dd>{% endfor %}
+          </dl>
+          {% else %}
+          <p class="text-sm text-slate-600">Todos os eleitores aptos da rede de quem criou o disparo.</p>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

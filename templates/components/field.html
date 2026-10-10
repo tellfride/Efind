@@ -1,0 +1,11 @@
+{% if field.is_hidden %}{{ field }}{% else %}
+<div class="space-y-1.5 {{ css }}">
+  {% if field.field.widget.input_type == "checkbox" %}
+    <label class="flex items-start gap-2 text-sm text-slate-700">{{ field }}<span>{{ label|default:field.label }}</span></label>
+  {% else %}
+    <label for="{{ field.id_for_label }}" class="label">{{ label|default:field.label }}{% if field.field.required %}<span class="ml-0.5 text-red-500">*</span>{% endif %}</label>
+    {{ field }}
+  {% endif %}
+  {% if field.errors %}<p class="field-error" role="alert">{{ field.errors.0 }}</p>{% elif hint %}<p class="field-hint">{{ hint }}</p>{% endif %}
+</div>
+{% endif %}

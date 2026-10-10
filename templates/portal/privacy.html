@@ -1,0 +1,129 @@
+{% extends "portal/_legal.html" %}
+{% block title %}Política de privacidade · E-Find{% endblock %}
+{% block head %}<meta name="description" content="Como o E-Find e as campanhas que usam a plataforma tratam dados pessoais, em conformidade com a LGPD.">{% endblock %}
+
+{% block legal_heading %}Política de privacidade{% endblock %}
+{% block legal_intro %}Esta política explica como o E-Find trata dados pessoais, quais são os papéis da plataforma e das campanhas eleitorais e como você pode exercer seus direitos previstos na Lei Geral de Proteção de Dados (Lei nº 13.709/2018, a LGPD).{% endblock %}
+
+{% block legal_toc %}
+<li><a href="#papeis">Quem é responsável pelos dados</a></li>
+<li><a href="#dados">Quais dados são tratados</a></li>
+<li><a href="#finalidades">Para que usamos os dados</a></li>
+<li><a href="#compartilhamento">Com quem os dados são compartilhados</a></li>
+<li><a href="#seguranca">Como protegemos os dados</a></li>
+<li><a href="#retencao">Por quanto tempo guardamos</a></li>
+<li><a href="#direitos">Direitos do titular</a></li>
+<li><a href="#whatsapp">Mensagens por WhatsApp e descadastro</a></li>
+<li><a href="#cookies">Cookies e tecnologias semelhantes</a></li>
+<li><a href="#alteracoes">Alterações desta política</a></li>
+<li><a href="#contato">Contato</a></li>
+{% endblock %}
+
+{% block legal_body %}
+<section id="papeis">
+  <h2>1. Quem é responsável pelos dados</h2>
+  <p>O E-Find (efind.com.br) é uma plataforma de gestão de campanha eleitoral. Cada candidato ou candidata contrata o uso da plataforma para a sua própria campanha, que funciona como um ambiente separado dos demais.</p>
+  <ul>
+    <li><strong>A campanha é a controladora</strong> dos dados dos eleitores e apoiadores que cadastra: ela decide quais dados coletar, para quais finalidades e quem da equipe pode acessá-los.</li>
+    <li><strong>O E-Find atua como operador</strong>: trata os dados em nome da campanha, seguindo as instruções dela e os <a href="/termos/">Termos de uso</a>, e mantém a infraestrutura segura.</li>
+    <li>Em relação aos dados de acesso dos usuários da plataforma (equipe da campanha e administradores do E-Find), o E-Find também atua como controlador, para operar e proteger o serviço.</li>
+  </ul>
+</section>
+
+<section id="dados">
+  <h2>2. Quais dados são tratados</h2>
+  <h3>Eleitores e apoiadores (cadastrados pela campanha ou por formulário público)</h3>
+  <ul>
+    <li>Identificação e contato: nome completo, telefone/WhatsApp e, se a campanha pedir, e-mail.</li>
+    <li>Dados opcionais conforme a configuração da campanha: data de nascimento, gênero, endereço (CEP, logradouro, número, bairro, cidade e estado) e zona e seção eleitoral.</li>
+    <li>Localização aproximada derivada do CEP/endereço, usada para o mapa por bairro.</li>
+    <li>Registro do consentimento: data e hora, endereço IP, texto aceito, aceite de mensagens por WhatsApp e eventual descadastro.</li>
+    <li>Origem do cadastro: qual integrante da equipe divulgou o link ou QR Code usado.</li>
+  </ul>
+  <h3>Equipe da campanha</h3>
+  <ul>
+    <li>Nome, e-mail de acesso, telefone, papel (administrador, coordenador ou cabo eleitoral) e posição na hierarquia.</li>
+    <li>Senha, armazenada somente na forma de hash (nunca em texto legível).</li>
+    <li>Registros de acesso e de ações realizadas na plataforma (trilha de auditoria): data e hora, endereço IP, tipo de ação e identificadores do item afetado.</li>
+  </ul>
+  <h3>Credenciais de integração</h3>
+  <ul>
+    <li>Chaves e tokens dos provedores oficiais de WhatsApp configurados pela campanha, guardados criptografados e nunca exibidos novamente em texto claro.</li>
+  </ul>
+  <p>O E-Find não solicita nem trata dados pessoais sensíveis (como opinião política declarada, saúde ou biometria) como campo do formulário. Caso a campanha entenda que o simples vínculo de apoio político constitui dado sensível, ela é responsável por manter a base legal adequada (veja o item 3).</p>
+</section>
+
+<section id="finalidades">
+  <h2>3. Para que usamos os dados</h2>
+  <ul>
+    <li><strong>Organizar a campanha e a comunicação política:</strong> cadastro de apoiadores, mapa por bairro, indicadores, metas e comunicação com quem autorizou. Base legal: <strong>consentimento do titular</strong>, coletado de forma específica e destacada no formulário (art. 7º, I, da LGPD).</li>
+    <li><strong>Enviar mensagens por WhatsApp:</strong> somente a quem deu um aceite próprio e separado e que não pediu descadastro.</li>
+    <li><strong>Operar o serviço:</strong> autenticar usuários, aplicar permissões, prevenir fraudes e abusos e manter a segurança (execução de contrato e legítimo interesse).</li>
+    <li><strong>Prestar contas:</strong> manter a trilha de auditoria exigida para demonstrar conformidade com a LGPD e com a legislação eleitoral (cumprimento de obrigação legal e regulatória).</li>
+  </ul>
+  <p>Os dados não são vendidos, alugados nem usados para publicidade de terceiros. O E-Find não utiliza dados de uma campanha para outra.</p>
+</section>
+
+<section id="compartilhamento">
+  <h2>4. Com quem os dados são compartilhados</h2>
+  <ul>
+    <li><strong>Equipe da própria campanha</strong>, dentro das regras de hierarquia: cada pessoa vê apenas a sua rede (o cabo eleitoral vê os eleitores que cadastrou; o coordenador, os da sua equipe; o administrador, toda a campanha).</li>
+    <li><strong>Provedores oficiais de WhatsApp</strong> escolhidos pela campanha (Meta Cloud API, Twilio ou 360dialog), apenas para entregar mensagens a quem consentiu.</li>
+    <li><strong>Serviços de consulta de CEP e geocodificação</strong>, que recebem somente o CEP ou o endereço necessário para localizar o bairro no mapa.</li>
+    <li><strong>Fornecedores de infraestrutura</strong> (hospedagem e banco de dados), contratualmente obrigados a proteger as informações.</li>
+    <li><strong>Autoridades</strong>, quando houver ordem judicial ou obrigação legal.</li>
+  </ul>
+  <p>O super administrador da plataforma gerencia campanhas e usuários, mas <strong>não tem acesso à lista de dados pessoais dos eleitores</strong>.</p>
+</section>
+
+<section id="seguranca">
+  <h2>5. Como protegemos os dados</h2>
+  <ul>
+    <li><strong>Isolamento entre campanhas:</strong> todas as consultas são restritas à campanha do usuário autenticado; nenhum candidato enxerga dados de outro.</li>
+    <li><strong>Controle de acesso:</strong> permissões por módulo e escopo hierárquico, definidos pelo administrador da campanha e aplicados no servidor a cada requisição.</li>
+    <li><strong>Criptografia:</strong> credenciais de provedores de WhatsApp são criptografadas com AES-256-GCM; senhas são protegidas com hash (PBKDF2); a comunicação com a plataforma ocorre por conexão segura (HTTPS).</li>
+    <li><strong>Trilha de auditoria:</strong> logins, alterações de configurações, equipe e permissões, exportações e disparos ficam registrados com data, hora e IP, sem dados pessoais de eleitores nos detalhes.</li>
+    <li><strong>Limites de uso:</strong> proteção contra tentativas repetidas de login e uso abusivo do formulário público.</li>
+  </ul>
+  <p>Nenhum sistema é totalmente imune a incidentes. Se ocorrer um incidente de segurança que possa acarretar risco ou dano relevante, comunicaremos a campanha controladora, a Autoridade Nacional de Proteção de Dados (ANPD) e os titulares, nos termos do art. 48 da LGPD.</p>
+</section>
+
+<section id="retencao">
+  <h2>6. Por quanto tempo guardamos</h2>
+  <ul>
+    <li>Os dados dos eleitores permanecem enquanto a campanha precisar deles para a finalidade informada ou até o titular pedir a exclusão. A exclusão de um eleitor feita na plataforma é <strong>definitiva</strong>.</li>
+    <li>Os registros de auditoria são mantidos pelo tempo necessário para a prestação de contas e a defesa em processos.</li>
+    <li>Ao término da campanha, a controladora deve decidir pela eliminação ou anonimização dos dados; o E-Find executa a instrução recebida, salvo se a lei exigir a guarda.</li>
+  </ul>
+</section>
+
+<section id="direitos">
+  <h2>7. Direitos do titular e como exercê-los</h2>
+  <p>Você pode, a qualquer momento e mediante requisição, exercer os direitos do art. 18 da LGPD: confirmar se há tratamento de dados seus; acessar e corrigir dados; pedir anonimização, bloqueio ou eliminação de dados desnecessários ou tratados em desconformidade; solicitar a portabilidade; saber com quem os dados foram compartilhados; e <strong>revogar o consentimento</strong>.</p>
+  <p><strong>Como pedir:</strong> como a campanha é a controladora, o caminho mais rápido é falar diretamente com ela, usando o contato do encarregado/controlador informado no formulário de cadastro em que você se inscreveu. Se preferir ou se não souber a quem recorrer, escreva para <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> informando seu nome, telefone cadastrado e a campanha: encaminharemos o pedido à controladora e acompanharemos a resposta.</p>
+  <p>Você também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).</p>
+</section>
+
+<section id="whatsapp">
+  <h2>8. Mensagens por WhatsApp e descadastro</h2>
+  <p>Mensagens de campanha só são enviadas a quem marcou, de forma livre e específica, a opção de receber contato por WhatsApp. Em toda comunicação você pode se descadastrar respondendo <strong>SAIR</strong>; o descadastro é registrado imediatamente e novos disparos para o seu número são bloqueados, conforme o art. 57-G da Lei nº 9.504/1997.</p>
+  <p>O E-Find utiliza apenas a API oficial do WhatsApp (Meta) e parceiros oficiais. Não usamos ferramentas não oficiais nem listas de contatos compradas.</p>
+</section>
+
+<section id="cookies">
+  <h2>9. Cookies e tecnologias semelhantes</h2>
+  <p>Usamos apenas cookies estritamente necessários: o cookie de sessão, que mantém você autenticado no painel, e o cookie de proteção contra requisições forjadas (CSRF). Não usamos cookies de publicidade nem ferramentas de rastreamento de terceiros.</p>
+</section>
+
+<section id="alteracoes">
+  <h2>10. Alterações desta política</h2>
+  <p>Podemos atualizar esta política para refletir mudanças legais ou no serviço. A data da última atualização aparece no topo da página; mudanças relevantes serão comunicadas às campanhas contratantes.</p>
+</section>
+
+<section id="contato">
+  <h2>11. Contato</h2>
+  <p>Dúvidas, solicitações ou denúncias sobre privacidade: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
+</section>
+{% endblock %}
+
+{% block legal_other %}os <a class="font-medium text-brand-600 hover:underline" href="/termos/">Termos de uso</a>{% endblock %}

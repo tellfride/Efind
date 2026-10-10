@@ -1,0 +1,44 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Importação concluída · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Importação concluída" description="Resumo do que foi gravado e do que foi ignorado." %}
+  <a class="btn btn-outline" href="{% url 'voters:import' %}">{% icon "upload" %} Importar outro arquivo</a>
+  <a class="btn btn-primary" href="{% url 'voters:list' %}">{% icon "users-round" %} Ver eleitores</a>
+{% endpage_header %}
+
+<div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+  {% stat_card "Importados" result.imported|num icon="circle-check" tone="green" hint="novos eleitores na campanha" %}
+  {% stat_card "Já cadastrados" result.duplicates_campaign|num icon="user-check" tone="yellow" hint="telefone já existia" %}
+  {% stat_card "Repetidos no arquivo" result.duplicates_file|num icon="copy" tone="yellow" hint="vale a primeira ocorrência" %}
+  {% stat_card "Linhas inválidas" result.invalid|num icon="circle-alert" tone="red" hint="nome ou telefone inválido" %}
+</div>
+
+{% if result.imported %}
+<div class="mb-6">
+  {% alert "info" %}A localização no mapa dos eleitores importados é processada em segundo plano e pode levar alguns minutos.{% endalert %}
+</div>
+{% endif %}
+
+{% if result.problems %}
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">Linhas ignoradas</h2>
+    <p class="card-description">Número da linha no arquivo original e o motivo.{% if truncated %} Mostrando as primeiras {{ result.problems|length }} de {{ ignored|num }}.{% endif %}</p>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th scope="col">Linha</th><th scope="col">Situação</th><th scope="col">Motivo</th></tr></thead>
+      <tbody>
+        {% for p in result.problems %}
+        <tr>
+          <td class="tabular-nums text-slate-500">{{ p.row }}</td>
+          <td>{% if p.kind == "invalid" %}{% badge p.label "red" %}{% else %}{% badge p.label "yellow" %}{% endif %}</td>
+          <td class="text-slate-600">{{ p.reasons }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{# Indicador de etapas do assistente de conexão. Variáveis: steps (lista de rótulos), current_step (1..N). #}
+<nav aria-label="Etapas da conexão" class="mb-6">
+  <ol class="flex items-center gap-2">
+    {% for label in steps %}
+    <li class="flex min-w-0 items-center gap-2 {% if forloop.counter == current_step %}flex-none{% else %}flex-1{% endif %}" {% if forloop.counter == current_step %}aria-current="step"{% endif %}>
+      <span class="flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold {% if forloop.counter < current_step %}bg-brand-600 text-white{% elif forloop.counter == current_step %}bg-brand-600 text-white ring-4 ring-brand-100{% else %}bg-slate-200 text-slate-500{% endif %}">
+        {% if forloop.counter < current_step %}{% icon "check" "size-4" %}{% else %}{{ forloop.counter }}{% endif %}
+      </span>
+      <span class="truncate text-sm {% if forloop.counter == current_step %}font-semibold text-slate-900{% else %}hidden text-slate-500 sm:inline{% endif %}">{{ label }}</span>
+      {% if not forloop.last %}<span class="h-px min-w-3 flex-1 bg-slate-200" aria-hidden="true"></span>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</nav>

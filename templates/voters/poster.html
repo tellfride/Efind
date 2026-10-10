@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Cartaz · {{ campaign.ballot_name }} · E-Find{% endblock %}
+{% block head %}
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    .poster-sheet {
+      width: 100%; max-width: 210mm; min-height: min(297mm, 140vw); margin: 0 auto; background: #fff;
+      display: flex; flex-direction: column; box-shadow: 0 10px 30px rgb(15 23 42 / 0.15);
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .poster-head { padding: 9% 8% 7%; text-align: center; }
+    .poster-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4% 8%; text-align: center; }
+    .poster-qr { width: 62%; max-width: 135mm; background: #fff; padding: 3%; border: 2px solid #e2e8f0; border-radius: 4mm; }
+    .poster-qr svg { display: block; width: 100%; height: auto; }
+    .poster-foot { padding: 4% 8% 6%; text-align: center; }
+    @media print {
+      html, body { background: #fff !important; }
+      .poster-sheet { width: 210mm; max-width: none; height: 297mm; min-height: 0; overflow: hidden; box-shadow: none; margin: 0; }
+    }
+  </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-slate-100 px-4 py-6 print:p-0">
+  <div class="no-print mx-auto mb-4 flex max-w-[210mm] flex-wrap items-center justify-between gap-2">
+    <a href="{% url 'voters:my_link' %}" class="btn btn-outline">{% icon "arrow-left" %} Voltar</a>
+    <button type="button" class="btn btn-primary" onclick="window.print()">{% icon "printer" %} Imprimir</button>
+  </div>
+
+  <article class="poster-sheet" aria-label="Cartaz de cadastro">
+    <header class="poster-head" style="background-color: {{ brand.color }}; color: {{ brand.text_color }}">
+      {% if brand.logo_url %}
+        <img src="{{ brand.logo_url }}" alt="" class="mx-auto mb-3 h-20 w-auto rounded-xl bg-white/95 object-contain p-2" style="max-width: 60%">
+      {% endif %}
+      <p class="text-3xl font-extrabold leading-tight sm:text-4xl">{{ campaign.ballot_name }}</p>
+      <p class="mt-1 text-base opacity-90 sm:text-lg">{{ brand.office_label }}{% if campaign.party %} · {{ campaign.party }}{% endif %}</p>
+      {% if campaign.ballot_number %}<p class="mt-3 text-6xl font-black leading-none tracking-tight sm:text-7xl">{{ campaign.ballot_number }}</p>{% endif %}
+    </header>
+
+    <div class="poster-body">
+      <p class="mb-4 text-2xl font-extrabold leading-tight text-slate-900 sm:text-3xl">Aponte a câmera do celular e cadastre-se</p>
+      <div class="poster-qr" role="img" aria-label="QR Code de cadastro">{{ qr_svg }}</div>
+    </div>
+
+    <footer class="poster-foot">
+      <p class="text-sm text-slate-500">Ou acesse</p>
+      <p class="mt-0.5 text-xl font-bold text-slate-900 break-all sm:text-2xl">{{ short_link }}</p>
+      <p class="mt-3 text-xs text-slate-400">Seus dados são usados somente pela campanha, conforme a LGPD.</p>
+    </footer>
+  </article>
+</div>
+{% endblock %}

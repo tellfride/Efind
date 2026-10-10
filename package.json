@@ -1,0 +1,23 @@
+{
+  "name": "efind-frontend-assets",
+  "private": true,
+  "description": "Somente build de CSS (Tailwind) e cópia de bibliotecas JS para static/. Produção não precisa de Node.",
+  "scripts": {
+    "build:css": "tailwindcss -i assets/css/app.css -o static/css/app.css --minify",
+    "watch:css": "tailwindcss -i assets/css/app.css -o static/css/app.css --watch",
+    "vendor": "node scripts/vendor.mjs",
+    "build": "npm run vendor && npm run build:css"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3",
+    "htmx.org": "^2.0.11",
+    "alpinejs": "^3.17.4",
+    "chart.js": "^4.5.1",
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
+    "leaflet.heat": "^0.2.0",
+    "sortablejs": "^1.15.7",
+    "lucide-static": "^1.54.0"
+  }
+}

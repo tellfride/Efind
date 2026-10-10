@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+@source "../../templates";
+@source "../../apps";
+@source "../js";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
+
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #128c7e;
+  --color-whatsapp-bubble: #dcf8c6;
+  --color-whatsapp-bg: #efeae2;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+  ::selection {
+    @apply bg-brand-200 text-brand-950;
+  }
+  [x-cloak] {
+    display: none !important;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Componentes semânticos (usados pelas template tags, pelos widgets de formulário e pelos templates)
+   --------------------------------------------------------------------------------------------- */
+@layer components {
+  /* Botões */
+  .btn {
+    @apply inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium whitespace-nowrap transition-colors;
+    @apply focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn svg {
+    @apply size-4 shrink-0;
+  }
+  .btn-primary {
+    @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700 focus-visible:ring-brand-500;
+  }
+  .btn-secondary {
+    @apply bg-slate-100 text-slate-900 hover:bg-slate-200 focus-visible:ring-slate-400;
+  }
+  .btn-outline {
+    @apply border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:ring-brand-500;
+  }
+  .btn-ghost {
+    @apply text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-slate-400;
+  }
+  .btn-danger {
+    @apply bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-500;
+  }
+  .btn-success {
+    @apply bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus-visible:ring-emerald-500;
+  }
+  .btn-whatsapp {
+    @apply bg-whatsapp text-white shadow-sm hover:bg-whatsapp-dark focus-visible:ring-emerald-500;
+  }
+  .btn-sm {
+    @apply h-8 gap-1.5 rounded-md px-3 text-xs;
+  }
+  .btn-lg {
+    @apply h-12 px-6 text-base;
+  }
+  .btn-icon {
+    @apply size-9 p-0;
+  }
+  .btn.htmx-request {
+    @apply pointer-events-none opacity-60;
+  }
+
+  /* Campos de formulário */
+  .input,
+  .select,
+  .textarea {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400;
+    @apply focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none;
+    @apply disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500;
+    @apply aria-[invalid=true]:border-red-400 aria-[invalid=true]:focus:ring-red-500/20;
+  }
+  .input,
+  .select {
+    @apply h-10;
+  }
+  .select {
+    @apply pr-8;
+  }
+  .textarea {
+    @apply min-h-24 py-2;
+  }
+  .input[type="color"] {
+    @apply h-10 w-16 cursor-pointer p-1;
+  }
+  .input[type="file"] {
+    @apply h-auto py-1.5 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium;
+  }
+  .checkbox {
+    @apply size-4 shrink-0 rounded border-slate-300 accent-brand-600;
+  }
+  .label {
+    @apply block text-sm font-medium text-slate-700;
+  }
+  .field-hint {
+    @apply text-xs text-slate-500;
+  }
+  .field-error {
+    @apply mt-1 text-xs text-red-600;
+  }
+
+  /* Cartões */
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  }
+  .card-header {
+    @apply flex flex-col gap-1 border-b border-slate-100 px-5 py-4;
+  }
+  .card-title {
+    @apply text-base font-semibold text-slate-900;
+  }
+  .card-description {
+    @apply text-sm text-slate-500;
+  }
+  .card-body {
+    @apply px-5 py-4;
+  }
+  .card-footer {
+    @apply flex items-center justify-end gap-2 rounded-b-xl border-t border-slate-100 bg-slate-50/60 px-5 py-3;
+  }
+
+  /* Selos */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset;
+  }
+  .badge-gray {
+    @apply bg-slate-100 text-slate-700 ring-slate-200;
+  }
+  .badge-brand {
+    @apply bg-brand-50 text-brand-700 ring-brand-200;
+  }
+  .badge-green {
+    @apply bg-emerald-50 text-emerald-700 ring-emerald-200;
+  }
+  .badge-yellow {
+    @apply bg-amber-50 text-amber-800 ring-amber-200;
+  }
+  .badge-red {
+    @apply bg-red-50 text-red-700 ring-red-200;
+  }
+  .badge-blue {
+    @apply bg-sky-50 text-sky-700 ring-sky-200;
+  }
+  .badge-purple {
+    @apply bg-violet-50 text-violet-700 ring-violet-200;
+  }
+
+  /* Tabelas */
+  .table-wrap {
+    @apply w-full overflow-x-auto;
+  }
+  .table {
+    @apply w-full min-w-full text-left text-sm;
+  }
+  .table thead {
+    @apply border-b border-slate-200 bg-slate-50/80;
+  }
+  .table th {
+    @apply px-4 py-3 text-xs font-semibold tracking-wide whitespace-nowrap text-slate-500 uppercase;
+  }
+  .table td {
+    @apply px-4 py-3 align-middle text-slate-700;
+  }
+  .table tbody {
+    @apply divide-y divide-slate-100;
+  }
+  .table tbody tr {
+    @apply transition-colors hover:bg-slate-50/70;
+  }
+
+  /* Progresso */
+  .progress {
+    @apply h-2 w-full overflow-hidden rounded-full bg-slate-100;
+  }
+  .progress-bar {
+    @apply h-full rounded-full transition-all;
+  }
+  .progress-brand {
+    @apply bg-brand-600;
+  }
+  .progress-green {
+    @apply bg-emerald-500;
+  }
+  .progress-yellow {
+    @apply bg-amber-500;
+  }
+  .progress-red {
+    @apply bg-red-500;
+  }
+
+  /* Avatar, alertas, abas, chips */
+  .avatar {
+    @apply inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700;
+  }
+  .alert {
+    @apply rounded-lg border px-4 py-3 text-sm;
+  }
+  .alert-info {
+    @apply border-sky-200 bg-sky-50 text-sky-900;
+  }
+  .alert-success {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-900;
+  }
+  .alert-warning {
+    @apply border-amber-200 bg-amber-50 text-amber-900;
+  }
+  .alert-danger {
+    @apply border-red-200 bg-red-50 text-red-900;
+  }
+  .tabs {
+    @apply flex gap-1 overflow-x-auto border-b border-slate-200;
+  }
+  .tab {
+    @apply -mb-px flex items-center gap-2 border-b-2 border-transparent px-3 py-2 text-sm font-medium whitespace-nowrap text-slate-500 transition-colors hover:text-slate-800;
+  }
+  .tab[aria-selected="true"],
+  .tab-active {
+    @apply border-brand-600 text-brand-700;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700;
+  }
+  .skeleton {
+    @apply animate-pulse rounded-md bg-slate-200/70;
+  }
+  .link {
+    @apply font-medium text-brand-600 hover:text-brand-700 hover:underline;
+  }
+
+  /* Menu lateral */
+  .nav-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white;
+  }
+  .nav-link svg {
+    @apply size-[18px] shrink-0;
+  }
+  .nav-link[aria-current="page"] {
+    @apply bg-brand-600 text-white shadow-sm;
+  }
+
+  /* Seleção múltipla (Alpine) */
+  .ms-panel {
+    @apply absolute z-50 mt-1 w-full min-w-56 rounded-lg border border-slate-200 bg-white shadow-lg;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) transparent;
+  }
+}
+
+/* Leaflet herda a fonte do sistema */
+.leaflet-container {
+  font: inherit;
+}
+
+/* Impressão: esconde o menu e a barra superior em páginas marcadas */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

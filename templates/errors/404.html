@@ -1,0 +1,11 @@
+{% extends base_layout|default:"layouts/public.html" %}
+{% block title %}Página não encontrada · E-Find{% endblock %}
+{% block content %}
+<div class="{% if base_layout == 'layouts/public.html' %}mx-auto max-w-3xl px-4 py-16{% endif %}">
+  <div class="card">
+    {% empty_state icon="search-x" title="Página não encontrada" description="O endereço acessado não existe ou você não tem acesso a ele." %}
+      <a href="/" class="btn btn-primary">Voltar ao início</a>
+    {% endempty_state %}
+  </div>
+</div>
+{% endblock %}

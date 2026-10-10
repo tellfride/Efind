@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% comment %}Layout das páginas públicas (landing, termos, privacidade, erros). Páginas preenchem {% block content %}.{% endcomment %}
+
+{% block body %}
+<div class="flex min-h-screen flex-col">
+  <header class="border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div class="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
+      <a href="/" aria-label="E-Find — início">{% include "components/logo.html" %}</a>
+      <nav class="flex items-center gap-3 text-sm">
+        {% if request.user.is_authenticated %}
+          <a href="{% if is_super_admin %}/super/{% else %}/painel/{% endif %}" class="btn btn-primary btn-sm">Ir para o painel</a>
+        {% else %}
+          <a href="/login/" class="btn btn-primary btn-sm">Entrar</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main class="flex-1">{% block content %}{% endblock %}</main>
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <p>© {% now "Y" %} E-Find · efind.com.br</p>
+      <p class="flex gap-4"><a class="hover:text-slate-800" href="/privacidade/">Privacidade</a><a class="hover:text-slate-800" href="/termos/">Termos de uso</a></p>
+    </div>
+  </footer>
+</div>
+{% endblock %}

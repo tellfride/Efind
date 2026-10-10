@@ -1,0 +1,44 @@
+{% comment %}Campos de dados do eleitor (nome, contato, endereço, título). `form` = VoterDataForm; respeita os grupos configurados.{% endcomment %}
+<div class="space-y-4">
+  {% field form.name %}
+  {% field form.phone %}
+  {% if form.show_email %}{% field form.email %}{% endif %}
+  {% if form.show_birth_date or form.show_gender %}
+  <div class="grid gap-4 sm:grid-cols-2">
+    {% if form.show_birth_date %}{% field form.birth_date %}{% endif %}
+    {% if form.show_gender %}{% field form.gender %}{% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% if form.show_address %}
+<fieldset class="mt-6 space-y-4 border-t border-slate-100 pt-5">
+  <legend class="sr-only">Endereço</legend>
+  <h3 class="text-sm font-semibold text-slate-900">Endereço</h3>
+  <div>
+    {% field form.cep %}
+    <p id="cep-status" class="field-hint mt-1 empty:hidden" aria-live="polite"></p>
+  </div>
+  {% field form.street %}
+  <div class="grid grid-cols-2 gap-4">
+    {% field form.number %}
+    {% field form.complement %}
+  </div>
+  {% field form.neighborhood %}
+  <div class="grid grid-cols-3 gap-4">
+    <div class="col-span-2">{% field form.city %}</div>
+    {% field form.state %}
+  </div>
+</fieldset>
+{% endif %}
+
+{% if form.show_electoral %}
+<fieldset class="mt-6 space-y-4 border-t border-slate-100 pt-5">
+  <legend class="sr-only">Título de eleitor</legend>
+  <h3 class="text-sm font-semibold text-slate-900">Título de eleitor</h3>
+  <div class="grid grid-cols-2 gap-4">
+    {% field form.electoral_zone %}
+    {% field form.electoral_section %}
+  </div>
+</fieldset>
+{% endif %}

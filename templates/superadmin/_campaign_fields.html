@@ -1,0 +1,14 @@
+{% comment %}Campos do candidato/campanha (criação e edição). Espera `form` (CampaignForm).{% endcomment %}
+{% if form.non_field_errors %}<div class="alert alert-danger mb-4" role="alert">{{ form.non_field_errors.0 }}</div>{% endif %}
+<div class="grid gap-4 sm:grid-cols-2">
+  {% field form.candidate_name %}
+  {% field form.ballot_name %}
+  {% field form.office %}
+  {% field form.ballot_number hint="Vereador e deputado estadual/distrital: 5 dígitos; deputado federal: 4; senador: 3; prefeito, governador e presidente: 2." %}
+  {% field form.party %}
+  {% field form.election_year %}
+  {% field form.city %}
+  {% field form.state %}
+  {% field form.primary_color %}
+  {% field form.voter_goal hint="Opcional. Aparece nos indicadores de progresso da campanha." %}
+</div>

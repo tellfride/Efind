@@ -1,0 +1,76 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Meu link / QR Code · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Meu link / QR Code" description="Todo eleitor que se cadastrar por aqui fica vinculado a você." %}
+  <a class="btn btn-outline" href="{% url 'voters:my_link_poster' %}" target="_blank" rel="noopener">{% icon "printer" %} Imprimir cartaz</a>
+{% endpage_header %}
+
+<div class="grid gap-6 lg:grid-cols-5">
+  <section class="card lg:col-span-3">
+    <div class="card-header">
+      <h2 class="card-title">Seu link de cadastro</h2>
+      <p class="card-description">Mostre o QR Code no celular ou imprima, e envie o link pelo WhatsApp.</p>
+    </div>
+    <div class="card-body space-y-5">
+      <div class="mx-auto w-full max-w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <img src="{{ qr_data_url }}" alt="QR Code do seu link de cadastro" class="aspect-square w-full" width="256" height="256">
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="label" for="my-link-url">Link</label>
+        <input id="my-link-url" class="input" readonly value="{{ link }}" onclick="this.select()">
+        <p class="field-hint">Quem abrir este endereço vê o formulário da campanha e é cadastrado como sua indicação.</p>
+      </div>
+
+      <div class="grid gap-2 sm:grid-cols-2">
+        <button type="button" class="btn btn-outline" data-copy="{{ link }}">{% icon "copy" %} Copiar link</button>
+        <a class="btn btn-whatsapp" href="{{ share_url }}" target="_blank" rel="noopener noreferrer">{% icon "message-circle" %} Enviar pelo WhatsApp</a>
+        <a class="btn btn-outline" href="{{ qr_data_url }}" download="{{ qr_filename }}">{% icon "download" %} Baixar QR Code (PNG)</a>
+        <a class="btn btn-outline" href="{% url 'voters:my_link_poster' %}" target="_blank" rel="noopener">{% icon "printer" %} Imprimir cartaz</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="space-y-6 lg:col-span-2">
+    <section>
+      <h2 class="mb-3 text-base font-semibold text-slate-900">Seus cadastros</h2>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="card px-2 py-4 text-center"><p class="text-2xl font-bold tracking-tight text-slate-900 tabular-nums">{{ stats.today|num }}</p><p class="mt-0.5 text-xs font-medium text-slate-500">Hoje</p></div>
+        <div class="card px-2 py-4 text-center"><p class="text-2xl font-bold tracking-tight text-slate-900 tabular-nums">{{ stats.week|num }}</p><p class="mt-0.5 text-xs font-medium text-slate-500">Últimos 7 dias</p></div>
+        <div class="card px-2 py-4 text-center"><p class="text-2xl font-bold tracking-tight text-slate-900 tabular-nums">{{ stats.total|num }}</p><p class="mt-0.5 text-xs font-medium text-slate-500">Total</p></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Meta de cadastros</h2></div>
+      <div class="card-body space-y-2 text-sm">
+        {% if goal %}
+          <p class="flex items-baseline justify-between"><span class="text-slate-600"><strong class="text-slate-900">{{ stats.total|num }}</strong> de {{ goal|num }}</span><span class="font-semibold text-slate-900">{{ goal_pct }}%</span></p>
+          {% progress stats.total goal "green" %}
+          {% if stats.total >= goal %}<p class="text-emerald-700">Meta alcançada. Parabéns!</p>{% else %}<p class="text-slate-500">Faltam {{ goal_remaining|num }} cadastro{{ goal_remaining|pluralize }} para a meta.</p>{% endif %}
+        {% else %}
+          <p class="text-slate-500">Você ainda não tem uma meta definida. Fale com o seu coordenador.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if can_list %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Últimos cadastros</h2></div>
+      {% if recent %}
+      <ul class="divide-y divide-slate-100">
+        {% for r in recent %}
+        <li class="flex items-center justify-between gap-3 px-6 py-3 text-sm">
+          <div class="min-w-0"><p class="truncate font-medium text-slate-900">{{ r.name }}</p><p class="truncate text-slate-500">{{ r.neighborhood|default:"Sem bairro" }}</p></div>
+          <span class="shrink-0 text-xs text-slate-400">{{ r.created_at|brdate }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="card-body text-sm text-slate-500">Quando alguém se cadastrar pelo seu link, aparece aqui.</p>
+      {% endif %}
+    </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}Novo membro · Equipe · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Novo membro da equipe" description="Cadastre um membro e libere o acesso dele ao painel." %}
+  <a class="btn btn-outline" href="{% url 'team:list' %}">{% icon "arrow-left" %} Voltar</a>
+{% endpage_header %}
+
+<form method="post" class="mx-auto max-w-3xl" x-data="memberForm(JSON.parse(document.getElementById('member-form-config').textContent))">
+  {% csrf_token %}
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">Dados do membro</h2>
+      <p class="card-description">
+        {% if is_admin %}O e-mail é o login do membro e precisa ser único no E-Find.{% else %}O novo membro entra como <strong>cabo eleitoral</strong> abaixo de você e vê apenas os eleitores que cadastrar.{% endif %}
+      </p>
+    </div>
+    <div class="card-body space-y-4">
+      {% include "team/_member_fields.html" %}
+      {% if not is_admin %}
+      {% alert "info" %}O acesso, o link de cadastro e a rede deste cabo ficam vinculados a você automaticamente.{% endalert %}
+      {% endif %}
+      {% alert "info" %}Depois de salvar, mostramos o e-mail e a senha provisória <strong>uma única vez</strong>, com um botão para enviar tudo por WhatsApp.{% endalert %}
+    </div>
+    <div class="card-footer flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <a class="btn btn-outline" href="{% url 'team:list' %}">Cancelar</a>
+      <button type="submit" class="btn btn-primary">{% icon "user-plus" %} Cadastrar membro</button>
+    </div>
+  </section>
+</form>
+{{ form_config|json_script:"member-form-config" }}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/team/member-form.js' %}"></script>{% endblock %}

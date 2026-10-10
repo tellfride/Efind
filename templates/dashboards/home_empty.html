@@ -1,0 +1,21 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Início · E-Find{% endblock %}
+
+{% block content %}
+{% page_header title="Início" description="Os dashboards mostram os números da campanha, inclusive os cadastros de cada cabo eleitoral." %}{% endpage_header %}
+
+<section class="card">
+  {% if can_create_defaults %}
+    {% empty_state icon="layout-grid" title="Sua campanha ainda não tem dashboards" description="Crie os dashboards padrão: visão geral com o ranking de cadastros por cabo eleitoral, desempenho da equipe, território e comunicação. Depois você pode personalizar cada um." %}
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <form method="post" action="{% url 'dashboards:create_defaults' %}">{% csrf_token %}<button type="submit" class="btn btn-primary">{% icon "wand-sparkles" %} Criar dashboards padrão</button></form>
+        {% if can_create %}<a class="btn btn-outline" href="{% url 'dashboards:create' %}">{% icon "plus" %} Começar em branco</a>{% endif %}
+      </div>
+    {% endempty_state %}
+  {% else %}
+    {% empty_state icon="layout-grid" title="Você ainda não tem um dashboard" description="Os dashboards existentes pertencem a outras pessoas. Crie o seu para acompanhar os cadastros da campanha, inclusive os de cada cabo eleitoral." %}
+      {% if can_create %}<a class="btn btn-primary" href="{% url 'dashboards:create' %}">{% icon "plus" %} Novo dashboard</a>{% endif %}
+    {% endempty_state %}
+  {% endif %}
+</section>
+{% endblock %}

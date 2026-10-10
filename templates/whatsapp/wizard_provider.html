@@ -1,0 +1,41 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Nova conexão · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Nova conexão" description="Escolha como o E-Find vai se conectar ao WhatsApp." %}
+  <a class="btn btn-outline" href="{% url 'whatsapp:connections' %}">{% icon "arrow-left" %} Voltar</a>
+{% endpage_header %}
+
+{% include "whatsapp/_steps.html" %}
+
+<div class="mb-6">{% include "whatsapp/_compliance.html" with compact=True %}</div>
+
+<h2 class="mb-3 text-base font-semibold text-slate-900">1. Escolha o provedor</h2>
+<div class="grid gap-4 md:grid-cols-2">
+  {% for p in providers %}
+  <article class="card flex flex-col {% if not p.official %}border-dashed{% endif %}">
+    <div class="card-body flex-1 space-y-3">
+      <div class="flex items-start gap-3">
+        <span class="flex size-10 shrink-0 items-center justify-center rounded-lg {% if p.official %}bg-emerald-50 text-emerald-600{% else %}bg-amber-50 text-amber-600{% endif %}">{% icon p.icon "size-5" %}</span>
+        <div class="min-w-0">
+          <h3 class="font-semibold text-slate-900">{{ p.label }}</h3>
+          <div class="mt-1 flex flex-wrap gap-1.5">
+            {% if p.official %}{% badge "Oficial" "green" %}{% else %}{% badge "Simulador" "yellow" %}{% endif %}
+            {% if p.requires_template %}{% badge "Exige templates aprovados" "gray" %}{% endif %}
+          </div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600">{{ p.description }}</p>
+      {% if not p.official %}
+      <p class="text-xs font-medium text-amber-700">Nenhuma mensagem real é enviada: use para treinar a equipe e testar disparos.</p>
+      {% endif %}
+    </div>
+    <div class="card-footer flex flex-wrap items-center justify-between gap-2">
+      {% if p.docs_url %}
+      <a class="link inline-flex items-center gap-1 text-sm" href="{{ p.docs_url }}" target="_blank" rel="noopener noreferrer">{% icon "external-link" "size-4" %} Documentação</a>
+      {% else %}<span></span>{% endif %}
+      <a class="btn btn-primary btn-sm" href="{% url 'whatsapp:connection_new' %}?provider={{ p.key }}">Escolher {% icon "arrow-right" %}</a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}

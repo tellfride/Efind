@@ -1,0 +1,10 @@
+layout-dashboard chart-column chart-line chart-pie chart-bar users users-round user user-round user-plus user-check user-x user-cog
+qr-code map map-pin map-pinned send message-square message-square-text message-circle plug-zap settings history key-round
+shield-check shield-off shield-alert log-out menu x chevron-down chevron-up chevron-left chevron-right chevrons-up-down
+search filter sliders-horizontal rotate-ccw plus minus pencil trash-2 copy check circle-check circle-x circle-alert triangle-alert info
+eye eye-off download upload file-text file-spreadsheet printer share-2 link external-link phone mail calendar clock target trophy medal award
+flame trending-up trending-down arrow-up arrow-down arrow-right arrow-left grip-vertical layers flag building-2 vote megaphone bell
+loader-circle refresh-cw play pause square ban hash tag tags building globe lock unlock smartphone scan-line badge-check handshake
+id-card clipboard-list list layout-grid table columns-3 ellipsis ellipsis-vertical star zap construction search-x inbox file-warning
+database server sparkles house cake venus-and-mars map-pinned crosshair navigation locate-fixed save undo-2 package archive
+wand-sparkles message-square-plus message-square-warning phone-call circle-dot circle-help list-checks gauge activity bot

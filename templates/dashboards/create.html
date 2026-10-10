@@ -1,0 +1,54 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Novo dashboard · E-Find{% endblock %}
+
+{% block content %}
+{% page_header title="Novo dashboard" description="Dê um nome e escolha um ponto de partida. Depois você adiciona, reordena e configura os widgets." %}
+  <a class="btn btn-ghost" href="{% url 'dashboards:list' %}">{% icon "arrow-left" %} Voltar</a>
+{% endpage_header %}
+
+<form method="post" class="mx-auto max-w-3xl space-y-6" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+  <section class="card">
+    <div class="card-body space-y-4">
+      {% field form.name %}
+      {% field form.description %}
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="dash-preset-title">
+    <div class="card-header">
+      <h2 id="dash-preset-title" class="card-title">Ponto de partida</h2>
+      <p class="card-description">Os modelos já vêm com widgets prontos; todos podem ser alterados depois.</p>
+    </div>
+    <div class="card-body">
+      <div class="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-labelledby="dash-preset-title">
+        {% for p in presets %}
+          <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/50 has-[:checked]:ring-2 has-[:checked]:ring-brand-500/20 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500">
+            <input type="radio" name="preset" value="{{ p.key }}" class="mt-1 accent-brand-600" {% if selected_preset == p.key %}checked{% endif %}>
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold text-slate-900">{{ p.name }}</span>
+              <span class="mt-0.5 block text-xs text-slate-500">{{ p.description }}</span>
+              <span class="mt-2 block text-xs font-medium text-brand-700">{{ p.widget_count }} widget{{ p.widget_count|pluralize }}</span>
+            </span>
+          </label>
+        {% endfor %}
+        <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-dashed border-slate-300 bg-white p-4 transition hover:border-brand-300 has-[:checked]:border-solid has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/50 has-[:checked]:ring-2 has-[:checked]:ring-brand-500/20 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500">
+          <input type="radio" name="preset" value="blank" class="mt-1 accent-brand-600" {% if selected_preset == "blank" %}checked{% endif %}>
+          <span class="min-w-0">
+            <span class="block text-sm font-semibold text-slate-900">Em branco</span>
+            <span class="mt-0.5 block text-xs text-slate-500">Comece sem widgets e escolha tudo do zero.</span>
+            <span class="mt-2 block text-xs font-medium text-slate-500">0 widgets</span>
+          </span>
+        </label>
+      </div>
+      {% if form.preset.errors %}<p class="field-error">{{ form.preset.errors.0 }}</p>{% endif %}
+    </div>
+    <div class="card-footer">
+      <a class="btn btn-outline" href="{% url 'dashboards:list' %}">Cancelar</a>
+      <button type="submit" class="btn btn-primary">{% icon "plus" %} Criar e personalizar</button>
+    </div>
+  </section>
+</form>
+{% endblock %}

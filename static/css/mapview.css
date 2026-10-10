@@ -1,0 +1,229 @@
+/* Mapa territorial (Leaflet) — estilos específicos do módulo. Cores em hex (paleta da marca) para não depender
+   de variáveis do Tailwind. Escopo: .efind-map e classes .mv-* / .map-seg. */
+
+/* Área do mapa: pelo menos 60% da altura da tela (mais alto no desktop) */
+.efind-map-area {
+  height: 60vh;
+  min-height: 60vh;
+}
+@media (min-width: 1024px) {
+  .efind-map-area {
+    height: 70vh;
+  }
+}
+
+.efind-map.leaflet-container {
+  background: #e2e8f0;
+  font: inherit;
+}
+
+/* Popups */
+.efind-map .leaflet-popup-content-wrapper {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgb(15 23 42 / 0.2), 0 4px 6px -4px rgb(15 23 42 / 0.1);
+}
+.efind-map .leaflet-popup-content {
+  margin: 12px 14px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #0f172a;
+}
+.efind-map .leaflet-popup-content p {
+  margin: 0;
+}
+.efind-map .leaflet-tooltip {
+  border-radius: 0.5rem;
+  border-color: #e2e8f0;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0f172a;
+  box-shadow: 0 4px 10px -2px rgb(15 23 42 / 0.15);
+}
+
+/* Conteúdo dos popups (montado pelo JavaScript com nós DOM) */
+.mv-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.mv-popup-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+.mv-popup-sub {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+.mv-popup-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  font-size: 0.75rem;
+}
+.mv-popup-grid dt {
+  color: #64748b;
+}
+.mv-popup-grid dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+.mv-popup-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.mv-popup-list {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+}
+.mv-popup-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1px 0;
+}
+.mv-popup-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #334155;
+}
+.mv-popup-num {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+
+/* Links dentro de popups: o Leaflet força azul em ".leaflet-container a" */
+.efind-map a.efind-map-link {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4f46e5;
+  text-decoration: none;
+}
+.efind-map a.efind-map-link:hover {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
+/* Ponto individual (L.divIcon — sem as imagens padrão do Leaflet) */
+.efind-point {
+  border-radius: 9999px;
+  background: #4f46e5;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgb(79 70 229 / 0.45), 0 1px 3px rgb(15 23 42 / 0.3);
+}
+
+/* Agrupamentos do markercluster na cor da marca */
+.efind-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgb(99 102 241 / 0.25);
+}
+.efind-cluster > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+  border-radius: 9999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.efind-cluster-sm > span {
+  background: #818cf8;
+}
+.efind-cluster-md > span {
+  background: #4f46e5;
+}
+.efind-cluster-lg {
+  background: rgb(49 46 129 / 0.25);
+}
+.efind-cluster-lg > span {
+  background: #312e81;
+}
+
+/* Controle segmentado (modo de visualização e mapa base) */
+.map-seg {
+  display: inline-flex;
+  gap: 2px;
+  border-radius: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.25rem;
+}
+.map-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.25rem;
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #475569;
+  transition: background-color 0.15s, color 0.15s;
+}
+.map-seg-btn:hover {
+  color: #0f172a;
+}
+.map-seg-btn[aria-checked="true"] {
+  background: #fff;
+  color: #4338ca;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.1);
+}
+.map-seg-btn:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 1px;
+}
+.map-seg-btn svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Legenda sobre o mapa */
+.map-legend {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 1.75rem;
+  z-index: 1000;
+  max-width: calc(100% - 1.5rem);
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: rgb(255 255 255 / 0.95);
+  font-size: 0.75rem;
+  box-shadow: 0 4px 10px -2px rgb(15 23 42 / 0.15);
+}
+.map-legend-swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  box-shadow: inset 0 0 0 1px rgb(15 23 42 / 0.2);
+}
+
+/* Respeita a preferência por menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .map-seg-btn {
+    transition: none;
+  }
+}

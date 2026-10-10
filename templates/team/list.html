@@ -1,0 +1,180 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Equipe · E-Find{% endblock %}
+{% block content %}
+{% page_header title="Equipe" description="Administradores, coordenadores e cabos eleitorais da campanha, com o desempenho de cada um." %}
+  {% if request.user.role == "ADMIN" %}<a class="btn btn-outline" href="{% url 'team:permissions' %}">{% icon "key-round" %} Permissões</a>{% endif %}
+  {% if can_create %}<a class="btn btn-primary" href="{% url 'team:create' %}">{% icon "user-plus" %} Novo membro</a>{% endif %}
+{% endpage_header %}
+
+<div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+  {% stat_card "Membros da equipe" summary.total icon="users" tone="brand" hint=roles_hint %}
+  {% stat_card "Membros ativos" summary.active icon="user-check" tone="green" hint=inactive_hint %}
+  {% stat_card "Eleitores cadastrados" summary.voters|num icon="users-round" tone="blue" hint="pela equipe visível" %}
+  {% stat_card "Sem cadastros em 7 dias" summary.idle_7d icon="clock" tone="yellow" hint="coordenadores e cabos ativos" %}
+</div>
+
+<div x-data="{ view: '{{ initial_view }}' }">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="tabs" role="tablist" aria-label="Visualização da equipe">
+      <button type="button" class="tab" role="tab" :aria-selected="view === 'hierarquia'" @click="view = 'hierarquia'">{% icon "layers" %} Hierarquia</button>
+      <button type="button" class="tab" role="tab" :aria-selected="view === 'lista'" @click="view = 'lista'">{% icon "list" %} Lista</button>
+    </div>
+    <div x-cloak x-show="view === 'hierarquia'" class="flex gap-2">
+      <button type="button" class="btn btn-ghost btn-sm" @click="$dispatch('team-tree', true)">Expandir tudo</button>
+      <button type="button" class="btn btn-ghost btn-sm" @click="$dispatch('team-tree', false)">Recolher tudo</button>
+    </div>
+  </div>
+
+  {# ---------------------------------------------------------------- Hierarquia #}
+  <section x-show="view === 'hierarquia'" {% if initial_view != "hierarquia" %}x-cloak{% endif %} aria-label="Hierarquia da equipe">
+    {% if tree %}
+    <ul class="space-y-2">
+      {% for node in tree %}{% include "team/_tree_node.html" %}{% endfor %}
+    </ul>
+    {% if summary.total == 1 and can_create %}
+    <div class="mt-4">{% alert "info" %}Sua equipe ainda está vazia. <a class="link" href="{% url 'team:create' %}">Cadastre o primeiro membro</a> para começar a distribuir metas e links de cadastro.{% endalert %}</div>
+    {% endif %}
+    {% else %}
+    <div class="card">{% empty_state icon="users" title="Nenhum membro na equipe" description="Quando houver membros, a hierarquia aparece aqui." %}{% endempty_state %}</div>
+    {% endif %}
+  </section>
+
+  {# ---------------------------------------------------------------- Lista #}
+  <section x-show="view === 'lista'" {% if initial_view != "lista" %}x-cloak{% endif %} aria-label="Lista da equipe">
+    <form method="get" class="card mb-4">
+      <div class="card-body grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <div class="sm:col-span-2 lg:col-span-2">
+          <label for="f-q" class="label">Buscar</label>
+          <input id="f-q" name="q" type="search" class="input" value="{{ filters.q }}" placeholder="Nome, e-mail, telefone ou região" maxlength="100">
+        </div>
+        <div>
+          <label for="f-papel" class="label">Papel</label>
+          <select id="f-papel" name="papel" class="select">
+            <option value="">Todos os papéis</option>
+            {% for value, label in role_choices %}<option value="{{ value }}" {% if filters.role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        {% if show_coordinator_filter %}
+        <div>
+          <label for="f-coord" class="label">Coordenador</label>
+          <select id="f-coord" name="coord" class="select">
+            <option value="">Todos</option>
+            {% for c in coordinators %}<option value="{{ c.id }}" {% if filters.coordinator == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <div>
+          <label for="f-status" class="label">Status</label>
+          <select id="f-status" name="status" class="select">
+            {% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="f-ordem" class="label">Ordenar por</label>
+          <select id="f-ordem" name="ordem" class="select">
+            {% for value, label in sort_choices %}<option value="{{ value }}" {% if filters.sort == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="card-footer flex flex-wrap items-center justify-between gap-2">
+        <p class="text-sm text-slate-500">{{ total_filtered|num }} membro{{ total_filtered|pluralize }} {% if filters.active_count %}com os filtros aplicados{% endif %}</p>
+        <div class="flex gap-2">
+          {% if filters.active_count %}<a class="btn btn-ghost" href="?vista=lista">Limpar</a>{% endif %}
+          <button type="submit" class="btn btn-primary">{% icon "search" %} Filtrar</button>
+        </div>
+      </div>
+    </form>
+
+    {% if page_obj.paginator.count %}
+    {# Celular: cartões #}
+    <ul class="space-y-3 md:hidden">
+      {% for r in page_obj %}
+      <li class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm {% if not r.is_active %}opacity-60{% endif %}">
+        <div class="flex items-start gap-3">
+          {% avatar r.name %}
+          <div class="min-w-0 flex-1">
+            <a class="link block truncate" href="{% url 'team:detail' r.id %}">{{ r.name }}</a>
+            <div class="mt-1 flex flex-wrap items-center gap-1.5">
+              {% badge r.role_label r.role_tone %}
+              {% if r.is_active %}{% badge "Ativo" "green" %}{% else %}{% badge "Inativo" "gray" %}{% endif %}
+              {% if r.is_self %}<span class="text-xs text-slate-500">(você)</span>{% endif %}
+            </div>
+            {% if r.parent_name and r.role == "CABO" %}<p class="mt-1 text-xs text-slate-500">Responsável: {{ r.parent_name }}</p>{% endif %}
+          </div>
+          <div class="shrink-0 text-right">
+            <p class="text-lg leading-tight font-bold tabular-nums">{{ r.voters_total|num }}</p>
+            <p class="text-[11px] text-slate-500">{{ r.voters_7d|num }} em 7 dias</p>
+          </div>
+        </div>
+        {% if r.goal %}
+        <div class="mt-3 flex items-center gap-2">
+          <div class="min-w-0 flex-1">{% progress r.voters_total r.goal r.goal_tone %}</div>
+          <span class="shrink-0 text-xs tabular-nums text-slate-600">{{ r.goal_percent|pct:0 }} de {{ r.goal|num }}</span>
+        </div>
+        {% endif %}
+        <p class="mt-2 text-xs text-slate-500">{% if r.phone %}{{ r.phone|phone }} · {% endif %}Último acesso: {{ r.last_login|brdatetime }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+
+    {# Telas maiores: tabela #}
+    <div class="card hidden md:block">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Nome</th>
+              <th scope="col">Papel</th>
+              <th scope="col">Coordenador</th>
+              <th scope="col">Telefone</th>
+              <th scope="col" class="text-right"><a class="inline-flex items-center gap-1 hover:text-slate-800" href="{% if filters.sort == 'eleitores' %}{% qs ordem='menos' page=None vista='lista' %}{% else %}{% qs ordem='eleitores' page=None vista='lista' %}{% endif %}" title="Ordenar por eleitores">Eleitores {% icon "chevrons-up-down" "size-3" %}</a></th>
+              <th scope="col" class="text-right">7 dias</th>
+              <th scope="col" class="min-w-40">Meta</th>
+              <th scope="col">Último acesso</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in page_obj %}
+            <tr class="{% if not r.is_active %}opacity-60{% endif %}">
+              <td>
+                <div class="flex items-center gap-3">
+                  {% avatar r.name %}
+                  <div class="min-w-0">
+                    <a class="link block max-w-56 truncate" href="{% url 'team:detail' r.id %}">{{ r.name }}{% if r.is_self %} <span class="font-normal text-slate-500">(você)</span>{% endif %}</a>
+                    <span class="block max-w-56 truncate text-xs text-slate-500">{{ r.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{% badge r.role_label r.role_tone %}</td>
+              <td class="whitespace-nowrap">{% if r.role == "CABO" and r.parent_name %}{{ r.parent_name }}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+              <td class="whitespace-nowrap">{% if r.phone %}{{ r.phone|phone }}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+              <td class="text-right font-semibold tabular-nums">{{ r.voters_total|num }}</td>
+              <td class="text-right tabular-nums">{{ r.voters_7d|num }}</td>
+              <td>
+                {% if r.goal %}
+                <div class="flex items-center gap-2">
+                  <div class="w-20 shrink-0">{% progress r.voters_total r.goal r.goal_tone %}</div>
+                  <span class="text-xs tabular-nums text-slate-600">{{ r.goal_percent|pct:0 }}</span>
+                </div>
+                {% else %}<span class="text-slate-400">Sem meta</span>{% endif %}
+              </td>
+              <td class="whitespace-nowrap">{{ r.last_login|brdatetime }}</td>
+              <td>{% if r.is_active %}{% badge "Ativo" "green" %}{% else %}{% badge "Inativo" "gray" %}{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% pagination page_obj %}
+    {% else %}
+    <div class="card">
+      {% empty_state icon="search-x" title="Nenhum membro encontrado" description="Nenhum membro corresponde aos filtros escolhidos." %}
+        <a class="btn btn-outline" href="?vista=lista">Limpar filtros</a>
+      {% endempty_state %}
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

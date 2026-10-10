@@ -1,0 +1,11 @@
+{# Maquete de celular com conversa do WhatsApp. O JS (EFindWA.showChat) preenche o elemento x-ref="{{ ref }}". #}
+<div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-3xl border-4 border-slate-800 bg-slate-800 shadow-lg">
+  <div class="flex items-center gap-2 bg-whatsapp-dark px-3 py-2 text-white">
+    <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-semibold" aria-hidden="true">{{ campaign.ballot_name|initials }}</span>
+    <div class="min-w-0">
+      <p class="truncate text-sm leading-tight font-medium">{{ campaign.ballot_name }}</p>
+      <p class="text-[11px] leading-tight text-white/70">conta comercial</p>
+    </div>
+  </div>
+  <div x-ref="{{ ref }}" class="max-h-[26rem] min-h-64 space-y-2 overflow-y-auto bg-whatsapp-bg p-3" aria-live="polite" aria-label="Pré-visualização da mensagem"></div>
+</div>

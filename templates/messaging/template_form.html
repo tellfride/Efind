@@ -1,0 +1,141 @@
+{% extends "layouts/shell.html" %}
+{% load static %}
+{% block title %}{{ page_title }} · E-Find{% endblock %}
+{% block content %}
+{% page_header title=page_title description="Escreva o texto com variáveis e veja ao lado como o eleitor vai receber." %}
+  <a class="btn btn-outline" href="{{ list_url }}">{% icon "arrow-left" %} Voltar</a>
+{% endpage_header %}
+
+{% if read_only %}{% alert "info" %}Você pode ver este modelo, mas não tem permissão para editá-lo.{% endalert %}<div class="h-4"></div>{% endif %}
+
+{{ editor_config|json_script:"editor-config" }}
+<form method="post" x-data='templateEditor(JSON.parse(document.getElementById("editor-config").textContent))' class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+  {% csrf_token %}
+  <div class="min-w-0 space-y-6">
+    {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Identificação</h2></div>
+      <div class="card-body space-y-4">
+        {% field form.name %}
+        <div class="grid gap-4 sm:grid-cols-2">
+          {% field form.category %}
+          {% field form.type %}
+        </div>
+        <div x-show="kind !== 'TEXT'" x-cloak>
+          {% field form.media_url %}
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Mensagem</h2>
+        <p class="card-description">Clique em uma variável para inseri-la onde está o cursor. Cada eleitor recebe o texto com os próprios dados.</p>
+      </div>
+      <div class="card-body space-y-4">
+        {% if not read_only %}
+        <div class="flex flex-wrap items-center gap-1.5" role="toolbar" aria-label="Formatação">
+          <button type="button" class="btn btn-outline btn-sm" @click="wrap('*')" title="Negrito: *texto*" aria-label="Negrito"><span class="font-bold">B</span></button>
+          <button type="button" class="btn btn-outline btn-sm" @click="wrap('_')" title="Itálico: _texto_" aria-label="Itálico"><span class="italic">I</span></button>
+          <button type="button" class="btn btn-outline btn-sm" @click="wrap('~')" title="Tachado: ~texto~" aria-label="Tachado"><span class="line-through">S</span></button>
+        </div>
+        <div>
+          <p class="label mb-1.5">Variáveis</p>
+          <div class="flex flex-wrap gap-1.5">
+            <template x-for="v in variables" :key="v.key">
+              <button type="button" class="chip cursor-pointer transition-colors hover:bg-brand-50 hover:text-brand-700" :title="v.label" @click="insertVariable(v.key)" x-text="token(v.key)"></button>
+            </template>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="space-y-1.5">
+          <label for="{{ form.body.id_for_label }}" class="label">{{ form.body.label }}<span class="ml-0.5 text-red-500">*</span></label>
+          {{ form.body }}
+          <div class="flex items-center justify-between gap-3 text-xs">
+            {% if form.body.errors %}<p class="field-error" role="alert">{{ form.body.errors.0 }}</p>{% else %}<p class="field-hint">Use *negrito*, _itálico_ e ~tachado~ como no WhatsApp.</p>{% endif %}
+            <span class="shrink-0 tabular-nums" :class="overLimit ? 'font-semibold text-red-600' : (nearLimit ? 'text-amber-600' : 'text-slate-500')" x-text="length + ' / ' + bodyMax"></span>
+          </div>
+        </div>
+
+        <div x-show="unknown.length > 0" x-cloak class="alert alert-warning" role="status">
+          <p class="font-semibold">Variáveis desconhecidas</p>
+          <p class="mt-1 text-sm"><span x-text="unknownText"></span> não existem e serão enviadas vazias. Use apenas as variáveis listadas acima.</p>
+        </div>
+        <div x-show="missingOptOut" x-cloak class="alert alert-warning flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" role="status">
+          <div>
+            <p class="font-semibold">Falta a instrução de descadastro</p>
+            <p class="mt-1 text-sm">Toda mensagem deve explicar como deixar de receber (por exemplo, responder SAIR). Isso protege o eleitor e a campanha.</p>
+          </div>
+          {% if not read_only %}<button type="button" class="btn btn-outline btn-sm shrink-0" @click="addOptOut()">{% icon "plus" %} Adicionar instrução de descadastro</button>{% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">API oficial (Meta / 360dialog / Twilio)</h2>
+        <p class="card-description">Opcional para o Simulador; obrigatório para enviar pela API oficial.</p>
+      </div>
+      <div class="card-body space-y-4">
+        {% alert "info" %}
+          Pela API oficial, mensagens iniciadas pela campanha só podem ser enviadas com um <strong>template aprovado</strong> pelo provedor. Cadastre o template no painel do provedor e informe aqui o nome exato (ou o ContentSid <code>HX…</code> da Twilio). O texto acima é usado na pré-visualização e no Simulador.
+        {% endalert %}
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div class="sm:col-span-2">{% field form.provider_template_name %}</div>
+          {% field form.provider_template_language %}
+        </div>
+
+        <div class="space-y-2">
+          <div>
+            <p class="label">Parâmetros do template</p>
+            <p class="field-hint">Na ordem em que aparecem no template aprovado: o primeiro valor vai em {% templatetag openvariable %}1{% templatetag closevariable %}, o segundo em {% templatetag openvariable %}2{% templatetag closevariable %}, e assim por diante.</p>
+          </div>
+          <p x-show="rows.length === 0" class="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-center text-sm text-slate-500">Nenhum parâmetro. Adicione se o template aprovado usa variáveis.</p>
+          <template x-for="(row, i) in rows" :key="i">
+            <div class="flex items-center gap-2">
+              <span class="w-12 shrink-0 rounded-md bg-slate-100 px-2 py-2 text-center font-mono text-xs text-slate-600" x-text="placeholder(i)"></span>
+              <select name="provider_variables" class="select min-w-0 flex-1" x-model="rows[i]" :disabled="readOnly" :aria-label="'Valor do parâmetro ' + (i + 1)">
+                {% for v in variables %}<option value="{{ v.key }}">{{ v.label }}</option>{% endfor %}
+              </select>
+              <template x-if="!readOnly">
+                <div class="flex shrink-0 items-center">
+                  <button type="button" class="btn btn-ghost btn-icon btn-sm" @click="moveRow(i, -1)" :disabled="i === 0" aria-label="Mover para cima">{% icon "arrow-up" %}</button>
+                  <button type="button" class="btn btn-ghost btn-icon btn-sm" @click="moveRow(i, 1)" :disabled="i === rows.length - 1" aria-label="Mover para baixo">{% icon "arrow-down" %}</button>
+                  <button type="button" class="btn btn-ghost btn-icon btn-sm" @click="removeRow(i)" aria-label="Remover parâmetro">{% icon "trash-2" "size-4 text-red-600" %}</button>
+                </div>
+              </template>
+            </div>
+          </template>
+          {% if form.provider_variables.errors %}<p class="field-error" role="alert">{{ form.provider_variables.errors.0 }}</p>{% endif %}
+          {% if not read_only %}<button type="button" class="btn btn-outline btn-sm" @click="addRow()" :disabled="rows.length >= 20">{% icon "plus" %} Adicionar parâmetro</button>{% endif %}
+        </div>
+      </div>
+    </section>
+
+    {% if not read_only %}
+    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <a class="btn btn-outline" href="{{ list_url }}">Cancelar</a>
+      <button type="submit" class="btn btn-primary" :disabled="overLimit">{% icon "save" %} Salvar modelo</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <aside class="min-w-0 lg:sticky lg:top-24 lg:self-start">
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Pré-visualização</h2>
+        <p class="card-description">Com dados de exemplo (Maria, Centro, Dr. João...).</p>
+      </div>
+      <div class="card-body">
+        {% include "messaging/_phone_mock.html" with ref="preview" %}
+      </div>
+    </section>
+  </aside>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/messaging/whatsapp-format.js' %}"></script>
+<script src="{% static 'js/messaging/template-editor.js' %}"></script>
+{% endblock %}

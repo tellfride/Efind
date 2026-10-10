@@ -1,0 +1,106 @@
+<form method="get" action="{{ action }}" class="card p-4" x-data="{ expanded: {{ expanded|yesno:'true,false' }} }">
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    {% if singles.q %}
+    <div class="space-y-1.5">
+      <label for="vf-q" class="label">Buscar</label>
+      <input id="vf-q" type="search" name="q" value="{{ filters.q|default:'' }}" class="input" placeholder="Nome, telefone ou e-mail">
+    </div>
+    {% endif %}
+
+    {% for m in multi %}
+    <div class="space-y-1.5" {% if not m.primary %}x-show="expanded" x-cloak{% endif %}>
+      <label class="label">{{ m.label }}</label>
+      <div x-data="multiSelect({{ m.json }})" @click.outside="open = false" @keydown.escape="open = false" class="relative">
+        <template x-for="v in selected" :key="v"><input type="hidden" :name="name" :value="v"></template>
+        <button type="button" @click="open = !open" class="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-left text-sm shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none" :aria-expanded="open" aria-haspopup="listbox">
+          <span class="flex min-w-0 flex-1 flex-wrap gap-1">
+            <span x-show="selected.length === 0" class="text-slate-400" x-text="placeholder"></span>
+            <template x-for="v in selected.slice(0, 3)" :key="v"><span class="inline-flex max-w-full items-center rounded bg-brand-50 px-1.5 py-0.5 text-xs text-brand-700"><span class="truncate" x-text="labelOf(v)"></span></span></template>
+            <span x-show="selected.length > 3" class="text-xs text-slate-500" x-text="'+' + (selected.length - 3)"></span>
+          </span>
+          {% icon "chevron-down" "size-4 shrink-0 text-slate-400" %}
+        </button>
+        <div x-cloak x-show="open" class="ms-panel">
+          <div class="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
+            {% icon "search" "size-4 text-slate-400" %}
+            <input type="text" x-model="query" :placeholder="searchPlaceholder" class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" @keydown.enter.prevent>
+          </div>
+          <ul class="max-h-64 overflow-y-auto py-1 scrollbar-thin" role="listbox" aria-multiselectable="true">
+            <li x-show="filtered.length === 0" class="px-3 py-2 text-sm text-slate-500">Nenhuma opção</li>
+            <template x-for="o in filtered" :key="o.value">
+              <li>
+                <button type="button" role="option" :aria-selected="isOn(o.value)" @click="toggle(o.value)" class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-slate-50">
+                  <span class="flex size-4 shrink-0 items-center justify-center rounded border" :class="isOn(o.value) ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-300'">
+                    <svg x-show="isOn(o.value)" viewBox="0 0 24 24" class="size-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  </span>
+                  <span class="min-w-0 flex-1"><span class="block truncate text-slate-800" x-text="o.label"></span><span x-show="o.hint" class="block truncate text-xs text-slate-400" x-text="o.hint"></span></span>
+                  <span x-show="o.count !== null" class="text-xs text-slate-400 tabular-nums" x-text="o.count"></span>
+                </button>
+              </li>
+            </template>
+          </ul>
+          <div x-show="selected.length > 0" class="flex justify-between border-t border-slate-100 px-3 py-2 text-xs">
+            <span class="text-slate-500" x-text="selected.length + ' selecionado(s)'"></span>
+            <button type="button" class="font-medium text-brand-600 hover:underline" @click="clear()">Limpar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if singles.age %}
+    <div class="space-y-1.5" x-show="expanded" x-cloak>
+      <label class="label">Faixa de idade</label>
+      <div class="flex items-center gap-2">
+        <input type="number" name="idade_min" min="16" max="120" inputmode="numeric" class="input" placeholder="De" aria-label="Idade mínima" value="{{ filters.age_min|default_if_none:'' }}">
+        <span class="text-slate-400">–</span>
+        <input type="number" name="idade_max" min="16" max="120" inputmode="numeric" class="input" placeholder="Até" aria-label="Idade máxima" value="{{ filters.age_max|default_if_none:'' }}">
+      </div>
+    </div>
+    {% endif %}
+
+    {% if singles.created %}
+    <div class="space-y-1.5" x-show="expanded" x-cloak>
+      <label class="label">Cadastrados entre</label>
+      <div class="flex items-center gap-2">
+        <input type="date" name="de" class="input" aria-label="Data inicial" value="{{ filters.created_from|default:'' }}">
+        <input type="date" name="ate" class="input" aria-label="Data final" value="{{ filters.created_to|default:'' }}">
+      </div>
+    </div>
+    {% endif %}
+
+    {% if singles.has_geo %}
+    <div class="space-y-1.5" x-show="expanded" x-cloak>
+      <label for="vf-geo" class="label">Localização no mapa</label>
+      <select id="vf-geo" name="geo" class="select">
+        <option value="">Todos</option>
+        <option value="1" {% if filters.has_geo is True %}selected{% endif %}>Com localização</option>
+        <option value="0" {% if filters.has_geo is False %}selected{% endif %}>Sem localização</option>
+      </select>
+    </div>
+    {% endif %}
+
+    {% if singles.messageable %}
+    <div class="flex items-end pb-2" x-show="expanded" x-cloak>
+      <label class="flex items-center gap-2 text-sm text-slate-700">
+        <input type="checkbox" name="whatsapp" value="1" class="checkbox" {% if filters.messageable %}checked{% endif %}>
+        Somente aptos a receber WhatsApp
+      </label>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+    {% if has_secondary %}
+    <button type="button" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700" @click="expanded = !expanded">
+      {% icon "sliders-horizontal" %} <span x-text="expanded ? 'Menos filtros' : 'Mais filtros'"></span>
+    </button>
+    {% endif %}
+    <span class="ml-auto"></span>
+    {% if active_count %}
+      <span class="inline-flex items-center gap-1 text-xs text-slate-500">{% icon "filter" "size-3.5" %} {{ active_count }} filtro{{ active_count|pluralize }} ativo{{ active_count|pluralize }}</span>
+      <a href="{{ clear_url }}" class="btn btn-ghost btn-sm">{% icon "rotate-ccw" %} Limpar</a>
+    {% endif %}
+    <button type="submit" class="btn btn-primary btn-sm">{% icon "filter" %} {{ submit_label }}</button>
+  </div>
+</form>

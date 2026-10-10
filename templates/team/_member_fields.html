@@ -1,0 +1,36 @@
+{% comment %}
+Campos do membro (cadastro e edição). Variáveis: form. Precisa estar dentro de um elemento com x-data="memberForm(...)".
+Campos que o usuário não pode alterar (coordenador) nem existem no formulário.
+{% endcomment %}
+{% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors.0 }}</div>{% endif %}
+<div class="grid gap-4 sm:grid-cols-2">
+  <div class="sm:col-span-2">{% field form.name %}</div>
+  {% if form.fields.email %}<div class="sm:col-span-2">{% field form.email %}</div>{% endif %}
+  <div>{% field form.phone hint="Usado para enviar os dados de acesso pelo WhatsApp." %}</div>
+  <div>{% field form.goal %}</div>
+  <div class="sm:col-span-2">{% field form.region %}</div>
+
+  {% if form.fields.role and form.is_admin %}
+  <div class="sm:col-span-2">
+    {% field form.role %}
+    <p class="field-hint mt-1.5" x-text="roleHint"></p>
+  </div>
+  {% endif %}
+
+  {% if form.fields.parent %}
+  <div class="space-y-1.5 sm:col-span-2" x-show="needsParent" x-cloak>
+    <label for="id_parent" class="label" x-text="parentLabel">Responsável</label>
+    <select name="parent" id="id_parent" class="select {% if form.parent.errors %}border-red-400{% endif %}" x-model="parent" {% if form.parent.errors %}aria-invalid="true"{% endif %}>
+      <option value="">Selecione…</option>
+      <template x-for="c in parentOptions" :key="c.id">
+        <option :value="c.id" x-text="c.label" :selected="c.id === parent"></option>
+      </template>
+    </select>
+    {% if form.parent.errors %}<p class="field-error" role="alert">{{ form.parent.errors.0 }}</p>{% else %}<p class="field-hint" x-text="parentHint"></p>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if form.fields.password %}
+  <div class="sm:col-span-2">{% field form.password %}</div>
+  {% endif %}
+</div>

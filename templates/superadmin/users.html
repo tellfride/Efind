@@ -1,0 +1,85 @@
+{% extends "layouts/shell.html" %}
+{% block title %}Super admins · E-Find{% endblock %}
+{% block content %}
+<div x-data="{ open: {{ open_form|yesno:'true,false' }} }">
+  {% page_header title="Super admins" description="Contas com acesso à administração da plataforma. Elas criam campanhas, mas nunca veem dados pessoais de eleitores." %}
+    <button type="button" class="btn btn-primary" x-show="!open" @click="open = true">{% icon "user-plus" %} Novo super admin</button>
+  {% endpage_header %}
+
+  <section class="card mb-6" x-cloak x-show="open" aria-labelledby="new-super-title">
+    <form method="post" action="{% url 'superadmin:user_create' %}">
+      {% csrf_token %}
+      <div class="card-header">
+        <h2 id="new-super-title" class="card-title">Novo super admin</h2>
+        <p class="card-description">Se a senha ficar em branco, o E-Find gera uma senha provisória e a exibe uma única vez.</p>
+      </div>
+      <div class="card-body">
+        {% if form.non_field_errors %}<div class="alert alert-danger mb-4" role="alert">{{ form.non_field_errors.0 }}</div>{% endif %}
+        <div class="grid gap-4 sm:grid-cols-2">
+          {% field form.name %}
+          {% field form.email %}
+          {% field form.phone %}
+          {% field form.password %}
+        </div>
+      </div>
+      <div class="card-footer flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button type="button" class="btn btn-outline" @click="open = false">Cancelar</button>
+        <button type="submit" class="btn btn-primary">{% icon "user-plus" %} Criar super admin</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    {% if accounts %}
+      <ul class="divide-y divide-slate-100">
+        {% for a in accounts %}
+        <li class="flex flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex min-w-0 items-start gap-3">
+            {% avatar a.name %}
+            <div class="min-w-0">
+              <p class="flex flex-wrap items-center gap-2 font-medium text-slate-900">
+                <span class="truncate">{{ a.name }}</span>
+                {% if a.is_active %}{% badge "Ativo" "green" %}{% else %}{% badge "Desativado" "red" %}{% endif %}
+                {% if a.pk == request.user.pk %}{% badge "Você" "brand" %}{% endif %}
+              </p>
+              <p class="truncate text-sm text-slate-500">{{ a.email }}{% if a.phone %} · {{ a.phone|phone }}{% endif %}</p>
+              <p class="text-xs text-slate-500">
+                {% if a.last_login %}Último acesso em {{ a.last_login|brdatetime }}{% else %}Nunca acessou{% endif %} · criado em {{ a.created_at|brdate }}
+              </p>
+            </div>
+          </div>
+          {% if a.pk == request.user.pk %}
+            <a class="btn btn-outline btn-sm self-start" href="/super/perfil/">{% icon "user-round" %} Meu perfil</a>
+          {% else %}
+            <div class="flex flex-wrap gap-2">
+              <form method="post" action="{% url 'superadmin:user_reset_password' a.pk %}" data-confirm="Gerar uma nova senha provisória para {{ a.name }}? A senha atual deixa de funcionar e as sessões abertas são encerradas.">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline btn-sm">{% icon "key-round" %} Redefinir senha</button>
+              </form>
+              {% if a.is_active %}
+                <form method="post" action="{% url 'superadmin:user_deactivate' a.pk %}" data-confirm="Desativar {{ a.name }}? Ele(a) perde o acesso imediatamente.">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline btn-sm text-red-600">{% icon "user-x" %} Desativar</button>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'superadmin:user_activate' a.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline btn-sm">{% icon "user-check" %} Reativar</button>
+                </form>
+              {% endif %}
+            </div>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      {% empty_state icon="users" title="Nenhum super admin" description="Crie a primeira conta de administração da plataforma." %}{% endempty_state %}
+    {% endif %}
+  </section>
+
+  <p class="mt-4 flex items-start gap-2 text-xs text-slate-500">
+    {% icon "info" "mt-0.5 size-3.5 shrink-0" %}
+    A plataforma sempre mantém ao menos um super admin ativo, e você não pode desativar a sua própria conta. Para trocar a sua senha, use Meu perfil.
+  </p>
+</div>
+{% endblock %}
