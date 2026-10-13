@@ -156,7 +156,9 @@ sudo systemctl restart efind-web efind-worker
 ```
 
 **Eleitores com localização errada no mapa** (versões anteriores aceitavam coordenadas de fontes externas sem conferir o bairro):
-refaça a localização com as regras novas, que só aceitam pontos dentro do bairro do eleitor:
+o `migrate` acima (migração `geo 0003`) já devolve todos os eleitores com endereço à fila e descarta o cache antigo; o worker
+(`efind-worker`, precisa estar rodando) os localiza de novo com as regras novas, que só aceitam pontos dentro do bairro do
+eleitor. Os pontos antigos continuam no mapa até o novo resultado chegar. Para refazer à mão (ou sem worker):
 
 ```bash
 .venv/bin/python manage.py regeocode --campaign SLUG --all --purge-cache   # uma campanha
