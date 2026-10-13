@@ -144,3 +144,24 @@ DEFAULT_FROM_EMAIL=E-Find <nao-responda@efind.com.br>
 - A resposta é a mesma exista ou não a conta (não revela quem está cadastrado); há limite de 3 pedidos por e-mail e 10 por IP a cada hora.
 - Configure SPF/DKIM do domínio de envio para os e-mails não caírem no spam.
 - Senhas provisórias geradas por administradores (equipe, super admin) exigem troca no primeiro acesso.
+
+## 9. Atualizando uma instalação existente
+
+```bash
+git pull
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py collectstatic --noinput
+sudo systemctl restart efind-web efind-worker
+```
+
+**Eleitores com localização errada no mapa** (versões anteriores aceitavam coordenadas de fontes externas sem conferir o bairro):
+refaça a localização com as regras novas, que só aceitam pontos dentro do bairro do eleitor:
+
+```bash
+.venv/bin/python manage.py regeocode --campaign SLUG --all --purge-cache   # uma campanha
+.venv/bin/python manage.py regeocode --all --purge-cache                   # todas
+```
+
+O comando respeita o limite de 1 consulta por segundo do OpenStreetMap (os resultados ficam em cache por CEP e bairro). Também há o
+botão **Relocalizar todos os eleitores** no mapa (administrador), que devolve todos à fila do worker.

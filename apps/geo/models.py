@@ -12,6 +12,8 @@ class CepCache(models.Model):
     state = models.CharField(max_length=2, blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
-    # Origem das coordenadas: brasilapi | nominatim | nominatim-bairro | nominatim-cidade | none
+    # Origem das coordenadas: nominatim-rua | brasilapi | nominatim-cep | nominatim-bairro | nominatim-cidade | none
     geo_source = models.CharField(max_length=30, blank=True)
+    # Caixa da área (bairro/cidade) como "sul,oeste,norte,leste" — usada para validar coordenadas
+    bbox = models.CharField(max_length=80, blank=True)
     updated_at = models.DateTimeField(auto_now=True)

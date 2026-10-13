@@ -21,7 +21,7 @@ from apps.core.ratelimit import rate_limit
 from apps.core.voter_filters import count_active_filters, parse_voter_filters, voter_filters_to_params
 
 from .data import geo_queue_counts, load_map_data, map_filters
-from .geocoding import DEFAULT_LIMIT, geocode_run_message, run_campaign_geocoding
+from .geocoding import DEFAULT_LIMIT, geocode_run_message, requeue_all_voters, run_campaign_geocoding
 from .options import build_map_config
 
 VOTERS_URL = "/painel/eleitores/"
@@ -69,6 +69,23 @@ def _back_to_map(request):
     query = urlencode(voter_filters_to_params(filters))
     base = reverse("mapview:index")
     return redirect(f"{base}?{query}" if query else base)
+
+
+@admin_required
+@require_POST
+def geocode_requeue_all(request):
+    """ADMIN: manda todos os eleitores com endereço de volta à fila de geocodificação."""
+    count = requeue_all_voters(request.user)
+    audit("voter.geocode", request=request, entity="Voter", details={"requeued": count, "scope": "all"})
+    if count:
+        messages.success(
+            request,
+            f"{count} eleitor(es) voltaram para a fila e serão localizados de novo pelo CEP e bairro. "
+            "Use \"Localizar pendentes agora\" ou aguarde o processamento em segundo plano.",
+        )
+    else:
+        messages.info(request, "Não há eleitores com endereço para relocalizar.")
+    return _back_to_map(request)
 
 
 @admin_required

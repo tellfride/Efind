@@ -69,6 +69,12 @@ def run_campaign_geocoding(
     return GeocodeRunResult(processed=len(processed), located=located, failed=failed, remaining=remaining)
 
 
+def requeue_all_voters(user) -> int:
+    """ADMIN: devolve à fila TODOS os eleitores da campanha que têm CEP ou cidade, para serem localizados de novo
+    (corrige coordenadas erradas de versões anteriores). Mantém as coordenadas atuais até o novo resultado."""
+    return voter_scope(user).exclude(city="", cep="").update(geo_status=GeoStatus.PENDING)
+
+
 def _fmt(n: int) -> str:
     return f"{n:,}".replace(",", ".")
 

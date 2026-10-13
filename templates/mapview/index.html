@@ -275,6 +275,13 @@
           </button>
         </div>
       </form>
+      <form method="post" action="{% url 'mapview:geocode_requeue_all' %}" class="border-t border-slate-100 px-5 py-3"
+            data-confirm="Relocalizar todos os eleitores da campanha? Eles voltam para a fila e serão localizados de novo pelo CEP e pelo bairro. Pode levar um tempo.">
+        {% csrf_token %}
+        <input type="hidden" name="qs" value="{{ filter_query }}">
+        <button type="submit" class="btn btn-outline btn-sm w-full">{% icon "rotate-ccw" %} Relocalizar todos os eleitores</button>
+        <p class="mt-2 text-xs text-slate-500">Use se algum eleitor aparecer no bairro errado: a localização é refeita validando o ponto dentro do bairro.</p>
+      </form>
     </section>
     {% endif %}
   </aside>
