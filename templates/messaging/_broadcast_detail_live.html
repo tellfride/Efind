@@ -1,6 +1,6 @@
 {% load messaging_tags %}
-{# Região atualizada a cada 5 s (HTMX) enquanto o disparo estiver agendado ou em andamento #}
-<div id="broadcast-live" class="space-y-6" {% if is_live %}hx-get="{{ refresh_url }}" hx-trigger="every 5s" hx-swap="outerHTML"{% endif %}>
+{# Região atualizada por HTMX: a cada 5 s enquanto agendado/em andamento e a cada 15 s por 30 min após concluir (entregas/leituras) #}
+<div id="broadcast-live" class="space-y-6" {% if poll_every %}hx-get="{{ refresh_url }}" hx-trigger="every {{ poll_every }}" hx-swap="outerHTML"{% endif %}>
 
   {# Situação e ações #}
   <section class="card">
@@ -15,7 +15,7 @@
           {% if broadcast.status == "CANCELLED" %}<span class="text-sm text-slate-500">Cancelado em {{ broadcast.finished_at|brdatetime }}</span>{% endif %}
           {% if broadcast.status == "FAILED" %}<span class="text-sm text-slate-500">Não foi possível iniciar este disparo. Veja a auditoria para o motivo.</span>{% endif %}
         </div>
-        {% if is_live %}<p class="text-xs text-slate-400">{% icon "refresh-cw" "mr-1 inline size-3" %}Atualizando automaticamente a cada 5 segundos.</p>{% endif %}
+        {% if is_live %}<p class="text-xs text-slate-400">{% icon "refresh-cw" "mr-1 inline size-3" %}Atualizando automaticamente a cada 5 segundos.</p>{% elif awaiting_receipts %}<p class="text-xs text-slate-400">{% icon "refresh-cw" "mr-1 inline size-3" %}Confirmações de entrega e leitura ainda podem chegar: atualizando a cada 15 segundos.</p>{% endif %}
       </div>
 
       <div class="flex flex-wrap items-center gap-2">

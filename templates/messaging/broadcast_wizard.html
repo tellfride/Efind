@@ -103,8 +103,8 @@
             </div>
             <ul class="space-y-1.5 text-sm text-slate-600">
               <li><span x-text="voters(audience.total_matching)"></span> <span x-text="audience.total_matching === 1 ? 'corresponde' : 'correspondem'"></span> aos filtros.</li>
-              <li x-show="audience.without_opt_in > 0" class="flex items-start gap-2 text-amber-700">{% icon "triangle-alert" "mt-0.5 size-4 shrink-0" %}<span><span x-text="voters(audience.without_opt_in)"></span> não autorizaram WhatsApp e não receberão.</span></li>
-              <li x-show="audience.opted_out > 0" class="flex items-start gap-2 text-amber-700">{% icon "user-x" "mt-0.5 size-4 shrink-0" %}<span><span x-text="voters(audience.opted_out)"></span> pediram para sair e não receberão.</span></li>
+              <li x-show="audience.without_opt_in > 0" class="flex items-start gap-2 text-amber-700">{% icon "triangle-alert" "mt-0.5 size-4 shrink-0" %}<span><span x-text="voters(audience.without_opt_in)"></span> <span x-text="audience.without_opt_in === 1 ? 'não autorizou WhatsApp e não receberá' : 'não autorizaram WhatsApp e não receberão'"></span>.</span></li>
+              <li x-show="audience.opted_out > 0" class="flex items-start gap-2 text-amber-700">{% icon "user-x" "mt-0.5 size-4 shrink-0" %}<span><span x-text="voters(audience.opted_out)"></span> <span x-text="audience.opted_out === 1 ? 'pediu para sair e não receberá' : 'pediram para sair e não receberão'"></span>.</span></li>
             </ul>
             <div x-show="audience.eligible === 0" class="alert alert-warning" role="status">Nenhum eleitor deste público pode receber mensagens. Ajuste os filtros para continuar.</div>
           </div>
@@ -202,7 +202,7 @@
             </dd>
           </dl>
           <p x-show="review && (review.without_opt_in > 0 || review.opted_out > 0)" class="mt-4 text-sm text-amber-700">
-            <span x-text="voters(review ? review.without_opt_in + review.opted_out : 0)"></span> do público não receberão por falta de autorização ou descadastro.
+            <span x-text="voters(review ? review.without_opt_in + review.opted_out : 0)"></span> do público <span x-text="review && review.without_opt_in + review.opted_out === 1 ? 'não receberá' : 'não receberão'"></span> por falta de autorização ou descadastro.
           </p>
         </div>
       </div>

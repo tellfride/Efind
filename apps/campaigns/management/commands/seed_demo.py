@@ -12,6 +12,7 @@ import datetime as dt
 import os
 import random
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
@@ -56,8 +57,14 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--reset", action="store_true", help="Apaga a campanha demo e recria")
         parser.add_argument("--voters", type=int, default=240, help="Quantidade de eleitores fictícios")
+        parser.add_argument("--force", action="store_true", help="Permite rodar com DEBUG desligado (NÃO use em produção)")
 
     def handle(self, *args, **opts):
+        if not (settings.DEBUG or opts["force"] or os.environ.get("ALLOW_SEED_DEMO") == "1"):
+            raise CommandError(
+                "seed_demo cria contas com senha conhecida e só deve rodar em desenvolvimento (DEBUG=1). "
+                "Em produção crie campanhas pelo painel do super admin."
+            )
         super_email = os.environ.get("SEED_SUPERADMIN_EMAIL", "super@efind.com.br").strip().lower()
         super_password = os.environ.get("SEED_SUPERADMIN_PASSWORD", "")
         if not super_password:

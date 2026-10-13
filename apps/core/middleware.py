@@ -10,10 +10,15 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.utils.functional import SimpleLazyObject
 
 from .constants import Role
+
+
+# Com senha provisória pendente, o usuário só alcança a troca de senha (perfil), o logout e os arquivos estáticos
+_PASSWORD_CHANGE_PATHS = ("/painel/perfil/", "/super/perfil/", "/logout/", "/static/", "/favicon.ico")
 
 
 class CampaignContextMiddleware:
@@ -34,6 +39,11 @@ class CampaignContextMiddleware:
                     return redirect("/login/")
                 request.campaign = campaign
             request.perms = SimpleLazyObject(lambda: permissions_for(user))
+            if user.must_change_password and not request.path.startswith(_PASSWORD_CHANGE_PATHS):
+                if request.path.startswith("/api/") or request.headers.get("HX-Request"):
+                    return JsonResponse({"error": "Defina uma nova senha antes de continuar."}, status=403)
+                messages.warning(request, "Você entrou com uma senha provisória. Defina uma nova senha para continuar.")
+                return redirect("/super/perfil/" if user.role == Role.SUPER_ADMIN else "/painel/perfil/")
         else:
             request.perms = {}
         return self.get_response(request)

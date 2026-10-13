@@ -221,6 +221,7 @@ Cada app declara `app_name` e seus caminhos **completos** em `urls.py` (todos in
 ./.venv/Scripts/python.exe manage.py migrate        # cria/atualiza o banco
 ./.venv/Scripts/python.exe manage.py seed_demo      # super admin + campanha demo (240 eleitores fictícios)
 ./.venv/Scripts/python.exe manage.py runserver 8000 # http://localhost:8000
+                                                    # (com --noreload, reinicie após editar Python OU templates: o cache de templates não recarrega)
 ./.venv/Scripts/python.exe manage.py run_worker     # fila de disparos + geocodificação (outro terminal)
 PYTHONUTF8=1 ./.venv/Scripts/python.exe manage.py test apps          # todos os testes
 PYTHONUTF8=1 ./.venv/Scripts/python.exe manage.py test apps.voters   # um módulo
@@ -233,3 +234,19 @@ Contas do seed (somente dev): `super@efind.com.br` (senha em `SEED_SUPERADMIN_PA
 
 **Models e migrations são da fundação.** Módulos não alteram `models.py` nem criam migrations; se faltar um campo,
 registrem em "mudanças compartilhadas necessárias" e contornem dentro do próprio módulo.
+
+## Contas, senhas e confirmações
+
+- **Senha provisória** (equipe/super admin criam ou redefinem): `User.must_change_password=True`. Enquanto estiver ligado, o
+  middleware (`apps/core/middleware.py`) só deixa o usuário abrir o perfil (troca de senha), sair e carregar estáticos;
+  `/api/*` e HTMX recebem 403 em JSON. Trocar a senha (perfil ou link do e-mail) desliga a flag. Qualquer novo fluxo que
+  gere senha para outra pessoa deve ligar a flag.
+- **Recuperação por e-mail** (`apps/accounts/password_reset.py`, rotas `/senha/...`): só existe com e-mail configurado
+  (`EMAIL_HOST` no `.env`; em DEBUG imprime no console). Resposta idêntica exista ou não a conta, limite 3/e-mail e 10/IP por
+  hora, link de uso único com validade de 1 h montado com `APP_URL` (nunca o cabeçalho Host), senha com letras e números.
+  `settings.PASSWORD_RESET_ENABLED` desliga tudo (404 + link some do login) quando não há e-mail.
+- **Confirmação de ações**: use `data-confirm="Mensagem?"` no botão/`<form>`; o diálogo é próprio (`EFind.confirm`), porque
+  `window.confirm()` é suprimido em WebViews (ex.: navegador do WhatsApp). Título opcional: `data-confirm-title`; o botão
+  de confirmar herda o texto e o tom (`btn-danger` → vermelho) do botão que disparou. Testes: `apps/core/tests/test_js_confirm.py`.
+- **Auditoria de consulta**: abrir a ficha de um eleitor grava `voter.view` (só o id). Nunca coloque dados pessoais em `details`.
+- `seed_demo` só roda com `DEBUG=1` (ou `--force` / `ALLOW_SEED_DEMO=1`): ele cria contas com senha conhecida.

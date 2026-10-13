@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.shortcuts import redirect, render
@@ -55,7 +56,7 @@ def login_view(request):
                     and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}, require_https=request.is_secure())
                 )
                 return redirect(target if safe else home)
-    return render(request, "accounts/login.html", {"form": form})
+    return render(request, "accounts/login.html", {"form": form, "password_reset_enabled": settings.PASSWORD_RESET_ENABLED})
 
 
 @require_POST
@@ -86,7 +87,8 @@ def _profile(request, template_context):
             password_form = ChangePasswordForm(request.POST, user=user)
             if password_form.is_valid():
                 user.set_password(password_form.cleaned_data["new_password"])
-                user.save(update_fields=["password", "updated_at"])
+                user.must_change_password = False
+                user.save(update_fields=["password", "must_change_password", "updated_at"])
                 update_session_auth_hash(request, user)  # mantém esta sessão; encerra as demais
                 audit("auth.password_change", request=request)
                 messages.success(request, "Senha alterada com sucesso. Outras sessões foram encerradas.")

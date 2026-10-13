@@ -65,7 +65,7 @@ def create_member(request, data: dict[str, Any]) -> tuple[User, str]:
                 data["email"],
                 password,
                 campaign_id=actor.campaign_id,
-                name=data["name"].strip(),
+                must_change_password=True, name=data["name"].strip(),
                 phone=data.get("phone") or "",
                 role=placement.role,
                 parent_id=placement.parent_id,
@@ -223,7 +223,8 @@ def reset_member_password(request, target: User) -> str:
         raise TeamError(error)
     password = generate_temp_password()
     target.set_password(password)
-    target.save(update_fields=["password", "updated_at"])
+    target.must_change_password = True
+    target.save(update_fields=["password", "must_change_password", "updated_at"])
     audit("user.password_reset", request=request, entity="User", entity_id=target.pk)
     return password
 

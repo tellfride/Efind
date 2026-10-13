@@ -212,6 +212,7 @@ def voter_detail(request, voter_id):
     from apps.messaging.models import BroadcastMessage
 
     voter = _voter_or_404(request, voter_id)
+    audit("voter.view", request=request, entity="Voter", entity_id=voter.pk)  # só o id, sem dados pessoais
     decorate_voter(voter)
     history = list(
         BroadcastMessage.objects.filter(voter_id=voter.pk, campaign_id=voter.campaign_id)

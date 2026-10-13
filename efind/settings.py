@@ -138,6 +138,29 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 
+# --- E-mail (recuperação de senha) -------------------------------------------------------------
+# Defina EMAIL_HOST (SMTP) no .env para habilitar o "Esqueci minha senha". Em desenvolvimento (DEBUG=1) os e-mails
+# são impressos no console. Sem e-mail configurado em produção, a recuperação fica desligada (os administradores
+# continuam gerando senhas provisórias pelo painel).
+EMAIL_HOST = env("EMAIL_HOST")
+if env("EMAIL_BACKEND"):
+    EMAIL_BACKEND = env("EMAIL_BACKEND")
+elif EMAIL_HOST:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+elif DEBUG or TESTING:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.dummy.EmailBackend"
+EMAIL_PORT = int(env("EMAIL_PORT", "587") or 587)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True) and not EMAIL_USE_SSL
+EMAIL_TIMEOUT = 10
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "E-Find <nao-responda@efind.com.br>")
+PASSWORD_RESET_TIMEOUT = 60 * 60  # links de redefinição valem 1 hora
+PASSWORD_RESET_ENABLED = not EMAIL_BACKEND.endswith("dummy.EmailBackend")
+
 # --- Internacionalização -----------------------------------------------------------------------
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"

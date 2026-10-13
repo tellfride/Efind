@@ -28,6 +28,7 @@
         {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors.0 }}</div>{% endif %}
         {% field form.email %}
         {% field form.password %}
+        {% if password_reset_enabled %}<p class="-mt-2 text-right text-sm"><a class="link" href="{% url 'accounts:password_reset' %}">Esqueci minha senha</a></p>{% endif %}
         {{ form.next }}
         <button type="submit" class="btn btn-primary btn-lg w-full">Entrar</button>
       </form>

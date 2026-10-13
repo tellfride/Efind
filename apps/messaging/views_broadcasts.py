@@ -64,6 +64,8 @@ from .queries import (
 
 logger = logging.getLogger(__name__)
 
+RECEIPTS_POLL_WINDOW = timedelta(minutes=30)  # após concluir, segue atualizando p/ mostrar entregas e leituras
+
 BASE_URL = "/painel/mensagens/disparos/"
 LIST_PER_PAGE = 20
 RECIPIENTS_PER_PAGE = 50
@@ -389,6 +391,13 @@ def broadcast_detail(request, pk):
     delivery_rate, read_rate = broadcast_rates(counters.sent, counters.delivered, counters.read)
     template = broadcast.template
     is_live = broadcast.status in (BroadcastStatus.SCHEDULED, BroadcastStatus.RUNNING)
+    # Entregas e leituras chegam por webhook DEPOIS de concluir o envio: a tela continua atualizando, mais devagar
+    awaiting_receipts = (
+        broadcast.status == BroadcastStatus.COMPLETED
+        and broadcast.finished_at is not None
+        and timezone.now() - broadcast.finished_at < RECEIPTS_POLL_WINDOW
+    )
+    poll_every = "5s" if is_live else ("15s" if awaiting_receipts else "")
     estimated_minutes = 0
     if broadcast.status in (BroadcastStatus.RUNNING, BroadcastStatus.PAUSED) and counters.queued:
         rate = min(broadcast.rate_per_minute, broadcast.connection.rate_per_minute) if broadcast.connection else broadcast.rate_per_minute
@@ -413,6 +422,8 @@ def broadcast_detail(request, pk):
         "retryable": retryable,
         "can_process": request.user.role == Role.ADMIN and is_live,
         "is_live": is_live,
+        "awaiting_receipts": awaiting_receipts,
+        "poll_every": poll_every,
         "remaining_label": format_duration(estimated_minutes) if estimated_minutes else "",
         "template_obj": template,
         "preview_text": render_template(template.body, EXAMPLE_CONTEXT) if template else "",

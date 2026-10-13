@@ -128,7 +128,7 @@ def create_campaign_with_admin(request, *, campaign_data: dict, admin_data: dict
                 admin = User.objects.create_user(
                     admin_data["email"],
                     password,
-                    name=admin_data["name"],
+                    must_change_password=True, name=admin_data["name"],
                     phone=admin_data.get("phone", ""),
                     role=Role.ADMIN,
                     campaign=campaign,
@@ -241,7 +241,7 @@ def create_account(request, *, role: str, campaign: Campaign | None, data: dict)
         try:
             with transaction.atomic():
                 user = User.objects.create_user(
-                    data["email"], password, name=data["name"], phone=data.get("phone", ""), role=role, campaign=campaign
+                    data["email"], password, must_change_password=True, name=data["name"], phone=data.get("phone", ""), role=role, campaign=campaign
                 )
                 audit(
                     "user.create",
@@ -263,7 +263,8 @@ def reset_password(request, user: User, *, campaign: Campaign | None = None) -> 
     password = generate_temp_password()
     with transaction.atomic():
         user.set_password(password)
-        user.save(update_fields=["password", "updated_at"])
+        user.must_change_password = True
+        user.save(update_fields=["password", "must_change_password", "updated_at"])
         audit(
             "user.password_reset",
             request=request,

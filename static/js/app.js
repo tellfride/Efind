@@ -66,16 +66,103 @@
   }
   window.EFind.copyText = copyText;
 
-  // ------------------------------------------------------------------ Confirmação e cópia (delegação)
+  // ------------------------------------------------------------------ Confirmação (diálogo próprio) e cópia (delegação)
+  // window.confirm() é suprimido por alguns WebViews (como o navegador interno do WhatsApp, usado em campo): os botões
+  // com data-confirm pareceriam "mortos". Usamos um diálogo próprio e acessível: Esc cancela, o foco fica preso nos dois
+  // botões e começa em "Cancelar" (ação destrutiva exige um gesto deliberado).
+  const confirmed = new WeakSet(); // gatilhos já confirmados: a repetição do gesto não pergunta de novo
+
+  function confirmDialog(message, options) {
+    options = options || {};
+    return new Promise((resolve) => {
+      const previous = document.activeElement;
+      const overlay = document.createElement("div");
+      overlay.className = "fixed inset-0 z-[1200] flex items-end justify-center bg-slate-900/50 p-4 sm:items-center";
+      overlay.setAttribute("data-confirm-dialog", "");
+      const box = document.createElement("div");
+      box.className = "w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl";
+      box.setAttribute("role", "alertdialog");
+      box.setAttribute("aria-modal", "true");
+      box.setAttribute("aria-labelledby", "efind-confirm-title");
+      box.setAttribute("aria-describedby", "efind-confirm-text");
+      const title = document.createElement("h2");
+      title.id = "efind-confirm-title";
+      title.className = "text-base font-semibold text-slate-900";
+      title.textContent = options.title || "Confirmar ação";
+      const text = document.createElement("p");
+      text.id = "efind-confirm-text";
+      text.className = "mt-2 text-sm text-slate-600";
+      text.textContent = message;
+      const actions = document.createElement("div");
+      actions.className = "mt-5 flex justify-end gap-2";
+      const cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.className = "btn btn-outline";
+      cancel.textContent = "Cancelar";
+      const ok = document.createElement("button");
+      ok.type = "button";
+      ok.className = "btn " + (options.danger ? "btn-danger" : "btn-primary");
+      ok.textContent = options.confirmLabel || "Confirmar";
+
+      function close(result) {
+        document.removeEventListener("keydown", onKey, true);
+        overlay.remove();
+        if (previous && typeof previous.focus === "function") previous.focus();
+        resolve(result);
+      }
+      function onKey(ev) {
+        if (ev.key === "Escape") {
+          ev.preventDefault();
+          close(false);
+        } else if (ev.key === "Tab") {
+          ev.preventDefault();
+          (document.activeElement === cancel ? ok : cancel).focus();
+        }
+      }
+      cancel.addEventListener("click", () => close(false));
+      ok.addEventListener("click", () => close(true));
+      overlay.addEventListener("click", (ev) => {
+        if (ev.target === overlay) close(false);
+      });
+      document.addEventListener("keydown", onKey, true);
+      actions.append(cancel, ok);
+      box.append(title, text, actions);
+      overlay.append(box);
+      document.body.append(overlay);
+      cancel.focus();
+    });
+  }
+  window.EFind.confirm = confirmDialog;
+
+  // Título/rótulo/tom do diálogo: data-confirm-title, data-confirm-label ou o texto do botão; vermelho se o botão for btn-danger
+  function dialogOptionsFor(trigger) {
+    const button = trigger.tagName === "FORM" ? trigger.querySelector("[type=submit]") : trigger;
+    const label = button ? (button.dataset.confirmLabel || button.textContent || "").replace(/\s+/g, " ").trim() : "";
+    return {
+      title: trigger.dataset.confirmTitle || "",
+      confirmLabel: label && label.length <= 28 ? label : "",
+      danger: !!(button && button.classList.contains("btn-danger")),
+    };
+  }
+
   document.addEventListener(
     "click",
     (e) => {
       const el = e.target.closest("[data-confirm]");
       // botão de submit dentro de form: a confirmação é feita no evento "submit" (evita perguntar duas vezes)
-      if (el && el.tagName !== "FORM" && !(el.type === "submit" && el.form) && !window.confirm(el.dataset.confirm)) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        return;
+      if (el && el.tagName !== "FORM" && !(el.type === "submit" && el.form)) {
+        if (confirmed.has(el)) {
+          confirmed.delete(el); // segunda passada (já confirmado): deixa o gesto seguir
+        } else {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          confirmDialog(el.dataset.confirm, dialogOptionsFor(el)).then((yes) => {
+            if (!yes) return;
+            confirmed.add(el);
+            el.click(); // repete o clique original (links, botões com Alpine)
+          });
+          return;
+        }
       }
       const copy = e.target.closest("[data-copy]");
       if (copy) {
@@ -89,11 +176,22 @@
   document.addEventListener(
     "submit",
     (e) => {
-      const msg = (e.submitter && e.submitter.dataset.confirm) || e.target.dataset.confirm;
-      if (msg && !window.confirm(msg)) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
+      const form = e.target;
+      const submitter = e.submitter;
+      const trigger = submitter && submitter.dataset && submitter.dataset.confirm ? submitter : form.dataset && form.dataset.confirm ? form : null;
+      if (!trigger) return;
+      if (confirmed.has(trigger)) {
+        confirmed.delete(trigger); // reenvio já confirmado
+        return;
       }
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      confirmDialog(trigger.dataset.confirm, dialogOptionsFor(trigger)).then((yes) => {
+        if (!yes) return;
+        confirmed.add(trigger);
+        if (typeof form.requestSubmit === "function") form.requestSubmit(submitter || undefined);
+        else form.submit();
+      });
     },
     true,
   );

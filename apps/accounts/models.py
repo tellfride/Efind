@@ -50,6 +50,8 @@ class User(AbstractBaseUser, TimestampedModel):
     is_active = models.BooleanField("ativo", default=True)
     goal = models.PositiveIntegerField("meta de cadastros", null=True, blank=True)
     region = models.CharField("região de atuação", max_length=120, blank=True)
+    # Senha provisória (definida/redefinida por um administrador): exige troca no próximo acesso
+    must_change_password = models.BooleanField("trocar a senha no próximo acesso", default=False)
 
     objects = UserManager()
 

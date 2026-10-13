@@ -126,3 +126,21 @@ O `X-Forwarded-Proto` é obrigatório (o Django decide HTTPS por ele). O IP do c
 - Backups diários do MariaDB (`mysqldump --single-transaction`): os dados de eleitores são dados pessoais (LGPD).
 - Logs não contêm dados pessoais por regra do projeto; mantenha o acesso ao banco e aos backups restrito.
 - Textos de privacidade e termos de uso são genéricos: **passe por revisão jurídica** antes de publicar.
+
+## 8. E-mail e recuperação de senha
+
+O "Esqueci minha senha" só aparece quando há e-mail configurado. Preencha no `.env` (SMTP do seu provedor: Amazon SES, SendGrid, Mailgun, Zoho, o SMTP da hospedagem...):
+
+```ini
+EMAIL_HOST=smtp.seudominio.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=usuario
+EMAIL_HOST_PASSWORD=senha
+EMAIL_USE_TLS=1
+DEFAULT_FROM_EMAIL=E-Find <nao-responda@efind.com.br>
+```
+
+- Os links valem 1 hora e são de uso único; o endereço do link vem de `APP_URL` (não do cabeçalho `Host`).
+- A resposta é a mesma exista ou não a conta (não revela quem está cadastrado); há limite de 3 pedidos por e-mail e 10 por IP a cada hora.
+- Configure SPF/DKIM do domínio de envio para os e-mails não caírem no spam.
+- Senhas provisórias geradas por administradores (equipe, super admin) exigem troca no primeiro acesso.

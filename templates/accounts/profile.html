@@ -3,6 +3,10 @@
 {% block content %}
 {% page_header title="Meu perfil" description="Seus dados de acesso e informações da conta." %}{% endpage_header %}
 
+{% if request.user.must_change_password %}
+  <div class="mb-6">{% alert "warning" title="Defina uma nova senha" %}Você entrou com uma senha provisória. Troque-a no cartão "Alterar senha" abaixo para liberar o restante do sistema.{% endalert %}</div>
+{% endif %}
+
 <div class="grid gap-6 lg:grid-cols-2">
   <div class="space-y-6">
     <section class="card">
