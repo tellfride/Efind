@@ -12,7 +12,7 @@ from django.db.models import Count
 from .access import team_scope, voter_scope
 from .constants import Gender, Role, SupportLevel, VoterSource
 from .utils import parse_tags
-from .voter_filters import URL_PARAMS, count_active_filters
+from .voter_filters import URL_PARAMS, count_active_filters, sanitize_voter_filters
 
 ROLE_HINT = {Role.ADMIN: "Administrador", Role.COORDENADOR: "Coordenador", Role.CABO: "Cabo eleitoral"}
 
@@ -109,6 +109,9 @@ _MULTI = {
 }
 
 
+_SINGLE_FILTER_KEYS = {"age": ("age_min", "age_max"), "created": ("created_from", "created_to")}
+
+
 def build_filter_panel(filters: dict, options: dict, fields=None, hide=(), expanded=False) -> dict:
     """Dados para components/voter_filters.html."""
     wanted = [f for f in (fields or ALL_FIELDS) if f not in hide]
@@ -132,10 +135,17 @@ def build_filter_panel(filters: dict, options: dict, fields=None, hide=(), expan
         else:
             singles[key] = True
     has_secondary = any(not m["primary"] for m in multi) or any(k not in ("q",) for k in singles)
+    # Abre o painel quando há filtro "secundário" ativo (multi-seleção OU idade, datas, localização, WhatsApp...):
+    # senão o resultado parece estar limitado sem motivo, com os campos que causam isso escondidos.
+    shown = {m["key"] for m in multi}
+    for key in singles:  # os campos simples são grupos: "age" = idade_min/idade_max, "created" = de/ate
+        shown.update(_SINGLE_FILTER_KEYS.get(key, (key,)))
+    active = sanitize_voter_filters(filters)
+    secondary_active = any(k in active for k in shown if k not in PRIMARY_FIELDS)
     return {
         "multi": multi,
         "singles": singles,
         "has_secondary": has_secondary,
         "active_count": count_active_filters(filters),
-        "expanded": expanded or any(not m["primary"] and filters.get(m["key"]) for m in multi),
+        "expanded": expanded or secondary_active,
     }

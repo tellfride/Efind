@@ -26,7 +26,7 @@ from apps.core.constants import (
 )
 from apps.core.forms import PhoneField, StyledFormMixin
 from apps.core.utils import age_from, parse_tags, serialize_tags, title_case
-from apps.geo.cep import normalize_cep
+from apps.geo.cep import format_cep, normalize_cep
 
 from .utils import (
     MAX_VOTER_AGE,
@@ -92,6 +92,7 @@ def voter_initial(voter) -> dict:
         support_level=voter.support_level,
         tags=", ".join(parse_tags(voter.tags)),
         notes=voter.notes,
+        cep=format_cep(voter.cep),  # guardado só com dígitos; a máscara só age ao digitar, então formatamos aqui
     )
     return initial
 

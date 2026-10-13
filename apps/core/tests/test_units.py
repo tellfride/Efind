@@ -90,6 +90,16 @@ class UtilTests(SimpleTestCase):
         self.assertEqual(parse_tags(",saude,jovem,"), ["saude", "jovem"])
         self.assertEqual(title_case("MARIA DA SILVA"), "Maria da Silva")
 
+    def test_title_case_capitalizes_after_apostrophe_and_hyphen(self):
+        # Regressão (QA no navegador): "joão d'ávila da silva" virava "João D'ávila da Silva"
+        self.assertEqual(title_case("joão d'ávila da silva"), "João D'Ávila da Silva")
+        self.assertEqual(title_case("MARIA DALL'AGNOL"), "Maria Dall'Agnol")
+        self.assertEqual(title_case("ana-clara dos santos"), "Ana-Clara dos Santos")
+        self.assertEqual(title_case("sant’anna"), "Sant’Anna")  # apóstrofo tipográfico (colado do Word/WhatsApp)
+        self.assertEqual(title_case("  josé   da  silva  "), "José da Silva")
+        self.assertEqual(title_case("d'"), "D'")  # sem letra depois do apóstrofo
+        self.assertEqual(title_case(""), "")
+
     def test_csv_blocks_formula_injection(self):
         csv_text = to_csv([{"a": "=1+1", "b": 'x"y'}], [("a", "A"), ("b", "B")])
         self.assertIn("'=1+1", csv_text)

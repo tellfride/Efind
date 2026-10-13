@@ -160,6 +160,22 @@ class PublicFormTests(VoterTestCase):
             self.assertContains(r, text)
         self.assertEqual(r["X-Robots-Tag"], "noindex, nofollow, noarchive")
 
+    def test_ballot_number_badge_shrinks_for_long_numbers(self):
+        # Regressão (QA no navegador): "12345" (vereador) estourava o quadro de 80 px do cabeçalho em text-3xl
+        Campaign.objects.filter(pk=self.a.pk).update(ballot_number="12345", logo_url="")
+        badge = 'bg-white/95 text-2xl font-extrabold'
+        self.assertContains(self.client.get(self.url()), badge)
+        Campaign.objects.filter(pk=self.a.pk).update(ballot_number="55")
+        r = self.client.get(self.url())
+        self.assertContains(r, 'bg-white/95 text-3xl font-extrabold')
+        self.assertNotContains(r, badge)
+
+    def test_privacy_page_shows_election_year_without_thousand_separator(self):
+        # Regressão (QA no navegador): com USE_THOUSAND_SEPARATOR o ano saía como "2.026"
+        r = self.client.get(self.url(suffix="privacidade/"))
+        self.assertContains(r, "nas eleições de 2026.")
+        self.assertNotContains(r, "2.026")
+
     def test_method_not_allowed(self):
         self.assertEqual(self.client.put(self.url()).status_code, 405)
         self.assertEqual(self.client.post(self.url(suffix="obrigado/")).status_code, 405)

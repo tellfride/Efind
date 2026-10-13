@@ -27,7 +27,7 @@
         <dt class="text-slate-500">Cargo</dt><dd class="col-span-2">{{ camp.office_label }}</dd>
         {% if camp.ballot_number %}<dt class="text-slate-500">Número</dt><dd class="col-span-2">{{ camp.ballot_number }}{% if camp.party %} · {{ camp.party }}{% endif %}</dd>{% endif %}
         <dt class="text-slate-500">Local</dt><dd class="col-span-2">{{ camp.place }}</dd>
-        <dt class="text-slate-500">Eleição</dt><dd class="col-span-2">{{ camp.election_year }}</dd>
+        <dt class="text-slate-500">Eleição</dt><dd class="col-span-2">{{ camp.election_year|stringformat:"d" }}</dd>
         <dt class="text-slate-500">Identificador</dt><dd class="col-span-2 font-mono text-xs break-all">{{ camp.slug }}</dd>
       </dl>
       <div class="flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row lg:flex-col xl:flex-row">

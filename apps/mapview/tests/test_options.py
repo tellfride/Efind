@@ -28,15 +28,27 @@ class MapConfigTests(SimpleTestCase):
 
     def test_basemaps_use_the_required_tile_servers_and_attribution(self):
         self.assertEqual(DEFAULT_BASEMAP, "ruas")
-        osm, carto = BASEMAPS["ruas"], BASEMAPS["claro"]
+        osm, light = BASEMAPS["ruas"], BASEMAPS["claro"]
         self.assertEqual(osm["url"], "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-        self.assertEqual(carto["url"], "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png")
         self.assertIn("OpenStreetMap", osm["attribution"])
         self.assertIn("contributors", osm["attribution"])
-        self.assertIn("OpenStreetMap", carto["attribution"])
-        self.assertIn("CARTO", carto["attribution"])
+        self.assertIn("OpenStreetMap", light["attribution"])
         for base in BASEMAPS.values():
             self.assertIn('rel="noopener noreferrer"', base["attribution"])
+
+    def test_light_basemap_does_not_depend_on_a_provider_that_requires_an_api_key(self):
+        """Regressão: os tiles gratuitos da CARTO passaram a devolver "API KEY REQUIRED" em qualquer coordenada, então
+        o mapa "Claro" quebrou. Ele agora usa os tiles do OSM com um filtro CSS (classe `efind-tiles-light`)."""
+        light = BASEMAPS["claro"]
+        self.assertNotIn("cartocdn", light["url"])
+        self.assertTrue(light["url"].startswith("https://{s}.tile.openstreetmap.org/"))
+        self.assertEqual(light["className"], "efind-tiles-light")
+        self.assertNotIn("className", BASEMAPS["ruas"])
+        css = (ROOT / "static/css/mapview.css").read_text(encoding="utf-8")
+        self.assertIn(".efind-tiles-light", css)
+        self.assertIn("filter:", css.split(".efind-tiles-light", 1)[1].split("}", 1)[0])
+        js = (ROOT / "static/js/mapview/map.js").read_text(encoding="utf-8")
+        self.assertIn("className: base.className", js)
 
     def test_heat_gradient_keys_are_strings_for_json(self):
         gradient = self.config()["heatGradient"]

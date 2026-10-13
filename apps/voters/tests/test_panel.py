@@ -382,6 +382,14 @@ class DetailAndEditTests(PanelBase):
         self.assertNotIn("Novo Nome", str(log.details))
         self.geocode_panel.assert_not_called()  # endereço igual: não regeocodifica
 
+    def test_edit_form_shows_cep_with_mask(self):
+        # Regressão (QA no navegador): o CEP (guardado só com dígitos) aparecia como "13010001" na edição
+        Voter.objects.filter(pk=self.v_cabo1.pk).update(cep="13010001")
+        self.login(self.cabo1)
+        r = self.client.get(f"/painel/eleitores/{self.v_cabo1.pk}/editar/")
+        self.assertContains(r, 'value="13010-001"')
+        self.assertNotContains(r, 'value="13010001"')
+
     def test_edit_rechecks_phone_uniqueness(self):
         self.login(self.cabo1)
         r = self.client.post(f"/painel/eleitores/{self.v_cabo1.pk}/editar/", {"name": "Fulano de Tal", "phone": self.v_admin.phone})

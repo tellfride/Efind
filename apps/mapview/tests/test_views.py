@@ -120,7 +120,8 @@ class PageContentTests(MapBase):
         self.assertEqual(config["votersUrl"], "/painel/eleitores/")
         self.assertEqual(config["defaultMode"], "bairros")
         self.assertIn("openstreetmap.org", config["basemaps"]["ruas"]["url"])
-        self.assertIn("cartocdn.com", config["basemaps"]["claro"]["url"])
+        self.assertIn("openstreetmap.org", config["basemaps"]["claro"]["url"])
+        self.assertEqual(config["basemaps"]["claro"]["className"], "efind-tiles-light")
         self.assertContains(response, "dados/")
 
     def test_page_has_no_voter_personal_data(self):

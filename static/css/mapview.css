@@ -17,6 +17,11 @@
   font: inherit;
 }
 
+/* Mapa base "Claro": mesmos tiles do OpenStreetMap, sem cor e mais suaves (os marcadores ganham destaque) */
+.efind-map .efind-tiles-light {
+  filter: grayscale(1) brightness(1.12) contrast(0.82);
+}
+
 /* Popups */
 .efind-map .leaflet-popup-content-wrapper {
   border-radius: 0.75rem;

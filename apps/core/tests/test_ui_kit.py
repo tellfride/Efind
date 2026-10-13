@@ -7,7 +7,7 @@ from django.test import RequestFactory, TestCase
 from apps.accounts.models import User
 from apps.campaigns.bootstrap import bootstrap_campaign
 from apps.campaigns.models import Campaign
-from apps.core.filter_options import get_voter_filter_options
+from apps.core.filter_options import build_filter_panel, get_voter_filter_options
 from apps.core.forms import PhoneField, StyledFormMixin
 from apps.core.voter_filters import parse_voter_filters
 from apps.voters.models import Voter
@@ -99,6 +99,32 @@ class VoterFiltersComponentTests(TestCase):
         self.assertIn('value="18"', html)
         self.assertIn("2 filtros ativos", html)
         self.assertIn('action="/painel/eleitores/"', html)
+
+    def test_panel_opens_when_a_secondary_filter_is_active(self):
+        # Regressão (QA no navegador): com idade/datas/mapa/WhatsApp ativos o painel abria recolhido, e o usuário via
+        # uma lista "misteriosamente" menor, sem os campos que causavam isso à vista.
+        options = {"neighborhoods": [], "cities": [], "coordinators": [], "members": [], "tags": [], "electoral_zones": []}
+
+        def expanded(params):
+            return build_filter_panel(parse_voter_filters(RequestFactory().get("/x/", params).GET), options)["expanded"]
+
+        self.assertFalse(expanded({}))
+        self.assertFalse(expanded({"q": "ana"}))  # busca é filtro primário: sempre à vista
+        for params in (
+            {"idade_min": "18"},
+            {"idade_max": "40"},
+            {"de": "2026-01-01"},
+            {"ate": "2026-12-31"},
+            {"geo": "1"},
+            {"geo": "0"},
+            {"whatsapp": "1"},
+            {"genero": "F"},
+            {"apoio": "APOIADOR"},
+        ):
+            with self.subTest(params=params):
+                self.assertTrue(expanded(params))
+        # valor inválido é descartado pelo parser e não deve abrir o painel
+        self.assertFalse(expanded({"idade_min": "abc"}))
 
     def test_hides_filters_without_options(self):
         html = render(

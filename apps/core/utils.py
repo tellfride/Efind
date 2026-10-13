@@ -26,12 +26,18 @@ def slugify(value: str, max_length: int = 60) -> str:
 _LOWER_WORDS = {"da", "de", "do", "das", "dos", "e"}
 
 
+_AFTER_JOINER = re.compile(r"(?<=['’\-])[^\W\d_]")  # letra logo depois de apóstrofo/hífen: D'Ávila, Maria-Clara
+
+
 def title_case(value: str) -> str:
-    """"MARIA DA SILVA" → "Maria da Silva" """
+    """"MARIA DA SILVA" → "Maria da Silva"; "joão d'ávila" → "João D'Ávila"; "ana-clara" → "Ana-Clara" """
     words = re.sub(r"\s+", " ", (value or "").strip()).lower().split(" ")
     out = []
     for i, w in enumerate(words):
-        out.append(w if (i > 0 and w in _LOWER_WORDS) or not w else w[0].upper() + w[1:])
+        if not w or (i > 0 and w in _LOWER_WORDS):
+            out.append(w)
+        else:
+            out.append(_AFTER_JOINER.sub(lambda m: m.group(0).upper(), w[0].upper() + w[1:]))
     return " ".join(out)
 
 

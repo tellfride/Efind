@@ -280,6 +280,13 @@ class CreateCampaignViewTests(BaseCase):
             set(AuditLog.objects.filter(campaign=campaign).values_list("action", flat=True)), {"campaign.create", "user.create"}
         )
 
+    def test_created_page_shows_election_year_without_thousand_separator(self):
+        # Regressão (QA no navegador): com USE_THOUSAND_SEPARATOR o ano saía como "2.026"
+        response = self.client.post(url("campaign_create"), campaign_post_data(election_year="2026"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<dd class=\"col-span-2\">2026</dd>", html=False)
+        self.assertNotContains(response, "2.026")
+
     def test_explicit_password_is_honoured(self):
         response = self.client.post(url("campaign_create"), campaign_post_data(**{"admin-password": "Minha#Senha2026"}))
         self.assertEqual(response.status_code, 200)

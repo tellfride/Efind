@@ -18,6 +18,13 @@ class PublicPagesTests(TestCase):
         cls.cabo = make_user(cls.campaign, "cabo@a.com", Role.CABO, parent=cls.admin)
         cls.superuser = User.objects.create_superuser("super@x.com", PASSWORD, name="Suporte")
 
+    def test_favicon_ico_redirects_to_the_svg_icon_instead_of_404(self):
+        # Regressão (QA no navegador): cada página disparava GET /favicon.ico -> 404 com a página de erro inteira
+        response = Client().get("/favicon.ico")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].endswith("img/favicon.svg"))
+        self.assertEqual(Client().post("/favicon.ico").status_code, 405)
+
     # --- Landing -----------------------------------------------------------------------------------------
     def test_landing_for_anonymous(self):
         response = Client().get("/")

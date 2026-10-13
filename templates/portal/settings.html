@@ -195,7 +195,7 @@ ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_
           <dt class="text-slate-500">Situação</dt>
           <dd class="mt-0.5">{% if campaign_active %}{% badge campaign_status_label "green" %}{% else %}{% badge campaign_status_label "red" %}{% endif %}</dd>
         </div>
-        <div><dt class="text-slate-500">Cargo e ano</dt><dd class="mt-0.5 font-medium text-slate-900">{{ campaign.get_office_display }} · {{ campaign.election_year }}</dd></div>
+        <div><dt class="text-slate-500">Cargo e ano</dt><dd class="mt-0.5 font-medium text-slate-900">{{ campaign.get_office_display }} · {{ campaign.election_year|stringformat:"d" }}</dd></div>
         <div class="sm:col-span-2">
           <dt class="text-slate-500">Meu link de cadastro</dt>
           <dd class="mt-1 flex flex-col gap-2 sm:flex-row">

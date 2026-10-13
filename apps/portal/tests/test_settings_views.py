@@ -74,6 +74,12 @@ class SettingsAccessTests(SettingsBase):
         self.assertNotContains(response, "Somente leitura")
         self.assertContains(response, "Salvar identidade")
 
+    def test_info_card_shows_election_year_without_thousand_separator(self):
+        # Regressão (QA no navegador): com USE_THOUSAND_SEPARATOR o ano saía como "2.026"
+        response = login("admin@a.com").get(URL)
+        self.assertContains(response, "Vereador(a) · 2026</dd>")
+        self.assertNotContains(response, "2.026")
+
     def test_page_shows_default_consent_as_placeholder(self):
         response = login("admin@a.com").get(URL)
         self.assertContains(response, "Autorizo a campanha de {{candidato}}")  # placeholder do textarea

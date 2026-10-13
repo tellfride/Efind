@@ -13,8 +13,10 @@ DEFAULT_BASEMAP = "ruas"
 MAP_MODES: tuple[tuple[str, str], ...] = (("bairros", "Bairros"), ("pontos", "Pontos"), ("calor", "Calor"))
 
 _OSM_LINK = '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>'
-_CARTO_LINK = '<a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>'
 
+# O mapa "Claro" reaproveita os tiles do OpenStreetMap com um filtro CSS (classe `efind-tiles-light`, em
+# static/css/mapview.css). Os tiles gratuitos da CARTO (basemaps.cartocdn.com) passaram a devolver, para qualquer
+# coordenada, uma imagem "API KEY REQUIRED"; por isso não dependemos de provedores que exijam chave.
 BASEMAPS: dict[str, dict] = {
     "ruas": {
         "label": "Ruas",
@@ -25,10 +27,11 @@ BASEMAPS: dict[str, dict] = {
     },
     "claro": {
         "label": "Claro",
-        "url": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-        "attribution": f"&copy; {_OSM_LINK} &copy; {_CARTO_LINK}",
-        "subdomains": "abcd",
-        "maxZoom": 20,
+        "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": f"&copy; {_OSM_LINK} contributors",
+        "subdomains": "abc",
+        "maxZoom": 19,
+        "className": "efind-tiles-light",
     },
 }
 

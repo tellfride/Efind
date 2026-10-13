@@ -271,7 +271,12 @@
         const base = basemaps[key];
         if (!base) return;
         if (tileLayer) map.removeLayer(tileLayer);
-        tileLayer = window.L.tileLayer(base.url, { attribution: base.attribution, subdomains: base.subdomains, maxZoom: base.maxZoom });
+        tileLayer = window.L.tileLayer(base.url, {
+          attribution: base.attribution,
+          subdomains: base.subdomains,
+          maxZoom: base.maxZoom,
+          className: base.className || "", // "Claro": estilo (filtro CSS) sobre os mesmos tiles
+        });
         tileLayer.addTo(map);
         tileLayer.bringToBack();
       }

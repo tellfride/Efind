@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
+from django.templatetags.static import static
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_safe
@@ -58,6 +59,12 @@ LEGAL_LAST_UPDATED = "outubro de 2026"
 
 
 # --- Site público -------------------------------------------------------------------------------------
+@require_safe
+def favicon(request):
+    """Safari e navegadores antigos pedem /favicon.ico mesmo com <link rel="icon">: redireciona ao SVG (em vez de um 404)."""
+    return redirect(static("img/favicon.svg"))
+
+
 @require_safe
 def landing(request):
     """Página inicial de efind.com.br (pública; o CTA muda quando há sessão ativa)."""

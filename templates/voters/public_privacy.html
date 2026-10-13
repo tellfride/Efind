@@ -10,7 +10,7 @@
 
   <section>
     <h2 class="text-base font-semibold text-slate-900">Quem é o controlador dos dados</h2>
-    <p class="mt-1">O controlador é a campanha de <strong>{{ campaign.candidate_name }}</strong> ({{ campaign.ballot_name }}{% if campaign.ballot_number %}, {{ campaign.ballot_number }}{% endif %}{% if campaign.party %}, {{ campaign.party }}{% endif %}), candidato(a) a {{ brand.office_label }} nas eleições de {{ campaign.election_year }}.</p>
+    <p class="mt-1">O controlador é a campanha de <strong>{{ campaign.candidate_name }}</strong> ({{ campaign.ballot_name }}{% if campaign.ballot_number %}, {{ campaign.ballot_number }}{% endif %}{% if campaign.party %}, {{ campaign.party }}{% endif %}), candidato(a) a {{ brand.office_label }} nas eleições de {{ campaign.election_year|stringformat:"d" }}.</p>
     <p class="mt-1">Contato para assuntos de privacidade: {% if campaign.privacy_contact %}<strong>{{ campaign.privacy_contact }}</strong>{% else %}os canais oficiais de atendimento da campanha{% endif %}.</p>
   </section>
 

@@ -35,6 +35,37 @@
     pushToast(d.message || d.value, d.level);
   });
 
+  // Copia texto: Clipboard API (só em contexto seguro e com permissão) e, se falhar (HTTP na rede local, WebViews
+  // de apps, permissão negada), cai para um <textarea> + execCommand("copy"). Resolve true/false, nunca rejeita.
+  function copyFallback(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;pointer-events:none";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch (err) {
+      ok = false;
+    }
+    ta.remove();
+    return ok;
+  }
+  function copyText(text) {
+    const value = String(text == null ? "" : text);
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      return navigator.clipboard.writeText(value).then(
+        () => true,
+        () => copyFallback(value),
+      );
+    }
+    return Promise.resolve(copyFallback(value));
+  }
+  window.EFind.copyText = copyText;
+
   // ------------------------------------------------------------------ Confirmação e cópia (delegação)
   document.addEventListener(
     "click",
@@ -48,10 +79,9 @@
       }
       const copy = e.target.closest("[data-copy]");
       if (copy) {
-        navigator.clipboard
-          .writeText(copy.dataset.copy)
-          .then(() => pushToast("Copiado para a área de transferência", "success"))
-          .catch(() => pushToast("Não foi possível copiar", "error"));
+        copyText(copy.dataset.copy).then((ok) =>
+          ok ? pushToast("Copiado para a área de transferência", "success") : pushToast("Não foi possível copiar", "error"),
+        );
       }
     },
     true,
@@ -69,8 +99,19 @@
   );
 
   // ------------------------------------------------------------------ Máscaras
+  // Dígitos nacionais (DDD + número) de um telefone digitado/colado. Descarta o DDI "+55"/"55"/"0055" e o "0" do DDD de
+  // longa distância, como o servidor (apps/core/phone.py); sem isso "+55 91 98877-6655" virava o telefone errado
+  // "(55) 91988-7766" (DDI lido como DDD e os dois últimos dígitos cortados).
+  function phoneDigits(raw) {
+    const text = String(raw == null ? "" : raw);
+    let d = text.replace(/\D/g, "");
+    if (d.startsWith("00")) d = d.slice(2);
+    if (d.startsWith("55") && (/^\s*\+/.test(text) || d.length > 11)) d = d.slice(2);
+    else if (d.startsWith("0") && d.length > 10) d = d.slice(1);
+    return d.slice(0, 11);
+  }
   function maskPhone(v) {
-    const d = v.replace(/\D/g, "").slice(0, 11);
+    const d = phoneDigits(v);
     if (d.length <= 2) return d.length ? "(" + d : "";
     if (d.length <= 6) return "(" + d.slice(0, 2) + ") " + d.slice(2);
     if (d.length <= 10) return "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + "-" + d.slice(6);
