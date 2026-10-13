@@ -151,20 +151,6 @@
       onSubmit(ev) {
         if (!this.canSubmit) ev.preventDefault();
       },
-
-      downloadSample() {
-        const esc = (v) => '"' + String(v).replace(/"/g, '""') + '"';
-        const rows = [this.cfg.sampleColumns || [], this.cfg.sampleRow || []];
-        const csv = "﻿" + rows.map((r) => r.map(esc).join(";")).join("\r\n") + "\r\n";
-        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "modelo-importacao-eleitores.csv";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      },
     }));
   });
 })();

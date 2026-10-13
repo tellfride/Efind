@@ -18,7 +18,7 @@ from django.utils import timezone
 
 from apps.core.constants import UFS, Gender, SupportLevel
 from apps.core.phone import normalize_br_phone
-from apps.core.utils import age_from, normalize_text, serialize_tags, title_case
+from apps.core.utils import age_from, normalize_text, serialize_tags, title_case, to_csv
 from apps.geo.cep import normalize_cep
 
 from .utils import (
@@ -421,6 +421,53 @@ def split_file_duplicates(results: Sequence[RowResult]) -> tuple[list[RowResult]
 
 SAMPLE_COLUMNS = ["nome", "telefone", "email", "nascimento", "genero", "cep", "rua", "numero", "complemento",
                   "bairro", "cidade", "uf", "zona", "secao", "apoio", "tags"]  # fmt: skip
-SAMPLE_ROW = ["Maria da Silva", "(11) 98765-4321", "maria@exemplo.com", "15/03/1985", "F", "01310-100",
-              "Avenida Paulista", "1000", "Apto 12", "Bela Vista", "São Paulo", "SP", "1", "25", "apoiador",
-              "saúde, jovem"]  # fmt: skip
+
+
+# --- Modelo para download (/painel/eleitores/importar/modelo/) e guia de preenchimento -------------------------
+# As linhas de exemplo usam telefone INVÁLIDO de propósito (DDD 00): se alguém esquecer de apagá-las, o importador as
+# rejeita em vez de cadastrar eleitores fictícios.
+TEMPLATE_EXAMPLE_ROWS = [
+    ["EXEMPLO - apague esta linha", "(00) 90000-0000", "maria@exemplo.com", "15/03/1985", "Feminino", "01310-100",
+     "Avenida Paulista", "1000", "Apto 12", "Bela Vista", "São Paulo", "SP", "1", "25", "Apoiador", "saúde, jovem"],
+    ["EXEMPLO - apague esta linha", "(00) 90000-0001", "", "", "Masculino", "", "", "", "", "Centro", "Campinas",
+     "SP", "", "", "Simpatizante", ""],
+]  # fmt: skip
+
+# coluna → (formato / valores aceitos, exemplo)
+_GUIDE_TEXT = {
+    "nome": ("Nome completo, com pelo menos 3 letras.", "Maria da Silva"),
+    "telefone": ("DDD + número, com ou sem máscara. Telefones já cadastrados na campanha são ignorados.", "(11) 98765-4321"),
+    "email": ("Endereço de e-mail válido.", "maria@exemplo.com"),
+    "nascimento": (f"dd/mm/aaaa ou aaaa-mm-dd. Idade entre {MIN_VOTER_AGE} e {MAX_VOTER_AGE} anos.", "15/03/1985"),
+    "genero": ("Feminino, Masculino, Outro ou Prefere não informar (também aceita F, M, O, N).", "Feminino"),
+    "cep": ("8 dígitos, com ou sem hífen. Usado para localizar o eleitor no mapa.", "01310-100"),
+    "rua": ("Logradouro (rua, avenida...).", "Avenida Paulista"),
+    "numero": ("Número do imóvel. Não é enviado a serviços externos de mapa.", "1000"),
+    "complemento": ("Apartamento, bloco, referência.", "Apto 12"),
+    "bairro": ("Importante para o mapa, os filtros e as regiões. Escreva o nome oficial do bairro.", "Bela Vista"),
+    "cidade": ("Nome da cidade.", "São Paulo"),
+    "uf": ("Sigla do estado, com 2 letras.", "SP"),
+    "zona": ("Número da zona eleitoral.", "1"),
+    "secao": ("Número da seção eleitoral.", "25"),
+    "apoio": ("Apoiador, Simpatizante, Indeciso ou Opositor.", "Apoiador"),
+    "tags": ("Várias tags separadas por vírgula.", "saúde, jovem"),
+}
+
+COLUMN_GUIDE = [
+    {
+        "key": f.key,
+        "label": f.label,
+        "required": f.required,
+        "format": _GUIDE_TEXT[f.key][0],
+        "example": _GUIDE_TEXT[f.key][1],
+    }
+    for f in IMPORT_FIELDS
+]
+
+
+def build_template_csv() -> str:
+    """Conteúdo do modelo: cabeçalho (nomes que o importador reconhece sozinho) + 2 linhas de exemplo.
+    CSV com BOM UTF-8 e ";" — abre direto no Excel/LibreOffice/Google Planilhas em português e reimporta sem ajustes."""
+    columns = [(key, key) for key in SAMPLE_COLUMNS]
+    rows = [dict(zip(SAMPLE_COLUMNS, row, strict=True)) for row in TEMPLATE_EXAMPLE_ROWS]
+    return to_csv(rows, columns)

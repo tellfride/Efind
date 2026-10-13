@@ -179,7 +179,7 @@ Alpine e HTMX são carregados em todas as páginas (`defer`, depois de `app.js`)
 | `/login/`, `/logout/` (POST), `/painel/perfil/`, `/super/perfil/` | accounts (pronto) |
 | `/api/public/cep/<cep>/` | geo (pronto) |
 | `/`, `/privacidade/`, `/termos/`, `/painel/configuracoes/`, `/painel/auditoria/` | portal |
-| `/c/<code>/` (+ `obrigado/`, `privacidade/`), `/painel/eleitores/` (+ `novo/`, `<id>/`, `importar/`, `exportar/`), `/painel/meu-link/` (+ `cartaz/`) | voters |
+| `/c/<code>/` (+ `obrigado/`, `privacidade/`), `/painel/eleitores/` (+ `novo/`, `<id>/`, `importar/` (+ `modelo/`: planilha-modelo CSV para download), `exportar/`), `/painel/meu-link/` (+ `cartaz/`) | voters |
 | `/painel/` e `/painel/dashboards/` (+ `<id>/`, `<id>/editar/`), `/api/painel/dashboard/...` | dashboards |
 | `/painel/equipe/` (+ `novo/`, `<id>/`), `/painel/permissoes/` | team |
 | `/painel/mapa/`, `/api/painel/mapa/...` | mapview |

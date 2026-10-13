@@ -23,6 +23,35 @@
       <p class="card-description">Aceitamos CSV separado por ponto e vírgula, vírgula ou tabulação (como o Excel e o Google Planilhas exportam). Máximo de {{ max_rows|num }} linhas por importação.</p>
     </div>
     <div class="card-body space-y-4">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <a class="btn btn-outline btn-sm" href="{% url 'voters:import_template' %}" download>{% icon "file-spreadsheet" %} Baixar modelo de planilha (CSV)</a>
+        <span class="text-xs text-slate-500">Já vem com os títulos de coluna que o sistema reconhece.</span>
+      </div>
+      <details class="rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3 text-sm text-slate-700">
+        <summary class="cursor-pointer font-medium text-slate-900">Como preencher a planilha</summary>
+        <ol class="mt-3 list-decimal space-y-1.5 pl-5">
+          <li>Baixe o modelo e abra no Excel, Google Planilhas ou LibreOffice.</li>
+          <li>Apague as <strong>2 linhas de exemplo</strong> (têm telefone inválido de propósito: se esquecer, elas são ignoradas na importação).</li>
+          <li>Preencha <strong>uma linha por eleitor</strong>. Só <strong>nome</strong> e <strong>telefone</strong> são obrigatórios. Não altere os títulos das colunas.</li>
+          <li>Salve como <strong>CSV</strong> (no Excel: <em>Arquivo → Salvar como → CSV UTF-8</em>) e envie o arquivo aqui.</li>
+        </ol>
+        <div class="table-wrap mt-4">
+          <table class="table">
+            <thead><tr><th scope="col">Coluna</th><th scope="col">Preenchimento</th><th scope="col">Formato / valores aceitos</th><th scope="col">Exemplo</th></tr></thead>
+            <tbody>
+              {% for col in column_guide %}
+              <tr>
+                <td class="font-mono text-xs">{{ col.key }}</td>
+                <td>{% if col.required %}<span class="badge badge-red">Obrigatório</span>{% else %}<span class="badge badge-gray">Opcional</span>{% endif %}</td>
+                <td>{{ col.format }}</td>
+                <td class="whitespace-nowrap">{{ col.example }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-3 text-xs text-slate-500">Até {{ max_rows|num }} linhas por importação. Telefones já cadastrados na campanha e repetidos no arquivo são ignorados, e o resultado mostra o motivo de cada linha rejeitada.</p>
+      </details>
       <div class="space-y-1.5">
         <label class="label" for="import-file">Arquivo CSV</label>
         <input id="import-file" type="file" accept=".csv,.txt,text/csv,text/plain" class="input" @change="onFile($event)">
@@ -32,8 +61,7 @@
         <label class="label" for="import-text">Ou cole a lista aqui</label>
         <textarea id="import-text" class="textarea font-mono text-xs" rows="6" spellcheck="false" x-model="text" @input.debounce.700ms="onPaste()" placeholder="nome;telefone;bairro&#10;Maria da Silva;(11) 98765-4321;Centro"></textarea>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <button type="button" class="btn btn-outline btn-sm" @click="downloadSample()">{% icon "file-spreadsheet" %} Baixar modelo de planilha</button>
+      <div class="flex flex-wrap items-center gap-2" x-show="text || loading">
         <button type="button" class="btn btn-ghost btn-sm" x-show="text" @click="reset()">{% icon "x" %} Limpar</button>
         <span class="inline-flex items-center gap-2 text-sm text-slate-500" x-show="loading">{% icon "loader-circle" "size-4 animate-spin" %} Analisando...</span>
       </div>

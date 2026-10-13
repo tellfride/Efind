@@ -401,11 +401,3 @@ class ImportViewTests(VoterTestCase):
         r = strict.post(self.URL, {"csv_text": self.CSV, "declaration": "on"})
         self.assertEqual(r.status_code, 403)
         self.assertEqual(Voter.objects.count(), 0)
-
-    def test_sample_for_download_is_importable(self):
-        from apps.voters.csv_import import SAMPLE_COLUMNS, SAMPLE_ROW
-
-        text = ";".join(SAMPLE_COLUMNS) + "\n" + ";".join(SAMPLE_ROW)
-        a = analyze_import(text, self.a.pk, today=TODAY)
-        self.assertEqual(len(a.to_import), 1)
-        self.assertEqual(a.results[0].warnings, [])

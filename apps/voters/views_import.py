@@ -15,11 +15,17 @@ from django.views.decorators.http import require_GET, require_POST
 
 from apps.auditlog.service import audit
 from apps.core.decorators import module_permission_required
-from apps.core.http import json_error
+from apps.core.http import csv_response, json_error
 from apps.core.ratelimit import rate_limit
 from apps.core.utils import client_ip
 
-from .csv_import import IMPORT_FIELDS, MAX_IMPORT_ROWS, SAMPLE_COLUMNS, SAMPLE_ROW, CsvParseError
+from .csv_import import (
+    COLUMN_GUIDE,
+    IMPORT_FIELDS,
+    MAX_IMPORT_ROWS,
+    CsvParseError,
+    build_template_csv,
+)
 from .forms import ImportForm
 from .import_service import (
     PREVIEW_ROWS,
@@ -142,12 +148,19 @@ def _page_context(form: ImportForm, initial: dict) -> dict:
             "fields": _field_defs(),
             "maxChars": CLIENT_MAX_CHARS,
             "maxRows": MAX_IMPORT_ROWS,
-            "sampleColumns": SAMPLE_COLUMNS,
-            "sampleRow": SAMPLE_ROW,
             "initial": initial,
         },
         "max_rows": MAX_IMPORT_ROWS,
+        "column_guide": COLUMN_GUIDE,
     }
+
+
+@module_permission_required("eleitores", "create")
+@require_GET
+def import_template(request):
+    """Modelo de planilha (CSV) para download. Servido pelo servidor (e não gerado no navegador) para funcionar também
+    em navegadores embutidos, como o do WhatsApp, que costumam bloquear downloads por blob:."""
+    return csv_response(build_template_csv(), "modelo-importacao-eleitores.csv")
 
 
 @module_permission_required("eleitores", "create")

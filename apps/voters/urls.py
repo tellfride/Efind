@@ -18,6 +18,7 @@ urlpatterns = [
     path("painel/eleitores/exportar/", views_panel.voter_export, name="export"),
     path("painel/eleitores/localizar-novamente/", views_panel.retry_geo, name="retry_geo"),
     path("painel/eleitores/importar/", views_import.voter_import, name="import"),
+    path("painel/eleitores/importar/modelo/", views_import.import_template, name="import_template"),
     path("painel/eleitores/importar/resultado/", views_import.voter_import_result, name="import_result"),
     path("api/painel/eleitores/importar/previa/", views_import.import_preview, name="import_preview"),
     path("painel/eleitores/<uuid:voter_id>/", views_panel.voter_detail, name="detail"),
