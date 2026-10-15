@@ -13,6 +13,7 @@ from apps.auditlog.actions import AUDIT_ACTIONS
 from apps.campaigns.models import Campaign
 from apps.core.constants import UF_CHOICES, CampaignStatus, Office
 from apps.core.forms import PhoneField, StyledFormMixin
+from apps.core.utils import display_name_fallback
 
 DEFAULT_PRIMARY_COLOR = "#4f46e5"
 COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -96,7 +97,8 @@ class CampaignForm(StyledFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["candidate_name"].help_text = "Nome completo, como no registro de candidatura."
-        self.fields["ballot_name"].help_text = "Usado no painel e para gerar o identificador da campanha."
+        self.fields["ballot_name"].required = False
+        self.fields["ballot_name"].help_text = "Opcional. Usado no painel e no identificador da campanha; em branco, usa o nome do candidato."
         if self.instance._state.adding and not self.is_bound:
             self.initial["election_year"] = timezone.localdate().year
             self.initial["primary_color"] = DEFAULT_PRIMARY_COLOR
@@ -109,8 +111,8 @@ class CampaignForm(StyledFormMixin, forms.ModelForm):
 
     def clean_ballot_name(self):
         value = (self.cleaned_data.get("ballot_name") or "").strip()
-        if len(value) < 2:
-            raise forms.ValidationError("Informe o nome de urna.")
+        if value and len(value) < 2:
+            raise forms.ValidationError("O nome de urna deve ter ao menos 2 letras (ou deixe em branco).")
         return value
 
     def clean_ballot_number(self):
@@ -135,6 +137,8 @@ class CampaignForm(StyledFormMixin, forms.ModelForm):
 
     def clean(self):
         data = super().clean()
+        if not data.get("ballot_name") and "ballot_name" not in self.errors:
+            data["ballot_name"] = display_name_fallback(data.get("candidate_name"), 60)  # em branco: nome do candidato
         number = data.get("ballot_number")
         office = data.get("office")
         expected = expected_ballot_number_length(office) if office else None

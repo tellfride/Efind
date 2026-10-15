@@ -8,18 +8,23 @@ from django import forms
 
 from apps.core.constants import DEFAULT_CONSENT_TEXT, UF_CHOICES, Office, parse_form_config
 from apps.core.forms import StyledFormMixin
+from apps.core.utils import display_name_fallback
 
 from .settings_rules import (
     FORM_FIELD_GROUPS,
     FORM_FIELD_MODE_CHOICES,
     HEX_COLOR_RE,
+    BANNER_DATA_URL_MAX_CHARS,
+    BANNER_MAX_BYTES,
     LIMITS,
     LOGO_DATA_URL_MAX_CHARS,
     LogoError,
+    check_banner_data_url,
     check_logo_data_url,
 )
 
 LOGO_ACTIONS = ("keep", "remove", "replace")
+BANNER_ACTIONS = LOGO_ACTIONS
 
 
 def _single_line(value: str) -> str:
@@ -42,9 +47,9 @@ class IdentityForm(StyledFormMixin, forms.Form):
     )
     ballot_name = forms.CharField(
         label="Nome de urna",
-        min_length=2,
+        required=False,
         max_length=LIMITS["ballot_name"],
-        help_text="Como aparece na urna e nas mensagens (variável {{candidato}}).",
+        help_text="Opcional. Como aparece na urna e nas mensagens (variável {{candidato}}). Em branco, usamos o nome do candidato.",
         widget=forms.TextInput(attrs={"autocomplete": "off"}),
     )
     ballot_number = forms.CharField(
@@ -125,14 +130,25 @@ class IdentityForm(StyledFormMixin, forms.Form):
         error_messages={"max_length": "A imagem deve ter no máximo 300 KB."},
         widget=forms.HiddenInput,
     )
+    # Banner do topo do formulário público: recortado em 5:2 no navegador, revalidado aqui
+    banner_action = forms.ChoiceField(
+        required=False, choices=[(a, a) for a in BANNER_ACTIONS], widget=forms.HiddenInput
+    )
+    banner_data = forms.CharField(
+        required=False,
+        strip=True,
+        max_length=BANNER_DATA_URL_MAX_CHARS,
+        error_messages={"max_length": f"O banner deve ter no máximo {BANNER_MAX_BYTES // 1024} KB."},
+        widget=forms.HiddenInput,
+    )
 
     def clean_candidate_name(self):
         return _single_line(self.cleaned_data["candidate_name"])
 
     def clean_ballot_name(self):
-        value = _single_line(self.cleaned_data["ballot_name"])
-        if len(value) < 2:
-            raise forms.ValidationError("Informe o nome de urna.")
+        value = _single_line(self.cleaned_data.get("ballot_name") or "")
+        if value and len(value) < 2:
+            raise forms.ValidationError("O nome de urna deve ter ao menos 2 letras (ou deixe em branco).")
         return value
 
     def clean_ballot_number(self):
@@ -159,18 +175,25 @@ class IdentityForm(StyledFormMixin, forms.Form):
     def clean_logo_action(self):
         return self.cleaned_data.get("logo_action") or "keep"
 
+    def clean_banner_action(self):
+        return self.cleaned_data.get("banner_action") or "keep"
+
     def clean(self):
         cleaned = super().clean()
-        action = cleaned.get("logo_action") or "keep"
-        data = cleaned.get("logo_data") or ""
-        if action == "replace":
-            if "logo_data" not in self.errors:
-                try:
-                    check_logo_data_url(data)
-                except LogoError as exc:
-                    self.add_error("logo_data", str(exc))
-        else:
-            cleaned["logo_data"] = ""  # o servidor ignora qualquer imagem enviada sem a ação "replace"
+        for prefix, check in (("logo", check_logo_data_url), ("banner", check_banner_data_url)):
+            action = cleaned.get(f"{prefix}_action") or "keep"
+            data = cleaned.get(f"{prefix}_data") or ""
+            if action == "replace":
+                if f"{prefix}_data" not in self.errors:
+                    try:
+                        check(data)
+                    except LogoError as exc:
+                        self.add_error(f"{prefix}_data", str(exc))
+            else:
+                cleaned[f"{prefix}_data"] = ""  # o servidor ignora imagem enviada sem a ação "replace"
+        if not cleaned.get("ballot_name") and "ballot_name" not in self.errors:
+            # nome de urna em branco: usa o nome do candidato (o resto do sistema sempre tem um nome para exibir)
+            cleaned["ballot_name"] = display_name_fallback(cleaned.get("candidate_name"), LIMITS["ballot_name"])
         return cleaned
 
     @staticmethod
@@ -187,6 +210,7 @@ class IdentityForm(StyledFormMixin, forms.Form):
             "voter_goal": campaign.voter_goal,
             "primary_color": campaign.primary_color,
             "logo_action": "keep",
+            "banner_action": "keep",
         }
 
     def campaign_values(self, campaign) -> dict:
@@ -199,6 +223,13 @@ class IdentityForm(StyledFormMixin, forms.Form):
             logo_url = ""
         else:
             logo_url = campaign.logo_url
+        banner_action = data.get("banner_action") or "keep"
+        if banner_action == "replace":
+            banner_url = data["banner_data"]
+        elif banner_action == "remove":
+            banner_url = ""
+        else:
+            banner_url = campaign.banner_url
         return {
             "candidate_name": data["candidate_name"],
             "ballot_name": data["ballot_name"],
@@ -211,6 +242,7 @@ class IdentityForm(StyledFormMixin, forms.Form):
             "voter_goal": data["voter_goal"],
             "primary_color": data["primary_color"],
             "logo_url": logo_url,
+            "banner_url": banner_url,
         }
 
 

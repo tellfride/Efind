@@ -18,6 +18,8 @@ class Campaign(TimestampedModel):
     election_year = models.PositiveSmallIntegerField("ano da eleição")
     # Logo como data URL (png/jpeg/webp, até ~300 KB) para não depender de armazenamento de arquivos
     logo_url = models.TextField("logo", blank=True)
+    # Banner do topo do formulário público: data URL (png/jpeg/webp, proporção 4:1, até ~400 KB)
+    banner_url = models.TextField("banner do formulário", blank=True)
     primary_color = models.CharField("cor principal", max_length=7, default="#4f46e5")
     status = models.CharField(max_length=12, choices=CampaignStatus.choices, default=CampaignStatus.ACTIVE)
     voter_goal = models.PositiveIntegerField("meta de cadastros", null=True, blank=True)

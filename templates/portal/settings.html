@@ -26,9 +26,11 @@ ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_
         <input type="hidden" name="section" value="identity">
         <input type="hidden" name="logo_action" :value="logoAction" value="keep">
         <input type="hidden" name="logo_data" :value="logoAction === 'replace' ? logoData : ''" value="">
+        <input type="hidden" name="banner_action" :value="bannerAction" value="keep">
+        <input type="hidden" name="banner_data" :value="bannerAction === 'replace' ? bannerData : ''" value="">
         <div class="card-header">
           <h2 class="card-title">Identidade da campanha</h2>
-          <p class="card-description">Dados do candidato, cor e logo usados no painel e no formulário público.</p>
+          <p class="card-description">Dados do candidato, cor, logo e banner usados no painel e no formulário público.</p>
         </div>
         <fieldset class="contents" {% if not can_edit %}disabled{% endif %}>
           <div class="card-body space-y-5">
@@ -88,11 +90,41 @@ ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_
               <p class="field-error" x-cloak x-show="logoError" x-text="logoError" role="alert"></p>
               {% if identity_form.logo_data.errors %}<p class="field-error" role="alert">{{ identity_form.logo_data.errors.0 }}</p>{% endif %}
             </div>
+            {# Banner do topo do formulário público #}
+            <div class="space-y-1.5">
+              <label for="banner-file" class="label">Banner do formulário público</label>
+              <div class="space-y-3 rounded-lg border border-dashed border-slate-300 p-4">
+                <div class="relative aspect-[5/2] w-full overflow-hidden rounded-lg border border-slate-200" style="background-color:#fff;background-image:linear-gradient(45deg,#f1f5f9 25%,transparent 25%),linear-gradient(-45deg,#f1f5f9 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f1f5f9 75%),linear-gradient(-45deg,transparent 75%,#f1f5f9 75%);background-position:0 0,0 8px,8px -8px,-8px 0;background-size:16px 16px">
+                  <template x-if="bannerBusy"><span class="absolute inset-0 flex items-center justify-center text-slate-400">{% icon "loader-circle" "size-6 animate-spin" %}</span></template>
+                  <template x-if="!bannerBusy && bannerUrl"><img :src="bannerUrl" alt="Banner do formulário" class="size-full object-cover"></template>
+                  <template x-if="!bannerBusy && !bannerUrl"><span class="absolute inset-0 flex items-center justify-center px-4 text-center text-xs text-slate-500">2000 × 800 px · proporção 5:2</span></template>
+                </div>
+                <p class="text-sm" :class="bannerAction === 'keep' ? 'text-slate-600' : 'font-medium text-amber-700'" x-text="bannerStatus" aria-live="polite">{% if saved_banner %}Banner atual cadastrado.{% else %}Nenhum banner enviado: o formulário mostra o logo e o nome da campanha.{% endif %}</p>
+                <ul class="list-disc space-y-0.5 pl-5 text-xs text-slate-500">
+                  <li><strong>Tamanho ideal: 2000 × 800 px</strong> (proporção 5:2). Mínimo aceito: 640 × 256 px.</li>
+                  <li>PNG, JPEG ou WebP. A imagem é recortada no centro em 5:2 e otimizada no seu navegador para até 400 KB.</li>
+                  <li>Deixe o essencial (rosto, nome, número) no centro, cerca de 60% da largura: em celulares as laterais são cortadas.</li>
+                  <li>O banner substitui o logo e o nome no topo do formulário; o texto e as cores continuam abaixo dele.</li>
+                </ul>
+                {% if can_edit %}
+                <div class="flex flex-wrap gap-2">
+                  <input id="banner-file" x-ref="bannerFile" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" :disabled="bannerBusy" @change="pickBanner($event)">
+                  <button type="button" class="btn btn-outline btn-sm" :disabled="bannerBusy" @click="$refs.bannerFile.click()">
+                    {% icon "upload" %} <span x-text="bannerUrl ? 'Trocar banner' : 'Enviar banner'">Enviar banner</span>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-sm text-red-600 hover:bg-red-50 hover:text-red-700" x-cloak x-show="bannerUrl && bannerAction !== 'remove'" :disabled="bannerBusy" @click="removeBanner()">{% icon "trash-2" %} Remover</button>
+                  <button type="button" class="btn btn-ghost btn-sm" x-cloak x-show="bannerAction !== 'keep'" :disabled="bannerBusy" @click="undoBanner()">{% icon "undo-2" %} Desfazer</button>
+                </div>
+                {% endif %}
+              </div>
+              <p class="field-error" x-cloak x-show="bannerError" x-text="bannerError" role="alert"></p>
+              {% if identity_form.banner_data.errors %}<p class="field-error" role="alert">{{ identity_form.banner_data.errors.0 }}</p>{% endif %}
+            </div>
           </div>
         </fieldset>
         {% if can_edit %}
         <div class="card-footer flex items-center justify-end gap-2">
-          <button type="submit" class="btn btn-primary" :disabled="logoBusy || saving === 'identity'">{% icon "save" %} Salvar identidade</button>
+          <button type="submit" class="btn btn-primary" :disabled="logoBusy || bannerBusy || saving === 'identity'">{% icon "save" %} Salvar identidade</button>
         </div>
         {% endif %}
       </form>
@@ -217,8 +249,9 @@ ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_
       <span class="text-xs text-slate-500">Atualiza enquanto você digita</span>
     </div>
     <div x-cloak class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm">
-      <div class="px-5 pt-6 pb-10" :style="`background-color:${color};color:${textColor}`" style="background-color:{{ color_value }};color:{{ color_text }}">
-        <div class="flex items-center gap-3">
+      <template x-if="bannerUrl"><img :src="bannerUrl" alt="" class="block aspect-[5/2] w-full object-cover"></template>
+      <div class="px-5 pb-10" :class="bannerUrl ? 'pt-4' : 'pt-6'" :style="`background-color:${color};color:${textColor}`" style="background-color:{{ color_value }};color:{{ color_text }}">
+        <div class="flex items-center gap-3" x-show="!bannerUrl">
           <template x-if="logoUrl"><img :src="logoUrl" alt="" class="size-12 shrink-0 rounded-xl bg-white object-contain p-1 shadow-sm"></template>
           <template x-if="!logoUrl"><span class="flex size-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold shadow-sm" :style="textColor === '#ffffff' ? 'background-color:rgba(255,255,255,.18)' : 'background-color:rgba(15,23,42,.08)'" x-text="initial" aria-hidden="true"></span></template>
           <div class="min-w-0">
@@ -273,6 +306,7 @@ ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_
 
 {{ js_config|json_script:"portal-settings-config" }}
 {{ logo_state|json_script:"portal-logo-state" }}
+{{ banner_state|json_script:"portal-banner-state" }}
 {% endblock %}
 
 {% block scripts %}<script src="{% static 'js/portal/settings.js' %}"></script>{% endblock %}

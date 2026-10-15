@@ -34,6 +34,9 @@ def source_files():
                 yield rel, path
 
 
+WRONG_PHRASE = re.compile(r"t[ií]tulo de apoiador", re.IGNORECASE)  # o documento se chama "título eleitoral"
+
+
 class TerminologyTests(SimpleTestCase):
     def test_no_voter_wording_in_interface_texts_or_docs(self):
         found = []
@@ -42,3 +45,11 @@ class TerminologyTests(SimpleTestCase):
                 if WORD.search(INTERNAL_KEY.sub("", line)):
                     found.append(f"{rel}:{number}: {line.strip()[:110]}")
         self.assertEqual(found, [], "use 'apoiador(es)' em vez de 'eleitor(es)':\n" + "\n".join(found))
+
+    def test_electoral_document_keeps_its_real_name(self):
+        found = []
+        for rel, path in source_files():
+            for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                if WRONG_PHRASE.search(line):
+                    found.append(f"{rel}:{number}: {line.strip()[:110]}")
+        self.assertEqual(found, [], 'o documento é "título eleitoral", não "título de apoiador"')

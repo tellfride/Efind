@@ -43,12 +43,16 @@ from .services import (
     with_users,
 )
 from .settings_rules import (
+    BANNER_HEIGHT,
+    BANNER_MAX_BYTES,
+    BANNER_WIDTH,
     DEFAULT_PRIMARY_COLOR,
     LIMITS,
     LOGO_ACCEPTED_MIMES,
     LOGO_MAX_BYTES,
     LOGO_MAX_DIMENSION,
     LOGO_MAX_SOURCE_BYTES,
+    is_safe_banner_url,
     is_safe_logo_url,
     normalize_hex_color,
     readable_text_color,
@@ -109,6 +113,13 @@ def _settings_js_config() -> dict:
         "logo": {
             "maxBytes": LOGO_MAX_BYTES,
             "maxDimension": LOGO_MAX_DIMENSION,
+            "maxSourceBytes": LOGO_MAX_SOURCE_BYTES,
+            "accepted": list(LOGO_ACCEPTED_MIMES),
+        },
+        "banner": {
+            "maxBytes": BANNER_MAX_BYTES,
+            "width": BANNER_WIDTH,
+            "height": BANNER_HEIGHT,
             "maxSourceBytes": LOGO_MAX_SOURCE_BYTES,
             "accepted": list(LOGO_ACCEPTED_MIMES),
         },
@@ -178,6 +189,17 @@ def settings_view(request):
         elif posted == "remove":
             logo_action = "remove"
 
+    # Mesmo tratamento para o banner do formulário público
+    banner_action, banner_echo = "keep", ""
+    if identity_form.is_bound:
+        posted = identity_form.data.get("banner_action")
+        cleaned = getattr(identity_form, "cleaned_data", {})
+        if posted == "replace" and "banner_data" not in identity_form.errors and cleaned.get("banner_data"):
+            banner_action, banner_echo = "replace", cleaned["banner_data"]
+        elif posted == "remove":
+            banner_action = "remove"
+    saved_banner = campaign.banner_url if is_safe_banner_url(campaign.banner_url) else ""
+
     saved_logo = campaign.logo_url if is_safe_logo_url(campaign.logo_url) else ""
     color = normalize_hex_color(identity_form["primary_color"].value()) or DEFAULT_PRIMARY_COLOR
     context = {
@@ -194,6 +216,8 @@ def settings_view(request):
         "registration_link": registration_url(request.user.invite_code),
         "saved_logo": saved_logo,
         "logo_state": {"saved": saved_logo, "action": logo_action, "echo": logo_echo},
+        "saved_banner": saved_banner,
+        "banner_state": {"saved": saved_banner, "action": banner_action, "echo": banner_echo},
         "campaign_active": campaign.status == CampaignStatus.ACTIVE,
         "campaign_status_label": label_of(CampaignStatus, campaign.status),
         "js_config": _settings_js_config(),

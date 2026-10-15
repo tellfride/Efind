@@ -16,6 +16,7 @@ from .utils import (
     brand_style,
     is_valid_invite_code,
     readable_text_color,
+    safe_banner_url,
     safe_hex_color,
     safe_logo_url,
     whatsapp_share_url,
@@ -28,6 +29,7 @@ class PublicBrand:
     text_color: str  # cor legível sobre `color`
     style: str  # variáveis CSS brand-* (atributo style do contêiner)
     logo_url: str  # vazio se ausente/inseguro
+    banner_url: str  # banner do topo (vazio se ausente/inseguro)
     office_label: str
 
 
@@ -39,6 +41,7 @@ def brand_for(campaign) -> PublicBrand:
         text_color=readable_text_color(color),
         style=brand_style(color),
         logo_url=safe_logo_url(campaign.logo_url),
+        banner_url=safe_banner_url(campaign.banner_url),
         office_label=label_of(Office, campaign.office),
     )
 

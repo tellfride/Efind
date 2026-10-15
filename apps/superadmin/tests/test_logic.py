@@ -121,7 +121,7 @@ class CampaignFormTests(TestCase):
     def test_required_fields(self):
         form = CampaignForm({})
         self.assertFalse(form.is_valid())
-        for name in ("candidate_name", "ballot_name", "office", "election_year"):
+        for name in ("candidate_name", "office", "election_year"):
             self.assertIn(name, form.errors)
 
     def test_empty_color_uses_default_and_color_is_lowercased(self):

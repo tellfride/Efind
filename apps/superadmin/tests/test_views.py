@@ -325,7 +325,7 @@ class CreateCampaignViewTests(BaseCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Campaign.objects.count(), before)
-        self.assertEqual(set(response.context["form"].errors), {"primary_color", "ballot_number", "office", "ballot_name"})
+        self.assertEqual(set(response.context["form"].errors), {"primary_color", "ballot_number", "office"})  # nome de urna em branco é permitido
         self.assertIn("email", response.context["admin_form"].errors)  # os dois formulários são validados juntos
         self.assertIn("Verifique os campos destacados.", msgs(response))
 

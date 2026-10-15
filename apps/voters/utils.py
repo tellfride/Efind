@@ -153,6 +153,16 @@ def safe_logo_url(url: str | None) -> str:
     return ""
 
 
+_BANNER_RE = re.compile(r"^data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$")
+BANNER_URL_MAX_CHARS = 1_200_000  # ~900 KB de imagem: bem acima do limite de envio (400 KB)
+
+
+def safe_banner_url(url: str | None) -> str:
+    """Banner do topo do formulário: só data URL de imagem raster (png/jpeg/webp), nunca http(s) nem SVG."""
+    u = (url or "").strip()
+    return u if u and len(u) <= BANNER_URL_MAX_CHARS and _BANNER_RE.match(u) else ""
+
+
 def is_hex_color(value: str | None) -> bool:
     return bool(value) and _HEX_RE.match(value.strip()) is not None
 

@@ -5,7 +5,8 @@
  *   (só não há pré-visualização nem envio de logo).
  * - O logo é redimensionado (máx. 512 px) e recodificado no navegador (WebP, ou PNG se o navegador não codificar WebP)
  *   até caber em 300 KB, e vai no campo oculto `logo_data` como data URL. O servidor revalida tudo (apps/portal).
- * - Configuração vem do servidor via json_script: #portal-settings-config e #portal-logo-state.
+ * - O banner do topo do formulário segue o mesmo caminho, mas é recortado no centro em 5:2 (2000×800) e limitado a 400 KB.
+ * - Configuração vem do servidor via json_script: #portal-settings-config, #portal-logo-state e #portal-banner-state.
  */
 (function () {
   "use strict";
@@ -13,6 +14,7 @@
   var HEX = /^#[0-9a-fA-F]{6}$/;
   var MODE_KEYS = ["email", "birth_date", "gender", "address", "electoral"];
   var DIMENSIONS = [512, 384, 256, 192, 128];
+  var BANNER_WIDTHS = [2000, 1600, 1280, 960, 640];
   var QUALITIES = [0.92, 0.85, 0.75, 0.6, 0.45];
   var DEFAULT_COLOR = "#4f46e5";
 
@@ -118,6 +120,56 @@
     throw new Error("Não foi possível reduzir a imagem para até " + Math.round(limits.maxBytes / 1024) + " KB. Tente um arquivo mais simples.");
   }
 
+  // Banner do topo do formulário: recorte central na proporção 5:2 (2000×800), recodificado até caber no limite
+  async function processBannerFile(file, limits) {
+    if (limits.accepted.indexOf(file.type) === -1) throw new Error("Formato não suportado. Use PNG, JPEG ou WebP.");
+    if (file.size > limits.maxSourceBytes) {
+      throw new Error("Arquivo muito grande (" + formatBytes(file.size) + "). Escolha uma imagem de até " + Math.round(limits.maxSourceBytes / (1024 * 1024)) + " MB.");
+    }
+    var img = await loadImage(file);
+    var srcW = img.naturalWidth;
+    var srcH = img.naturalHeight;
+    if (!srcW || !srcH) throw new Error("Imagem inválida.");
+    if (srcW < 640 || srcH < 256) throw new Error("Imagem pequena demais (" + srcW + "×" + srcH + " px). Use ao menos 640×256 px; o ideal é " + limits.width + "×" + limits.height + " px.");
+
+    var ratio = limits.width / limits.height;
+    var cropW = srcW;
+    var cropH = srcH;
+    if (srcW / srcH > ratio) cropW = Math.round(srcH * ratio);
+    else cropH = Math.round(srcW / ratio);
+    var cropX = Math.round((srcW - cropW) / 2);
+    var cropY = Math.round((srcH - cropH) / 2);
+
+    var canvas = document.createElement("canvas");
+    var ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Seu navegador não permite processar imagens.");
+
+    for (var d = 0; d < BANNER_WIDTHS.length; d++) {
+      var width = Math.min(BANNER_WIDTHS[d], limits.width, cropW);
+      var height = Math.round(width / ratio);
+      canvas.width = width;
+      canvas.height = height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, width, height);
+
+      for (var q = 0; q < QUALITIES.length; q++) {
+        var dataUrl = canvas.toDataURL("image/webp", QUALITIES[q]);
+        var format = "WebP";
+        if (dataUrl.indexOf("data:image/webp") !== 0) {
+          dataUrl = canvas.toDataURL("image/jpeg", QUALITIES[q]); // sem codificador WebP: JPEG (sem transparência)
+          format = "JPEG";
+        }
+        var bytes = dataUrlBytes(dataUrl);
+        if (bytes <= limits.maxBytes) {
+          return { dataUrl: dataUrl, width: width, height: height, bytes: bytes, format: format, cropped: cropW !== srcW || cropH !== srcH };
+        }
+      }
+    }
+    throw new Error("Não foi possível reduzir o banner para até " + Math.round(limits.maxBytes / 1024) + " KB. Tente uma imagem mais simples.");
+  }
+
   function toast(message, level) {
     if (window.EFind && typeof window.EFind.toast === "function") window.EFind.toast(message, level);
   }
@@ -125,9 +177,13 @@
   document.addEventListener("alpine:init", function () {
     window.Alpine.data("portalSettings", function () {
       return {
-        cfg: readJson("portal-settings-config", { logo: { maxBytes: 307200, maxDimension: 512, maxSourceBytes: 15728640, accepted: [] } }),
+        cfg: readJson("portal-settings-config", {
+          logo: { maxBytes: 307200, maxDimension: 512, maxSourceBytes: 15728640, accepted: [] },
+          banner: { maxBytes: 409600, width: 2000, height: 800, maxSourceBytes: 15728640, accepted: [] },
+        }),
 
         // Campos lidos do DOM
+        candidateName: "",
         ballotName: "",
         ballotNumber: "",
         party: "",
@@ -144,6 +200,13 @@
         logoInfo: "",
         logoBusy: false,
         logoError: "",
+        // Banner
+        bannerAction: "keep",
+        bannerData: "",
+        bannerSaved: "",
+        bannerInfo: "",
+        bannerBusy: false,
+        bannerError: "",
         saving: "",
 
         init: function () {
@@ -156,6 +219,15 @@
           } else if (state.action === "remove") {
             this.logoAction = "remove";
           }
+          var banner = readJson("portal-banner-state", { saved: "", action: "keep", echo: "" });
+          this.bannerSaved = banner.saved || "";
+          if (banner.action === "replace" && banner.echo) {
+            this.bannerAction = "replace";
+            this.bannerData = banner.echo;
+            this.bannerInfo = "Novo banner · " + formatBytes(dataUrlBytes(banner.echo));
+          } else if (banner.action === "remove") {
+            this.bannerAction = "remove";
+          }
           this.readFields();
         },
 
@@ -165,6 +237,7 @@
             var el = document.getElementById(id);
             return el ? el.value : "";
           };
+          this.candidateName = val("id_candidate_name").trim();
           this.ballotName = val("id_ballot_name").trim();
           this.ballotNumber = val("id_ballot_number").trim();
           this.party = val("id_party").trim();
@@ -189,7 +262,7 @@
         },
 
         onSubmit: function (event, section) {
-          if (this.logoBusy) {
+          if (this.logoBusy || this.bannerBusy) {
             event.preventDefault();
             return;
           }
@@ -207,7 +280,7 @@
           return readableText(this.color);
         },
         get displayName() {
-          return this.ballotName || "Nome de urna";
+          return this.ballotName || this.candidateName || "Nome de urna";
         },
         get initial() {
           return this.ballotNumber.slice(0, 2) || this.displayName.charAt(0).toUpperCase();
@@ -238,6 +311,16 @@
           if (this.logoAction === "remove") return "O logo será removido ao salvar.";
           if (this.logoAction === "replace") return this.logoInfo || "Novo logo pronto. Salve para aplicar.";
           return this.logoSaved ? "Logo atual · " + formatBytes(dataUrlBytes(this.logoSaved)) : "Nenhum logo enviado.";
+        },
+        get bannerUrl() {
+          if (this.bannerAction === "replace") return this.bannerData;
+          if (this.bannerAction === "remove") return "";
+          return this.bannerSaved;
+        },
+        get bannerStatus() {
+          if (this.bannerAction === "remove") return "O banner será removido ao salvar.";
+          if (this.bannerAction === "replace") return this.bannerInfo || "Novo banner pronto. Salve para aplicar.";
+          return this.bannerSaved ? "Banner atual · " + formatBytes(dataUrlBytes(this.bannerSaved)) : "Nenhum banner enviado: o formulário mostra o logo e o nome da campanha.";
         },
         shown: function (key) {
           return this.modes[key] !== "hidden";
@@ -282,6 +365,44 @@
           this.logoData = "";
           this.logoInfo = "";
           this.logoError = "";
+        },
+
+        // ------------------------------------------------------------------ banner
+        pickBanner: async function (event) {
+          var input = event.target;
+          var file = input.files && input.files[0];
+          if (!file) return;
+          this.bannerError = "";
+          this.bannerBusy = true;
+          try {
+            var result = await processBannerFile(file, this.cfg.banner);
+            this.bannerData = result.dataUrl;
+            this.bannerAction = "replace";
+            this.bannerInfo = "Novo banner · " + result.format + " · " + result.width + "×" + result.height + " px · " + formatBytes(result.bytes) + (result.cropped ? " · recortado no centro (5:2)" : "");
+            toast("Banner pronto. Salve a identidade para aplicar.", "success");
+          } catch (err) {
+            this.bannerError = err && err.message ? err.message : "Não foi possível processar a imagem.";
+          } finally {
+            this.bannerBusy = false;
+            input.value = "";
+          }
+        },
+        removeBanner: function () {
+          if (this.bannerAction === "replace" && !this.bannerSaved) {
+            this.undoBanner();
+            return;
+          }
+          if (window.confirm("Remover o banner do formulário? O topo volta a mostrar o logo e o nome da campanha depois de salvar.")) {
+            this.bannerAction = "remove";
+            this.bannerData = "";
+            this.bannerError = "";
+          }
+        },
+        undoBanner: function () {
+          this.bannerAction = "keep";
+          this.bannerData = "";
+          this.bannerInfo = "";
+          this.bannerError = "";
         },
       };
     });

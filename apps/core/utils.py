@@ -105,3 +105,13 @@ def to_csv(rows: Iterable[dict], columns: list[tuple[str, str]]) -> str:
     for row in rows:
         writer.writerow([_csv_cell(row.get(key)) for key, _ in columns])
     return "﻿" + buf.getvalue()
+
+
+def display_name_fallback(full_name: str | None, limit: int = 60) -> str:
+    """Nome curto para exibição quando o campo "nome de urna" ficou em branco: o nome completo do candidato,
+    cortado em fronteira de palavra para caber em `limit` caracteres."""
+    name = re.sub(r"\s+", " ", full_name or "").strip()
+    if len(name) <= limit:
+        return name
+    cut = name[:limit].rsplit(" ", 1)[0]
+    return cut or name[:limit]

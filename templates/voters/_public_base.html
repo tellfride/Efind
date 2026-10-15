@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% comment %}
 Base das páginas públicas do link de cadastro (/c/<code>/...): identidade visual da campanha.
-Variáveis: campaign, brand (PublicBrand: color, text_color, style, logo_url, office_label), reg.
+Variáveis: campaign, brand (PublicBrand: color, text_color, style, logo_url, banner_url, office_label), reg.
 Preencha {% block public_content %}.
 {% endcomment %}
 {% block head %}
@@ -11,6 +11,12 @@ Preencha {% block public_content %}.
 
 {% block body %}
 <div class="min-h-screen bg-slate-50" style="{{ brand.style }}">
+  {% if brand.banner_url %}
+  {# Banner personalizado (2000×800, 5:2): substitui o logo e o nome no topo; a faixa de cor embaixo recebe o cartão do formulário #}
+  <header class="pb-12" style="background-color: {{ brand.color }}">
+    <img src="{{ brand.banner_url }}" alt="Banner de {{ campaign.ballot_name }}" class="mx-auto block aspect-[5/2] w-full max-w-3xl object-cover" width="2000" height="800" fetchpriority="high">
+  </header>
+  {% else %}
   <header class="px-4 pt-8 pb-16 text-center" style="background-color: {{ brand.color }}; color: {{ brand.text_color }}">
     <div class="mx-auto flex max-w-xl flex-col items-center gap-3">
       {% if brand.logo_url %}
@@ -24,6 +30,7 @@ Preencha {% block public_content %}.
       </div>
     </div>
   </header>
+  {% endif %}
 
   <main class="relative z-10 mx-auto -mt-10 w-full max-w-xl px-4 pb-10">
     {% block public_content %}{% endblock %}

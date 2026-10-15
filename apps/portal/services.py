@@ -44,6 +44,7 @@ IDENTITY_FIELDS = (
     "voter_goal",
     "primary_color",
     "logo_url",
+    "banner_url",
 )
 PUBLIC_FORM_FIELDS = ("form_title", "form_message", "form_config", "consent_text", "privacy_contact")
 

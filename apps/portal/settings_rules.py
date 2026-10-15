@@ -161,6 +161,30 @@ def check_logo_data_url(value: str, max_bytes: int = LOGO_MAX_BYTES) -> tuple[st
     return f"image/{subtype}", len(raw)
 
 
+# --- Banner do formulário público (data URL, proporção 5:2) --------------------------------------------
+BANNER_WIDTH = 2000  # tamanho gerado pelo navegador (recorte central 5:2)
+BANNER_HEIGHT = 800
+BANNER_MAX_BYTES = 400 * 1024  # tamanho máximo decodificado
+BANNER_MAX_SERVER_WIDTH = 2400  # tolerância do servidor
+BANNER_MAX_SERVER_HEIGHT = 1000
+BANNER_DATA_URL_MAX_CHARS = BANNER_MAX_BYTES * 4 // 3 + 64
+
+
+def is_safe_banner_url(value: Any) -> bool:
+    """True quando o banner salvo é um data URL de imagem permitido (seguro para <img src>)."""
+    return isinstance(value, str) and len(value) <= BANNER_DATA_URL_MAX_CHARS * 2 and _LOGO_RE.fullmatch(value) is not None
+
+
+def check_banner_data_url(value: str) -> tuple[str, int]:
+    """Valida o banner enviado (mesmas regras do logo, com limite de tamanho e dimensões próprios). Levanta `LogoError`."""
+    mime, size = check_logo_data_url(value, BANNER_MAX_BYTES)
+    raw = base64.b64decode(_LOGO_RE.fullmatch(value).group(2), validate=True)
+    dims = image_dimensions(mime.split("/")[1], raw)
+    if dims is not None and (dims[0] > BANNER_MAX_SERVER_WIDTH or dims[1] > BANNER_MAX_SERVER_HEIGHT):
+        raise LogoError("As dimensões do banner são grandes demais. Use 2000 × 800 px.")
+    return mime, size
+
+
 # --- Formulário público -------------------------------------------------------------------------------
 FORM_FIELD_MODE_LABELS = {"hidden": "Oculto", "optional": "Opcional", "required": "Obrigatório"}
 FORM_FIELD_MODE_CHOICES = [(mode, FORM_FIELD_MODE_LABELS[mode]) for mode in FORM_FIELD_MODES]
@@ -175,7 +199,7 @@ FORM_FIELD_GROUPS = [
         "label": "Endereço",
         "description": "CEP, rua, número, bairro e cidade. Alimenta o mapa por bairro.",
     },
-    {"key": "electoral", "label": "Zona e seção eleitoral", "description": "Dados do título de apoiador."},
+    {"key": "electoral", "label": "Zona e seção eleitoral", "description": "Dados do título eleitoral."},
 ]
 
 
