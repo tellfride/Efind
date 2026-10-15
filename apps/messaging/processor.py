@@ -3,10 +3,10 @@
 
 Cada ciclo (`run_queue_tick`):
   1. devolve à fila as mensagens presas em SENDING e encerra pendências de disparos cancelados;
-  2. materializa os disparos agendados que venceram (uma mensagem por eleitor apto);
+  2. materializa os disparos agendados que venceram (uma mensagem por apoiador apto);
   3. envia as mensagens dos disparos em andamento respeitando o limite por minuto da conexão e do disparo;
   4. atualiza os contadores e conclui os disparos sem pendências;
-  5. (ciclo global) geocodifica alguns eleitores pendentes.
+  5. (ciclo global) geocodifica alguns apoiadores pendentes.
 
 Consentimento (MESSAGEABLE_Q) é exigido na materialização E conferido de novo no momento do envio.
 Nada aqui grava dados pessoais em log ou auditoria: apenas ids e contagens.
@@ -74,7 +74,7 @@ class MaterializeResult:
 
 
 def _valid_filters(raw) -> dict | None:
-    """Filtros salvos válidos (sem `messageable`) ou None. Filtros inválidos NUNCA viram "todos os eleitores"."""
+    """Filtros salvos válidos (sem `messageable`) ou None. Filtros inválidos NUNCA viram "todos os apoiadores"."""
     if not isinstance(raw, dict):
         return None
     stored = {k: v for k, v in raw.items() if k != "messageable" and v not in (None, "", [])}
@@ -83,7 +83,7 @@ def _valid_filters(raw) -> dict | None:
 
 
 def _voter_pages(queryset):
-    """Percorre o queryset por paginação de chave (id), sem carregar todos os eleitores na memória."""
+    """Percorre o queryset por paginação de chave (id), sem carregar todos os apoiadores na memória."""
     queryset = queryset.order_by("id")
     last_id = None
     while True:
@@ -98,7 +98,7 @@ def _voter_pages(queryset):
 
 def materialize_broadcast(broadcast, now: datetime | None = None) -> MaterializeResult:
     """Gera as mensagens (uma por telefone) de um disparo SCHEDULED e o coloca em RUNNING (ou COMPLETED, se
-    ninguém estiver apto). O público é sempre limitado ao escopo de quem criou o disparo e somente a eleitores
+    ninguém estiver apto). O público é sempre limitado ao escopo de quem criou o disparo e somente a apoiadores
     que consentiram (`messageable` é forçado aqui, nunca salvo nos filtros)."""
     now = now or timezone.now()
     pk = getattr(broadcast, "pk", broadcast)
@@ -392,7 +392,7 @@ def run_queue_tick(campaign_id=None, max_messages: int = DEFAULT_MAX_MESSAGES, n
     """Um ciclo da fila. Seguro para rodar em paralelo (worker + cron): as reservas de mensagens são atômicas.
 
     `campaign_id` restringe o ciclo a uma campanha (botão "Processar fila agora"); sem ele é o ciclo global
-    (que também geocodifica eleitores pendentes). Retorna {materialized, sent, failed, skipped, completed, geocoded}.
+    (que também geocodifica apoiadores pendentes). Retorna {materialized, sent, failed, skipped, completed, geocoded}.
     """
     now = now or timezone.now()
     max_messages = max(0, int(max_messages))

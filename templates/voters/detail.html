@@ -1,5 +1,5 @@
 {% extends "layouts/shell.html" %}
-{% block title %}{{ voter.name }} · Eleitores · E-Find{% endblock %}
+{% block title %}{{ voter.name }} · Apoiadores · E-Find{% endblock %}
 {% block content %}
 {% page_header title=voter.name description=subtitle %}
   <a class="btn btn-outline" href="{% url 'voters:list' %}">{% icon "arrow-left" %} Voltar</a>
@@ -10,7 +10,7 @@
 <div class="grid gap-6 lg:grid-cols-3">
   <div class="space-y-6 lg:col-span-2">
     <section class="card">
-      <div class="card-header"><h2 class="card-title">Dados do eleitor</h2></div>
+      <div class="card-header"><h2 class="card-title">Dados do apoiador</h2></div>
       <dl class="card-body grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
         <div><dt class="text-slate-500">WhatsApp</dt><dd class="font-medium tabular-nums">{{ voter.phone|phone }}</dd></div>
         <div><dt class="text-slate-500">E-mail</dt><dd class="font-medium break-all">{{ voter.email|default:"—" }}</dd></div>
@@ -38,7 +38,7 @@
     </section>
 
     <section class="card">
-      <div class="card-header"><h2 class="card-title">Histórico de mensagens</h2><p class="card-description">Últimos disparos de WhatsApp enviados a este eleitor.</p></div>
+      <div class="card-header"><h2 class="card-title">Histórico de mensagens</h2><p class="card-description">Últimos disparos de WhatsApp enviados a este apoiador.</p></div>
       {% if history %}
       <div class="table-wrap">
         <table class="table">
@@ -55,7 +55,7 @@
         </table>
       </div>
       {% else %}
-      <p class="card-body text-sm text-slate-500">Nenhuma mensagem enviada a este eleitor até agora.</p>
+      <p class="card-body text-sm text-slate-500">Nenhuma mensagem enviada a este apoiador até agora.</p>
       {% endif %}
     </section>
   </div>
@@ -75,13 +75,13 @@
           {% if voter.consent_text %}<div><dt class="text-slate-500">Texto aceito</dt><dd class="mt-1 rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">{{ voter.consent_text }}</dd></div>{% endif %}
         </dl>
         {% if voter.opt_out_at %}
-          {% alert "info" %}Para voltar a receber mensagens, o eleitor precisa se cadastrar novamente por um link de cadastro e aceitar o WhatsApp. Não é possível reativar pelo painel.{% endalert %}
+          {% alert "info" %}Para voltar a receber mensagens, o apoiador precisa se cadastrar novamente por um link de cadastro e aceitar o WhatsApp. Não é possível reativar pelo painel.{% endalert %}
         {% elif perms.eleitores.edit %}
           <form method="post" action="{% url 'voters:opt_out' voter_id=voter.pk %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-outline btn-sm" data-confirm="Descadastrar este eleitor dos disparos de WhatsApp? Ele só volta a receber mensagens se se cadastrar de novo por um link.">{% icon "ban" %} Descadastrar do WhatsApp</button>
+            <button type="submit" class="btn btn-outline btn-sm" data-confirm="Descadastrar este apoiador dos disparos de WhatsApp? Ele só volta a receber mensagens se se cadastrar de novo por um link.">{% icon "ban" %} Descadastrar do WhatsApp</button>
           </form>
-          <p class="field-hint">O descadastro é permanente no painel: o eleitor só volta a receber mensagens se se cadastrar de novo por um link.</p>
+          <p class="field-hint">O descadastro é permanente no painel: o apoiador só volta a receber mensagens se se cadastrar de novo por um link.</p>
         {% endif %}
       </div>
     </section>
@@ -94,7 +94,7 @@
         <form method="post" action="{% url 'voters:change_registrar' voter_id=voter.pk %}" class="space-y-2">
           {% csrf_token %}
           {% field registrar_form.registered_by label="Transferir para" %}
-          <button type="submit" class="btn btn-outline btn-sm" data-confirm="Transferir este eleitor para outro membro da equipe?">{% icon "handshake" %} Transferir</button>
+          <button type="submit" class="btn btn-outline btn-sm" data-confirm="Transferir este apoiador para outro membro da equipe?">{% icon "handshake" %} Transferir</button>
         </form>
         {% endif %}
       </div>
@@ -102,11 +102,11 @@
 
     {% if perms.eleitores.delete %}
     <section class="card border-red-200">
-      <div class="card-header"><h2 class="card-title text-red-700">Excluir eleitor</h2><p class="card-description">Remove todos os dados deste eleitor de forma definitiva (direito à eliminação, LGPD art. 18).</p></div>
+      <div class="card-header"><h2 class="card-title text-red-700">Excluir apoiador</h2><p class="card-description">Remove todos os dados deste apoiador de forma definitiva (direito à eliminação, LGPD art. 18).</p></div>
       <div class="card-body">
         <form method="post" action="{% url 'voters:delete' voter_id=voter.pk %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger btn-sm" data-confirm="Excluir DEFINITIVAMENTE este eleitor? Esta ação não pode ser desfeita.">{% icon "trash-2" %} Excluir definitivamente</button>
+          <button type="submit" class="btn btn-danger btn-sm" data-confirm="Excluir DEFINITIVAMENTE este apoiador? Esta ação não pode ser desfeita.">{% icon "trash-2" %} Excluir definitivamente</button>
         </form>
       </div>
     </section>

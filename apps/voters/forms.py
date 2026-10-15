@@ -1,4 +1,4 @@
-"""Formulários de eleitor: cadastro público (link/QR), cadastro manual no painel, edição e troca de responsável.
+"""Formulários de apoiador: cadastro público (link/QR), cadastro manual no painel, edição e troca de responsável.
 
 Os campos pessoais/endereço/título são comuns (`VoterDataForm`); o modo de cada grupo vem da configuração da campanha
 (`Campaign.form_config`: hidden | optional | required). No painel todos os grupos são opcionais.
@@ -79,7 +79,7 @@ VOTER_DATA_KEYS = (
 
 
 def voter_data_from_cleaned(cleaned: dict) -> dict:
-    """Dados do eleitor a gravar (campos ocultos/ausentes viram vazio — nunca confiamos no que o cliente enviar)."""
+    """Dados do apoiador a gravar (campos ocultos/ausentes viram vazio — nunca confiamos no que o cliente enviar)."""
     data = {key: cleaned.get(key) or "" for key in VOTER_DATA_KEYS}
     data["birth_date"] = cleaned.get("birth_date") or None
     return data
@@ -360,7 +360,7 @@ def _registrar_label(user) -> str:
 
 
 class VoterPanelForm(VoterDataForm):
-    """Campos extras do painel: classificação do eleitor."""
+    """Campos extras do painel: classificação do apoiador."""
 
     support_level = forms.ChoiceField(
         label="Nível de apoio",
@@ -414,15 +414,15 @@ class VoterCreateForm(VoterPanelForm):
         queryset=User.objects.none(),
         required=False,
         empty_label=None,
-        help_text="O eleitor fica vinculado a este membro da equipe.",
+        help_text="O apoiador fica vinculado a este membro da equipe.",
     )
     consent = forms.BooleanField(
         required=True,
-        label="O eleitor autorizou o uso dos dados (LGPD)",
-        error_messages={"required": "Confirme que o eleitor autorizou o uso dos dados."},
+        label="O apoiador autorizou o uso dos dados (LGPD)",
+        error_messages={"required": "Confirme que o apoiador autorizou o uso dos dados."},
     )
     whatsapp_opt_in = forms.BooleanField(
-        required=False, label="O eleitor autorizou receber mensagens no WhatsApp"
+        required=False, label="O apoiador autorizou receber mensagens no WhatsApp"
     )
 
     def __init__(self, *args, user, **kwargs):

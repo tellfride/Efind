@@ -77,7 +77,7 @@ class RadiusTests(SimpleTestCase):
         self.assertEqual(radius_for_count(50, 50), MAX_RADIUS)
 
     def test_proportional_to_square_root(self):
-        # 4x mais eleitores → o dobro do raio (a área do círculo é proporcional ao total)
+        # 4x mais apoiadores → o dobro do raio (a área do círculo é proporcional ao total)
         big = radius_for_count(400, 400)
         small = radius_for_count(100, 400)
         self.assertAlmostEqual(big / small, 2.0, places=1)

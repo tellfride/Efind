@@ -1,4 +1,4 @@
-"""Gravação de eleitores vindos dos formulários (cadastro público e painel)."""
+"""Gravação de apoiadores vindos dos formulários (cadastro público e painel)."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def register_public_voter(
 ) -> PublicRegisterResult:
     """Cadastro pelo link público.
 
-    - telefone novo na campanha: cria o eleitor vinculado ao dono do link, com o consentimento registrado;
+    - telefone novo na campanha: cria o apoiador vinculado ao dono do link, com o consentimento registrado;
     - telefone já cadastrado: NÃO revela nem sobrescreve nada; renova o consentimento, completa campos vazios
       e mantém quem cadastrou originalmente (veja `merge.plan_duplicate_merge`).
     """

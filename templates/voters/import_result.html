@@ -3,11 +3,11 @@
 {% block content %}
 {% page_header title="Importação concluída" description="Resumo do que foi gravado e do que foi ignorado." %}
   <a class="btn btn-outline" href="{% url 'voters:import' %}">{% icon "upload" %} Importar outro arquivo</a>
-  <a class="btn btn-primary" href="{% url 'voters:list' %}">{% icon "users-round" %} Ver eleitores</a>
+  <a class="btn btn-primary" href="{% url 'voters:list' %}">{% icon "users-round" %} Ver apoiadores</a>
 {% endpage_header %}
 
 <div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-  {% stat_card "Importados" result.imported|num icon="circle-check" tone="green" hint="novos eleitores na campanha" %}
+  {% stat_card "Importados" result.imported|num icon="circle-check" tone="green" hint="novos apoiadores na campanha" %}
   {% stat_card "Já cadastrados" result.duplicates_campaign|num icon="user-check" tone="yellow" hint="telefone já existia" %}
   {% stat_card "Repetidos no arquivo" result.duplicates_file|num icon="copy" tone="yellow" hint="vale a primeira ocorrência" %}
   {% stat_card "Linhas inválidas" result.invalid|num icon="circle-alert" tone="red" hint="nome ou telefone inválido" %}
@@ -15,7 +15,7 @@
 
 {% if result.imported %}
 <div class="mb-6">
-  {% alert "info" %}A localização no mapa dos eleitores importados é processada em segundo plano e pode levar alguns minutos.{% endalert %}
+  {% alert "info" %}A localização no mapa dos apoiadores importados é processada em segundo plano e pode levar alguns minutos.{% endalert %}
 </div>
 {% endif %}
 

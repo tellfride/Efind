@@ -61,7 +61,7 @@
       <div class="card-body space-y-4">
         <div class="alert alert-danger" role="alert">
           <p class="font-semibold">Excluir a campanha apaga tudo, sem possibilidade de recuperação.</p>
-          <p class="mt-1">Eleitores, equipe, permissões, dashboards, modelos, disparos, conexões de WhatsApp e a auditoria da campanha serão removidos definitivamente.</p>
+          <p class="mt-1">Apoiadores, equipe, permissões, dashboards, modelos, disparos, conexões de WhatsApp e a auditoria da campanha serão removidos definitivamente.</p>
         </div>
         <form method="post" action="{% url 'superadmin:campaign_delete' camp.pk %}" class="space-y-3" data-confirm="Excluir DEFINITIVAMENTE a campanha “{{ camp.ballot_name }}” e todos os seus dados? Esta ação não pode ser desfeita.">
           {% csrf_token %}
@@ -157,7 +157,7 @@
   {# ------------------------------------------------------------------ Uso (somente números agregados) #}
   <div x-cloak x-show="tab === 'uso'" id="panel-uso" role="tabpanel" aria-labelledby="tab-uso" class="space-y-6">
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {% stat_card "Eleitores cadastrados" usage.voters.total|num icon="users-round" tone="brand" hint="Total da campanha" %}
+      {% stat_card "Apoiadores cadastrados" usage.voters.total|num icon="users-round" tone="brand" hint="Total da campanha" %}
       {% stat_card "Últimos 7 dias" usage.voters.last7|num icon="calendar" tone="purple" hint="Novos cadastros" %}
       {% stat_card "Últimos 30 dias" usage.voters.last30|num icon="calendar" tone="blue" hint="Novos cadastros" %}
       {% stat_card "Aptos a receber WhatsApp" usage.voters.messageable|num icon="message-circle" tone="green" hint="Com consentimento válido" %}
@@ -195,7 +195,7 @@
 
       <section class="card">
         <div class="card-header">
-          <h2 class="card-title">Base de eleitores</h2>
+          <h2 class="card-title">Base de apoiadores</h2>
           <p class="card-description">Proporções sobre o total cadastrado.</p>
         </div>
         <div class="card-body space-y-4">
@@ -236,7 +236,7 @@
 
     <p class="flex items-start gap-2 text-xs text-slate-500">
       {% icon "lock" "mt-0.5 size-3.5 shrink-0" %}
-      Somente números agregados: o super admin não acessa nomes, telefones, e-mails nem endereços de eleitores (LGPD).
+      Somente números agregados: o super admin não acessa nomes, telefones, e-mails nem endereços de apoiadores (LGPD).
     </p>
   </div>
 </div>

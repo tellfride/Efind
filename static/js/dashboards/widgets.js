@@ -304,14 +304,14 @@
     }
     const pct = d.pct || 0;
     body.append(
-      bigValue(fmtPct(pct), fmt(d.total) + " de " + fmt(d.goal) + " eleitores", null),
+      bigValue(fmtPct(pct), fmt(d.total) + " de " + fmt(d.goal) + " apoiadores", null),
       el("div", "mt-2", progressBar(pct, goalTone(pct))),
       el("p", "mt-2 text-xs text-slate-500", d.source === "campaign" ? "Meta da campanha" : "Soma das metas de " + fmt(d.members_with_goal) + " membro(s) da sua equipe"),
     );
   };
 
   R.kpi_messageable = (body, d) => {
-    const hint = d.total > 0 ? fmtPct(d.pct) + " dos " + fmt(d.total) + " eleitores" : "Nenhum eleitor cadastrado";
+    const hint = d.total > 0 ? fmtPct(d.pct) + " dos " + fmt(d.total) + " apoiadores" : "Nenhum apoiador cadastrado";
     body.append(bigValue(fmt(d.messageable), hint, null), el("div", "mt-2", progressBar(d.pct || 0, "green")));
   };
 
@@ -424,7 +424,7 @@
   R.ranking_members = (body, d) => {
     const rows = d.rows || [];
     if (!rows.length) {
-      body.append(emptyBlock("trophy", "Nenhum cadastro ainda", "Quando a equipe começar a cadastrar eleitores, o ranking aparece aqui."));
+      body.append(emptyBlock("trophy", "Nenhum cadastro ainda", "Quando a equipe começar a cadastrar apoiadores, o ranking aparece aqui."));
       return;
     }
     const limit = d.limit || 10;
@@ -680,17 +680,17 @@
   }
 
   R.by_neighborhood = (body, d) => {
-    body.append(barList(d, { singular: "bairro", plural: "bairros" }, "Nenhum eleitor com bairro informado."));
+    body.append(barList(d, { singular: "bairro", plural: "bairros" }, "Nenhum apoiador com bairro informado."));
   };
   R.by_city = (body, d) => {
-    body.append(barList(d, { singular: "cidade", plural: "cidades" }, "Nenhum eleitor com cidade informada."));
+    body.append(barList(d, { singular: "cidade", plural: "cidades" }, "Nenhum apoiador com cidade informada."));
   };
 
   // --- Rosquinhas (gênero / apoio / origem)
   function donut(body, d, ctx, colorOf, label) {
     const rows = d.rows || [];
     if (!d.total) {
-      body.append(emptyBlock("chart-pie", "Sem dados", "Nenhum eleitor corresponde a este recorte."));
+      body.append(emptyBlock("chart-pie", "Sem dados", "Nenhum apoiador corresponde a este recorte."));
       return;
     }
     const colors = rows.map((r, i) => colorOf(r, i));
@@ -721,7 +721,7 @@
     box.append(
       el("div", "pointer-events-none absolute inset-0 flex flex-col items-center justify-center", [
         el("span", "text-xl font-bold tabular-nums text-slate-900", fmt(d.total)),
-        el("span", "text-[11px] text-slate-500", "eleitores"),
+        el("span", "text-[11px] text-slate-500", "apoiadores"),
       ]),
     );
     ctx.track(
@@ -748,29 +748,29 @@
   }
 
   const categorical = (r, i) => (r.key === "unknown" ? UNKNOWN_COLOR : PALETTE[i % PALETTE.length]);
-  R.by_gender = (body, d, w, ctx) => donut(body, d, ctx, categorical, "Eleitores por gênero");
-  R.by_source = (body, d, w, ctx) => donut(body, d, ctx, categorical, "Eleitores por origem do cadastro");
+  R.by_gender = (body, d, w, ctx) => donut(body, d, ctx, categorical, "Apoiadores por gênero");
+  R.by_source = (body, d, w, ctx) => donut(body, d, ctx, categorical, "Apoiadores por origem do cadastro");
   R.by_support = (body, d, w, ctx) =>
-    donut(body, d, ctx, (r, i) => (r.key === "unknown" ? UNKNOWN_COLOR : SUPPORT_COLORS[r.key] || PALETTE[i % PALETTE.length]), "Eleitores por nível de apoio");
+    donut(body, d, ctx, (r, i) => (r.key === "unknown" ? UNKNOWN_COLOR : SUPPORT_COLORS[r.key] || PALETTE[i % PALETTE.length]), "Apoiadores por nível de apoio");
 
   // --- Faixa etária
   R.by_age = (body, d, w, ctx) => {
     const rows = d.rows || [];
     if (!d.total) {
-      body.append(emptyBlock("cake", "Sem dados", "Nenhum eleitor corresponde a este recorte."));
+      body.append(emptyBlock("cake", "Sem dados", "Nenhum apoiador corresponde a este recorte."));
       return;
     }
     const box = el("div", "relative h-52 w-full");
     body.append(box);
     const unknown = rows.find((r) => r.key === "unknown");
     if (unknown && unknown.count > 0) {
-      body.append(el("p", "mt-2 text-xs text-slate-500", fmt(unknown.count) + " eleitor(es) sem data de nascimento informada."));
+      body.append(el("p", "mt-2 text-xs text-slate-500", fmt(unknown.count) + " apoiador(es) sem data de nascimento informada."));
     }
     if (!chartAvailable()) {
       box.replaceChildren(errorBlock("Gráfico indisponível."));
       return;
     }
-    const canvas = canvasIn(box, "Eleitores por faixa etária: " + rows.map((r) => r.label + " " + fmt(r.count)).join(", "));
+    const canvas = canvasIn(box, "Apoiadores por faixa etária: " + rows.map((r) => r.label + " " + fmt(r.count)).join(", "));
     ctx.track(
       new window.Chart(canvas, {
         type: "bar",
@@ -778,7 +778,7 @@
           labels: rows.map((r) => r.label),
           datasets: [
             {
-              label: "Eleitores",
+              label: "Apoiadores",
               data: rows.map((r) => r.count),
               backgroundColor: rows.map((r) => (r.key === "unknown" ? UNKNOWN_COLOR : PALETTE[0])),
               borderRadius: 6,
@@ -808,12 +808,12 @@
   // --- Últimos cadastros
   R.recent_voters = (body, d) => {
     if (d.locked) {
-      body.append(lockedBlock("Você não tem permissão para ver a lista de eleitores."));
+      body.append(lockedBlock("Você não tem permissão para ver a lista de apoiadores."));
       return;
     }
     const rows = d.rows || [];
     if (!rows.length) {
-      body.append(emptyBlock("users-round", "Nenhum cadastro ainda", "Os eleitores cadastrados aparecem aqui."));
+      body.append(emptyBlock("users-round", "Nenhum cadastro ainda", "Os apoiadores cadastrados aparecem aqui."));
       return;
     }
     const ul = el("ul", "divide-y divide-slate-100");

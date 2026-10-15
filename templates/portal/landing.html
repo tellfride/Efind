@@ -6,7 +6,7 @@ Variáveis: cta_href, cta_label, contact_email.
 {% block title %}E-Find · Gestão de campanha eleitoral do cabo eleitoral ao candidato{% endblock %}
 
 {% block head %}
-<meta name="description" content="E-Find: cadastro de eleitores por link e QR Code, equipe com hierarquia e permissões, mapa por bairro a partir do CEP, dashboards e WhatsApp oficial — com LGPD e regras do TSE.">
+<meta name="description" content="E-Find: cadastro de apoiadores por link e QR Code, equipe com hierarquia e permissões, mapa por bairro a partir do CEP, dashboards e WhatsApp oficial — com LGPD e regras do TSE.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="E-Find · Organize sua campanha do cabo eleitoral ao candidato">
 <meta property="og:description" content="Cadastro por QR Code, equipe hierárquica, mapa por bairro e disparos de WhatsApp somente para quem consentiu.">
@@ -27,7 +27,7 @@ Variáveis: cta_href, cta_label, contact_email.
         Organize sua campanha <span class="bg-gradient-to-r from-brand-300 to-emerald-300 bg-clip-text text-transparent">do cabo eleitoral ao candidato</span>
       </h1>
       <p class="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
-        Cadastro de eleitores por link e QR Code, equipe com hierarquia e permissões, mapa por bairro a partir do CEP e comunicação pelo WhatsApp oficial — tudo em um só painel, pensado para o celular de quem está na rua.
+        Cadastro de apoiadores por link e QR Code, equipe com hierarquia e permissões, mapa por bairro a partir do CEP e comunicação pelo WhatsApp oficial — tudo em um só painel, pensado para o celular de quem está na rua.
       </p>
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
         <a href="{{ cta_href }}" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 text-base font-semibold text-white shadow-lg shadow-brand-900/30 transition-colors hover:bg-brand-500 focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none">
@@ -67,7 +67,7 @@ Variáveis: cta_href, cta_label, contact_email.
             <div class="min-w-0 flex-1 space-y-3 bg-slate-50 p-3 sm:p-4">
               <div class="grid grid-cols-3 gap-2">
                 <div class="rounded-lg border border-slate-200 bg-white p-2 sm:p-2.5">
-                  <div class="flex items-center justify-between"><span class="text-[9px] font-medium text-slate-500 sm:text-[10px]">Eleitores</span><span class="hidden size-5 items-center justify-center rounded bg-brand-50 text-brand-600 sm:flex">{% icon "users-round" "size-3" %}</span></div>
+                  <div class="flex items-center justify-between"><span class="text-[9px] font-medium text-slate-500 sm:text-[10px]">Apoiadores</span><span class="hidden size-5 items-center justify-center rounded bg-brand-50 text-brand-600 sm:flex">{% icon "users-round" "size-3" %}</span></div>
                   <p class="mt-1 text-sm font-bold text-slate-900 tabular-nums sm:text-base">12.480</p>
                 </div>
                 <div class="rounded-lg border border-slate-200 bg-white p-2 sm:p-2.5">
@@ -135,7 +135,7 @@ Variáveis: cta_href, cta_label, contact_email.
           </div>
         </div>
       </div>
-      <p class="sr-only">Ilustração do painel do E-Find com indicadores de eleitores, gráfico de cadastros por semana, mapa por bairro e metas da equipe.</p>
+      <p class="sr-only">Ilustração do painel do E-Find com indicadores de apoiadores, gráfico de cadastros por semana, mapa por bairro e metas da equipe.</p>
     </div>
   </div>
 </section>
@@ -161,7 +161,7 @@ Variáveis: cta_href, cta_label, contact_email.
       </li>
       <li class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
         <div class="flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">{% icon "smartphone" "size-5" %}</span><span class="text-sm font-bold text-brand-600 tabular-nums">03</span></div>
-        <h3 class="mt-4 text-base font-semibold text-slate-900">Eleitores se cadastram</h3>
+        <h3 class="mt-4 text-base font-semibold text-slate-900">Apoiadores se cadastram</h3>
         <p class="mt-2 text-sm leading-relaxed text-slate-600">Formulário rápido no celular: o CEP preenche o endereço e o consentimento LGPD é registrado com data e hora.</p>
       </li>
       <li class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
@@ -227,7 +227,7 @@ Variáveis: cta_href, cta_label, contact_email.
   <div class="relative mx-auto w-full max-w-6xl px-4 sm:px-6">
     <div class="mx-auto max-w-2xl text-center">
       <p class="text-sm font-semibold tracking-wide text-brand-300 uppercase">Segurança e conformidade</p>
-      <h2 class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Feito para respeitar o eleitor e a legislação eleitoral</h2>
+      <h2 class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Feito para respeitar o apoiador e a legislação eleitoral</h2>
       <p class="mt-4 text-base text-slate-300 sm:text-lg">Comunicação política responsável protege a campanha. O E-Find nasceu com a LGPD e as resoluções do TSE como ponto de partida.</p>
     </div>
     <div class="mt-14 grid gap-6 lg:grid-cols-2">
@@ -252,7 +252,7 @@ Variáveis: cta_href, cta_label, contact_email.
         </div>
         <ul class="mt-6 space-y-3 text-sm text-slate-300">
           <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Somente a API oficial do WhatsApp (Meta) e parceiros oficiais</li>
-          <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Envio apenas para eleitores que consentiram — sem listas compradas</li>
+          <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Envio apenas para apoiadores que consentiram — sem listas compradas</li>
           <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Mecanismo de descadastramento em toda comunicação (Lei nº 9.504/1997, art. 57-G)</li>
           <li class="flex gap-2.5">{% icon "badge-check" "mt-0.5 size-4 shrink-0 text-emerald-300" %} Sem disparadores não oficiais, chips descartáveis ou WhatsApp Web automatizado</li>
         </ul>

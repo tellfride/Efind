@@ -1,4 +1,4 @@
-"""Direito de eliminação (LGPD): excluir o eleitor não deixa telefone/texto em históricos de mensagens."""
+"""Direito de eliminação (LGPD): excluir o apoiador não deixa telefone/texto em históricos de mensagens."""
 
 from django.test import TestCase
 
@@ -23,7 +23,7 @@ class VoterErasureTests(TestCase):
         inbound = InboundMessage.objects.create(campaign=campaign, from_phone=voter.phone, body="SAIR", voter=voter)
 
         self.assertTrue(self.client.login(username="admin@lgpd.com", password=PASSWORD))
-        response = self.client.post(f"/painel/eleitores/{voter.pk}/excluir/")
+        response = self.client.post(f"/painel/apoiadores/{voter.pk}/excluir/")
 
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Voter.objects.filter(pk=voter.pk).exists())

@@ -1,8 +1,8 @@
 {% extends "layouts/shell.html" %}
 {% load static %}
-{% block title %}Importar eleitores · E-Find{% endblock %}
+{% block title %}Importar apoiadores · E-Find{% endblock %}
 {% block content %}
-{% page_header title="Importar eleitores" description="Envie um arquivo CSV ou cole a lista. Telefones já cadastrados são ignorados." %}
+{% page_header title="Importar apoiadores" description="Envie um arquivo CSV ou cole a lista. Telefones já cadastrados são ignorados." %}
   <a class="btn btn-outline" href="{% url 'voters:list' %}">{% icon "arrow-left" %} Voltar</a>
 {% endpage_header %}
 
@@ -32,7 +32,7 @@
         <ol class="mt-3 list-decimal space-y-1.5 pl-5">
           <li>Baixe o modelo e abra no Excel, Google Planilhas ou LibreOffice.</li>
           <li>Apague as <strong>2 linhas de exemplo</strong> (têm telefone inválido de propósito: se esquecer, elas são ignoradas na importação).</li>
-          <li>Preencha <strong>uma linha por eleitor</strong>. Só <strong>nome</strong> e <strong>telefone</strong> são obrigatórios. Não altere os títulos das colunas.</li>
+          <li>Preencha <strong>uma linha por apoiador</strong>. Só <strong>nome</strong> e <strong>telefone</strong> são obrigatórios. Não altere os títulos das colunas.</li>
           <li>Salve como <strong>CSV</strong> (no Excel: <em>Arquivo → Salvar como → CSV UTF-8</em>) e envie o arquivo aqui.</li>
         </ol>
         <div class="table-wrap mt-4">
@@ -157,26 +157,26 @@
   <section class="card">
     <div class="card-header">
       <h2 class="card-title">4. Confirmação</h2>
-      <p class="card-description">Só importe contatos que autorizaram o uso dos dados. Esta declaração fica registrada junto com cada eleitor.</p>
+      <p class="card-description">Só importe contatos que autorizaram o uso dos dados. Esta declaração fica registrada junto com cada apoiador.</p>
     </div>
     <div class="card-body space-y-4">
       {% if "registered_by" in form.fields %}
-        <div class="max-w-md">{% field form.registered_by label="Cadastrar em nome de" hint="Os eleitores importados ficam vinculados a este membro da equipe." %}</div>
+        <div class="max-w-md">{% field form.registered_by label="Cadastrar em nome de" hint="Os apoiadores importados ficam vinculados a este membro da equipe." %}</div>
       {% endif %}
       <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
         <label class="flex items-start gap-3 text-sm leading-snug text-slate-700">
           <input type="checkbox" name="declaration" class="checkbox mt-0.5" required{% if form.declaration.value %} checked{% endif %}>
-          <span>Declaro que os eleitores desta lista consentiram com o tratamento de seus dados (LGPD).<span class="ml-0.5 text-red-500">*</span></span>
+          <span>Declaro que os apoiadores desta lista consentiram com o tratamento de seus dados (LGPD).<span class="ml-0.5 text-red-500">*</span></span>
         </label>
         {% if form.declaration.errors %}<p class="field-error" role="alert">{{ form.declaration.errors.0 }}</p>{% endif %}
         <label class="flex items-start gap-3 text-sm leading-snug text-slate-700">
           <input type="checkbox" name="whatsapp_opt_in" class="checkbox mt-0.5"{% if form.whatsapp_opt_in.value %} checked{% endif %}>
-          <span>…e com o recebimento de mensagens de WhatsApp. <span class="text-slate-500">(opcional; sem isso os eleitores não entram nos disparos)</span></span>
+          <span>…e com o recebimento de mensagens de WhatsApp. <span class="text-slate-500">(opcional; sem isso os apoiadores não entram nos disparos)</span></span>
         </label>
       </div>
       <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <a class="btn btn-outline" href="{% url 'voters:list' %}">Cancelar</a>
-        <button type="submit" class="btn btn-primary" :disabled="!canSubmit">{% icon "upload" %} <span x-text="submitLabel">Importar eleitores</span></button>
+        <button type="submit" class="btn btn-primary" :disabled="!canSubmit">{% icon "upload" %} <span x-text="submitLabel">Importar apoiadores</span></button>
       </div>
     </div>
   </section>

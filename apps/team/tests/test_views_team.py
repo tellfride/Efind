@@ -143,7 +143,7 @@ class ListTests(BaseTeamTest):
         for i in range(3):
             make_voter(self.camp, self.cabo2, i + 1)
         c = login(self.admin)
-        r = c.get(reverse("team:list"), {"papel": "CABO", "ordem": "eleitores"})
+        r = c.get(reverse("team:list"), {"papel": "CABO", "ordem": "apoiadores"})
         self.assertEqual(r.context["initial_view"], "lista")
         self.assertEqual([x.email for x in r.context["page_obj"]], ["cabo2@a.com", "cabo1@a.com"])
         r = c.get(reverse("team:list"), {"q": "coord um"})
@@ -342,12 +342,12 @@ class DetailTests(BaseTeamTest):
         self.assertEqual(r.status_code, 200)
         self.assertFalse(r.context["can_see_voters"])
         self.assertEqual(r.context["recent_voters"], [])
-        self.assertNotContains(r, "Eleitor 2")
+        self.assertNotContains(r, "Apoiador 2")
 
     def test_recent_voters_visible_with_permission(self):
         r = login(self.coord1).get(reverse("team:detail", args=[self.cabo1.pk]))
         self.assertTrue(r.context["can_see_voters"])
-        self.assertContains(r, "Eleitor 2")
+        self.assertContains(r, "Apoiador 2")
 
     def test_coordinator_lists_his_cabos(self):
         r = login(self.admin).get(reverse("team:detail", args=[self.coord1.pk]))

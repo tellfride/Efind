@@ -29,7 +29,7 @@ class MessageTemplate(TimestampedModel):
 
 
 class Broadcast(TimestampedModel):
-    """Disparo: envio em massa para um público segmentado de eleitores que consentiram."""
+    """Disparo: envio em massa para um público segmentado de apoiadores que consentiram."""
 
     campaign = models.ForeignKey("campaigns.Campaign", on_delete=models.CASCADE, related_name="broadcasts")
     name = models.CharField(max_length=160)
@@ -39,7 +39,7 @@ class Broadcast(TimestampedModel):
     )
     created_by = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL, related_name="broadcasts")
     status = models.CharField(max_length=10, choices=BroadcastStatus.choices, default=BroadcastStatus.DRAFT)
-    # Filtros de eleitores (apps.core.voter_filters) que definem o público
+    # Filtros de apoiadores (apps.core.voter_filters) que definem o público
     filters = models.JSONField(default=dict)
     scheduled_at = models.DateTimeField(null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)

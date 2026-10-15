@@ -13,7 +13,7 @@ ROOT = Path(settings.BASE_DIR)
 
 class MapConfigTests(SimpleTestCase):
     def config(self):
-        return build_map_config(data_url="/api/painel/mapa/dados/", voters_url="/painel/eleitores/", login_url="/login/")
+        return build_map_config(data_url="/api/painel/mapa/dados/", voters_url="/painel/apoiadores/", login_url="/login/")
 
     def test_is_json_serializable(self):
         self.assertEqual(json.loads(json.dumps(self.config()))["dataUrl"], "/api/painel/mapa/dados/")

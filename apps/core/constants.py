@@ -119,7 +119,7 @@ class MessageStatus(models.TextChoices):
     SKIPPED = "SKIPPED", "Ignorada"
 
 
-# Palavras que, recebidas pelo WhatsApp, descadastram o eleitor dos disparos
+# Palavras que, recebidas pelo WhatsApp, descadastram o apoiador dos disparos
 OPT_OUT_KEYWORDS = ("SAIR", "PARAR", "STOP", "CANCELAR", "DESCADASTRAR", "REMOVER")
 
 # --- Configuração dos campos opcionais do formulário público de cadastro -------------------------

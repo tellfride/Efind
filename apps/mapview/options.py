@@ -35,7 +35,7 @@ BASEMAPS: dict[str, dict] = {
     },
 }
 
-# Centro do Brasil (quando ainda não há eleitores com localização)
+# Centro do Brasil (quando ainda não há apoiadores com localização)
 BRAZIL_CENTER: tuple[float, float] = (-14.235, -51.925)
 BRAZIL_ZOOM = 4
 # Zoom máximo ao enquadrar os dados (evita aproximar demais um único CEP)

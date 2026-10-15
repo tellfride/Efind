@@ -1,4 +1,4 @@
-"""Seed de desenvolvimento: super admin + campanha de demonstração com equipe, eleitores e modelos fictícios.
+"""Seed de desenvolvimento: super admin + campanha de demonstração com equipe, apoiadores e modelos fictícios.
 
     python manage.py seed_demo            # idempotente (não duplica)
     python manage.py seed_demo --reset    # apaga a campanha "demo" e recria
@@ -56,7 +56,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--reset", action="store_true", help="Apaga a campanha demo e recria")
-        parser.add_argument("--voters", type=int, default=240, help="Quantidade de eleitores fictícios")
+        parser.add_argument("--voters", type=int, default=240, help="Quantidade de apoiadores fictícios")
         parser.add_argument("--force", action="store_true", help="Permite rodar com DEBUG desligado (NÃO use em produção)")
 
     def handle(self, *args, **opts):

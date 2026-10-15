@@ -21,7 +21,7 @@ def make_voter(campaign, owner, n, **extra):
     data = dict(cep="21670000", street="Avenida Brasil", neighborhood="Guadalupe", city="Rio de Janeiro", state="RJ",
                 latitude=WRONG[0], longitude=WRONG[1], geo_status="OK")  # fmt: skip
     data.update(extra)
-    return Voter.objects.create(campaign=campaign, registered_by=owner, name=f"Eleitor {n}", phone=f"5521999990{n:03d}", **data)
+    return Voter.objects.create(campaign=campaign, registered_by=owner, name=f"Apoiador {n}", phone=f"5521999990{n:03d}", **data)
 
 
 class RegeocodeCommandTests(TestCase):
@@ -123,5 +123,5 @@ class RequeueButtonTests(TestCase):
     def test_button_is_shown_to_the_admin_on_the_map(self):
         self.assertTrue(self.client.login(username="admin@a.com", password=PASSWORD))
         page = self.client.get("/painel/mapa/")
-        self.assertContains(page, "Relocalizar todos os eleitores")
+        self.assertContains(page, "Relocalizar todos os apoiadores")
         self.assertContains(page, "/painel/mapa/relocalizar-todos/")

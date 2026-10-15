@@ -228,7 +228,7 @@ class BroadcastDetailTests(Fixtures):
         voter.delete()
         self.login(self.admin)
         response = self.client.get(self.url(broadcast))
-        self.assertContains(response, "Eleitor excluído")
+        self.assertContains(response, "Apoiador excluído")
         self.assertNotContains(response, phone)
 
     def test_deleted_template_is_handled(self):
@@ -475,7 +475,7 @@ class AudienceApiTests(Fixtures):
         self.assertEqual(data["duration_label"], "cerca de 2 min")
         self.assertEqual(len(data["samples"]), 2)
         for sample in data["samples"]:
-            self.assertTrue(sample["body"].startswith("Olá, Eleitor!") or sample["body"].startswith("Olá, "))
+            self.assertTrue(sample["body"].startswith("Olá, Apoiador!") or sample["body"].startswith("Olá, "))
             self.assertNotIn(" Sobrenome", sample["name"])  # só o primeiro nome
             self.assertIn("Aqui é Alfa", sample["body"])
 
@@ -682,7 +682,7 @@ class WizardPostTests(Fixtures):
     def test_audience_without_eligible_voters_is_rejected(self):
         self.assertRejected(self.post(filters=json.dumps({"neighborhoods": ["Bairro Sem Ninguém"]})))
         Broadcast.objects.all().delete()
-        # tem eleitores, mas nenhum com consentimento
+        # tem apoiadores, mas nenhum com consentimento
         make_voter(self.a, self.cabo2, consent=False, neighborhood="Sem Consentimento")
         self.assertRejected(self.post(filters=json.dumps({"neighborhoods": ["Sem Consentimento"]})))
 

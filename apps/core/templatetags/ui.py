@@ -3,9 +3,9 @@
 Filtros:  phone, cep, num, pct, brdate, brdatetime, initials, get_item, tags_list, role_label
 Tags:     {% icon "users" "size-5 text-brand-600" %}   {% qs page=2 %}   {% badge "Ativo" "green" %}
           {% progress 40 100 "green" %}   {% avatar name %}   {% field form.name hint="..." %}
-          {% stat_card "Eleitores" total icon="users-round" tone="brand" hint="..." %}
+          {% stat_card "Apoiadores" total icon="users-round" tone="brand" hint="..." %}
           {% pagination page_obj %}
-Blocos:   {% page_header title="Eleitores" description="..." %}<botões>{% endpage_header %}
+Blocos:   {% page_header title="Apoiadores" description="..." %}<botões>{% endpage_header %}
           {% card title="..." description="..." padding=False %}...{% endcard %}
           {% empty_state icon="inbox" title="Nada aqui" description="..." %}<botão>{% endempty_state %}
           {% alert "warning" title="Atenção" %}texto{% endalert %}
@@ -222,7 +222,7 @@ def field(bound_field, hint="", css="", label=None):
 
 @register.inclusion_tag("components/voter_filters.html", takes_context=True)
 def voter_filters(context, filters, options, action="", fields=None, hide=None, expanded=False, submit_label="Filtrar"):
-    """Painel de filtros de eleitores (formulário GET). Parâmetros de URL: veja apps.core.voter_filters.URL_PARAMS.
+    """Painel de filtros de apoiadores (formulário GET). Parâmetros de URL: veja apps.core.voter_filters.URL_PARAMS.
         {% voter_filters filters filter_options %}   (filters = parse_voter_filters(request.GET);
                                                        filter_options = get_voter_filter_options(request.user))
     `fields`/`hide`: listas de chaves (ex.: hide=["has_geo"]); `action`: URL de destino (padrão: a página atual)."""

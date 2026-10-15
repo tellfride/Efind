@@ -43,7 +43,7 @@ def get_campaign_user(campaign_id, user_id, roles=None) -> User | None:
 
 
 def voters_count(campaign_id, member_pk) -> int:
-    """Eleitores cadastrados pelo membro (contagem real, independente do escopo de visualização)."""
+    """Apoiadores cadastrados pelo membro (contagem real, independente do escopo de visualização)."""
     return Voter.objects.filter(campaign_id=campaign_id, registered_by_id=member_pk).count()
 
 

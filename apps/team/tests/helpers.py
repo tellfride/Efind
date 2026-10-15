@@ -28,7 +28,7 @@ def make_user(campaign, email, role, parent=None, **extra):
 
 def make_voter(campaign, registered_by, n, **extra):
     return Voter.objects.create(
-        campaign=campaign, registered_by=registered_by, name=f"Eleitor {n}", phone=f"5511900000{n:03d}", **extra
+        campaign=campaign, registered_by=registered_by, name=f"Apoiador {n}", phone=f"5511900000{n:03d}", **extra
     )
 
 

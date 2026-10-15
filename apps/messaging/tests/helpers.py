@@ -1,4 +1,4 @@
-"""Fixtures dos testes de mensagens: campanhas, equipe, eleitores, conexões, modelos e disparos em memória
+"""Fixtures dos testes de mensagens: campanhas, equipe, apoiadores, conexões, modelos e disparos em memória
 (SQLite), com o provedor de WhatsApp sempre simulado (nenhum teste acessa a rede)."""
 
 from __future__ import annotations
@@ -48,9 +48,9 @@ def make_user(campaign, email, role, parent=None, **extra):
 
 
 def make_voter(campaign, registered_by, *, consent=True, **extra):
-    """Eleitor; por padrão já com consentimento de WhatsApp (apto a receber disparos)."""
+    """Apoiador; por padrão já com consentimento de WhatsApp (apto a receber disparos)."""
     n = next(_seq)
-    data = dict(name=f"Eleitor {n} Sobrenome", phone=f"55119{n:08d}")
+    data = dict(name=f"Apoiador {n} Sobrenome", phone=f"55119{n:08d}")
     if consent:
         data.update(whatsapp_opt_in=True, consent_at=timezone.now())
     data.update(extra)

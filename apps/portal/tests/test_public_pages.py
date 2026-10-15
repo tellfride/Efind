@@ -44,7 +44,7 @@ class PublicPagesTests(TestCase):
             "Como funciona",
             "Cadastre a equipe",
             "Cada cabo recebe seu link e QR Code",
-            "Eleitores se cadastram",
+            "Apoiadores se cadastram",
             "Acompanhe no mapa e nos dashboards",
             "Comunique-se pelo WhatsApp oficial",
             "Recursos",

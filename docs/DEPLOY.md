@@ -123,7 +123,7 @@ O `X-Forwarded-Proto` é obrigatório (o Django decide HTTPS por ele). O IP do c
 - Limitadores de taxa (login, cadastro público, CEP) usam o cache local do processo. Com mais de um processo/servidor web,
   configure `CACHES` com Redis/Memcached em `efind/settings.py` (a API de `apps.core.ratelimit` não muda).
 - Rode **um único worker** (as reservas de mensagens são atômicas, mas um worker evita disputa desnecessária).
-- Backups diários do MariaDB (`mysqldump --single-transaction`): os dados de eleitores são dados pessoais (LGPD).
+- Backups diários do MariaDB (`mysqldump --single-transaction`): os dados de apoiadores são dados pessoais (LGPD).
 - Logs não contêm dados pessoais por regra do projeto; mantenha o acesso ao banco e aos backups restrito.
 - Textos de privacidade e termos de uso são genéricos: **passe por revisão jurídica** antes de publicar.
 
@@ -155,10 +155,10 @@ git pull
 sudo systemctl restart efind-web efind-worker
 ```
 
-**Eleitores com localização errada no mapa** (versões anteriores aceitavam coordenadas de fontes externas sem conferir o bairro):
-o `migrate` acima (migração `geo 0003`) já devolve todos os eleitores com endereço à fila e descarta o cache antigo; o worker
+**Apoiadores com localização errada no mapa** (versões anteriores aceitavam coordenadas de fontes externas sem conferir o bairro):
+o `migrate` acima (migração `geo 0003`) já devolve todos os apoiadores com endereço à fila e descarta o cache antigo; o worker
 (`efind-worker`, precisa estar rodando) os localiza de novo com as regras novas, que só aceitam pontos dentro do bairro do
-eleitor. Os pontos antigos continuam no mapa até o novo resultado chegar. Para refazer à mão (ou sem worker):
+apoiador. Os pontos antigos continuam no mapa até o novo resultado chegar. Para refazer à mão (ou sem worker):
 
 ```bash
 .venv/bin/python manage.py regeocode --campaign SLUG --all --purge-cache   # uma campanha
@@ -166,4 +166,4 @@ eleitor. Os pontos antigos continuam no mapa até o novo resultado chegar. Para 
 ```
 
 O comando respeita o limite de 1 consulta por segundo do OpenStreetMap (os resultados ficam em cache por CEP e bairro). Também há o
-botão **Relocalizar todos os eleitores** no mapa (administrador), que devolve todos à fila do worker.
+botão **Relocalizar todos os apoiadores** no mapa (administrador), que devolve todos à fila do worker.

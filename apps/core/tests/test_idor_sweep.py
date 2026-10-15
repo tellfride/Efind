@@ -75,7 +75,7 @@ class IdorSweepTests(TestCase):
         cls.superuser = User.objects.create_superuser("super@x.com", PASSWORD)
 
         def voter(c, owner, n):
-            return Voter.objects.create(campaign=c, registered_by=owner, name=f"Eleitor {n}", phone=f"5511900000{n:03d}", whatsapp_opt_in=True, consent_text="x")
+            return Voter.objects.create(campaign=c, registered_by=owner, name=f"Apoiador {n}", phone=f"5511900000{n:03d}", whatsapp_opt_in=True, consent_text="x")
 
         cls.voters_b = [voter(cls.b, cls.cabo_b, 1), voter(cls.b, cls.admin_b, 2)]
         cls.voter_a2 = voter(cls.a, cls.cabo2, 3)  # fora do escopo de cabo1 e de coord1
@@ -102,7 +102,7 @@ class IdorSweepTests(TestCase):
         return [str(o.pk) for o in objs]
 
     def same_campaign_out_of_scope_ids(self):
-        # usuários/eleitores fora do escopo e objetos privados de outro usuário da MESMA campanha
+        # usuários/apoiadores fora do escopo e objetos privados de outro usuário da MESMA campanha
         return [str(o.pk) for o in (self.voter_a2, self.voter_a_admin, self.admin_a, self.cabo2, self.coord2, self.dash_a, self.bc_a)]
 
     # --- varredura ----------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ class IdorSweepTests(TestCase):
         client = Client()
         self.assertTrue(client.login(username="super@x.com", password=PASSWORD))
         for voter in [*self.voters_b, self.voter_a2]:
-            for path in (f"/painel/eleitores/{voter.pk}/", f"/painel/eleitores/{voter.pk}/excluir/"):
+            for path in (f"/painel/apoiadores/{voter.pk}/", f"/painel/apoiadores/{voter.pk}/excluir/"):
                 self.assertNotEqual(client.get(path).status_code, 200, path)
 
     def test_anonymous_gets_no_panel_or_api_page(self):
@@ -157,7 +157,7 @@ class IdorSweepTests(TestCase):
         client = Client()
         self.assertTrue(client.login(username="admin@a.com", password=PASSWORD))
         legit = [
-            f"/painel/eleitores/{self.voter_a2.pk}/",
+            f"/painel/apoiadores/{self.voter_a2.pk}/",
             f"/painel/equipe/{self.cabo2.pk}/",
             f"/painel/dashboards/{self.dash_a.pk}/",
             f"/painel/mensagens/modelos/{self.tpl_a.pk}/",
@@ -167,5 +167,5 @@ class IdorSweepTests(TestCase):
         for url in legit:
             self.assertEqual(client.get(url).status_code, 200, url)
         # e o mesmo caminho com um id de OUTRA campanha é negado
-        self.assertEqual(client.get(f"/painel/eleitores/{self.voters_b[0].pk}/").status_code, 404)
+        self.assertEqual(client.get(f"/painel/apoiadores/{self.voters_b[0].pk}/").status_code, 404)
         self.assertEqual(client.get(f"/painel/equipe/{self.cabo_b.pk}/").status_code, 404)

@@ -384,7 +384,7 @@ def data(request):
 @never_cache
 @module_permission_required("dashboard", "view", json_response=True)
 def filters_panel(request):
-    """Fragmento HTML com o painel de filtros de eleitores (opções no escopo do usuário) para o modal do widget."""
+    """Fragmento HTML com o painel de filtros de apoiadores (opções no escopo do usuário) para o modal do widget."""
     return render(
         request,
         "dashboards/_filters.html",

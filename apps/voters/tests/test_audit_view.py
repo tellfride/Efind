@@ -1,4 +1,4 @@
-"""LGPD: quem abriu a ficha de um eleitor fica registrado (só o id, sem dados pessoais)."""
+"""LGPD: quem abriu a ficha de um apoiador fica registrado (só o id, sem dados pessoais)."""
 
 from django.test import TestCase
 
@@ -22,7 +22,7 @@ class VoterViewAuditTests(TestCase):
 
     def test_opening_a_voter_is_audited_without_personal_data(self):
         self.assertTrue(self.client.login(username="cabo@auditv.com", password=PASSWORD))
-        self.assertEqual(self.client.get(f"/painel/eleitores/{self.voter.pk}/").status_code, 200)
+        self.assertEqual(self.client.get(f"/painel/apoiadores/{self.voter.pk}/").status_code, 200)
         entry = AuditLog.objects.get(action="voter.view")
         self.assertEqual(entry.entity, "Voter")
         self.assertEqual(entry.entity_id, str(self.voter.pk))
@@ -33,8 +33,8 @@ class VoterViewAuditTests(TestCase):
 
     def test_out_of_scope_voter_is_404_and_not_audited(self):
         self.assertTrue(self.client.login(username="cabo@auditv.com", password=PASSWORD))
-        self.assertEqual(self.client.get(f"/painel/eleitores/{self.other_voter.pk}/").status_code, 404)
+        self.assertEqual(self.client.get(f"/painel/apoiadores/{self.other_voter.pk}/").status_code, 404)
         self.assertFalse(AuditLog.objects.filter(action="voter.view").exists())
 
     def test_action_has_a_portuguese_label(self):
-        self.assertEqual(action_label("voter.view"), "Ficha do eleitor consultada")
+        self.assertEqual(action_label("voter.view"), "Ficha do apoiador consultada")

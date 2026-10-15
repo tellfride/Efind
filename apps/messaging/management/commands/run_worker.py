@@ -1,7 +1,7 @@
 """Worker da fila de disparos: `manage.py run_worker` (outro terminal / serviço do servidor).
 
 A cada 3 segundos roda um ciclo (`run_queue_tick`): materializa disparos agendados, envia as mensagens respeitando o
-limite por minuto, atualiza contadores e geocodifica eleitores pendentes. SIGINT/SIGTERM terminam o ciclo atual e
+limite por minuto, atualiza contadores e geocodifica apoiadores pendentes. SIGINT/SIGTERM terminam o ciclo atual e
 encerram. Os logs têm apenas contagens (nunca telefones, nomes ou textos).
 """
 

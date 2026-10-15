@@ -1,4 +1,4 @@
-"""Fixtures dos testes do mapa (campanhas, usuários, eleitores e login)."""
+"""Fixtures dos testes do mapa (campanhas, usuários, apoiadores e login)."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ def make_user(campaign, email: str, role: str, parent=None, name: str | None = N
 
 def make_voter(campaign, registered_by, n: int, **extra) -> Voter:
     return Voter.objects.create(
-        campaign=campaign, registered_by=registered_by, name=f"Eleitor Secreto {n}", phone=f"551190000{n:04d}", **extra
+        campaign=campaign, registered_by=registered_by, name=f"Apoiador Secreto {n}", phone=f"551190000{n:04d}", **extra
     )
 
 

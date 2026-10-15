@@ -47,7 +47,7 @@ WIDGET_GROUPS = (
     ("indicadores", "Indicadores"),
     ("equipe", "Equipe"),
     ("territorio", "Território"),
-    ("perfil", "Perfil do eleitor"),
+    ("perfil", "Perfil do apoiador"),
     ("whatsapp", "WhatsApp"),
     ("outros", "Outros"),
 )
@@ -71,7 +71,7 @@ class WidgetDefinition:
     default_size: str = "sm"
     period: bool = False  # aceita config.period
     limit: tuple[int, int, int] | None = None  # (mínimo, máximo, padrão) de config.limit
-    filters: bool = False  # aceita config.filters (filtros de eleitores)
+    filters: bool = False  # aceita config.filters (filtros de apoiadores)
     text: bool = False  # aceita config.text
     requires: str = ""  # módulo cuja permissão "view" é exigida para ver os dados ("eleitores" | "disparos")
 
@@ -92,7 +92,7 @@ WIDGET_CATALOG: dict[str, WidgetDefinition] = {
     d.type: d
     for d in (
         # --- Indicadores
-        _d("kpi_total", "Total de eleitores", "Quantidade de eleitores cadastrados e o crescimento nos últimos 7 dias.",
+        _d("kpi_total", "Total de apoiadores", "Quantidade de apoiadores cadastrados e o crescimento nos últimos 7 dias.",
            "indicadores", "users-round", filters=True),
         _d("kpi_today", "Cadastros hoje", "Cadastros feitos hoje, comparados com ontem.",
            "indicadores", "calendar", filters=True),
@@ -103,7 +103,7 @@ WIDGET_CATALOG: dict[str, WidgetDefinition] = {
         _d("timeline", "Evolução dos cadastros", "Gráfico com os cadastros dia a dia no período.",
            "indicadores", "chart-line", "lg", period=True, filters=True),
         # --- Equipe
-        _d("kpi_team", "Equipe ativa", "Membros ativos da equipe e quantos cadastraram eleitores no período.",
+        _d("kpi_team", "Equipe ativa", "Membros ativos da equipe e quantos cadastraram apoiadores no período.",
            "equipe", "users", period=True, filters=True),
         _d("ranking_members", "Cadastros por cabo eleitoral",
            "Ranking da equipe: total, cadastros no período, meta e último cadastro de cada membro.",
@@ -114,27 +114,27 @@ WIDGET_CATALOG: dict[str, WidgetDefinition] = {
         _d("goals_progress", "Metas individuais", "Progresso de cada membro em relação à sua meta individual de cadastros.",
            "equipe", "flag", "md", limit=(3, 50, 10), filters=True),
         # --- Território
-        _d("by_neighborhood", "Eleitores por bairro", "Bairros com mais eleitores cadastrados.",
+        _d("by_neighborhood", "Apoiadores por bairro", "Bairros com mais apoiadores cadastrados.",
            "territorio", "map-pin", "md", limit=(3, 30, 10), filters=True),
-        _d("by_city", "Eleitores por cidade", "Cidades com mais eleitores cadastrados.",
+        _d("by_city", "Apoiadores por cidade", "Cidades com mais apoiadores cadastrados.",
            "territorio", "building-2", "md", limit=(3, 30, 10), filters=True),
-        # --- Perfil do eleitor
-        _d("by_gender", "Gênero", "Distribuição dos eleitores por gênero.",
+        # --- Perfil do apoiador
+        _d("by_gender", "Gênero", "Distribuição dos apoiadores por gênero.",
            "perfil", "venus-and-mars", "md", filters=True),
-        _d("by_support", "Nível de apoio", "Apoiadores, simpatizantes, indecisos e opositores.",
+        _d("by_support", "Nível de apoio", "Distribuição por nível de apoio: apoiador, simpatizante, indeciso e opositor.",
            "perfil", "handshake", "md", filters=True),
         _d("by_source", "Origem do cadastro", "Cadastros feitos por link, QR Code, manualmente ou por importação.",
            "perfil", "qr-code", "md", filters=True),
-        _d("by_age", "Faixa etária", "Eleitores por faixa de idade (16–24, 25–34, 35–44, 45–59 e 60+).",
+        _d("by_age", "Faixa etária", "Apoiadores por faixa de idade (16–24, 25–34, 35–44, 45–59 e 60+).",
            "perfil", "cake", "md", filters=True),
         # --- WhatsApp
-        _d("kpi_messageable", "Aptos a WhatsApp", "Eleitores que aceitaram receber mensagens e não pediram descadastro.",
+        _d("kpi_messageable", "Aptos a WhatsApp", "Apoiadores que aceitaram receber mensagens e não pediram descadastro.",
            "whatsapp", "message-circle", filters=True),
         _d("broadcasts", "Disparos de WhatsApp",
            "Mensagens enviadas, entregues, lidas e com falha, além dos últimos disparos.",
            "whatsapp", "send", "full", period=True, requires="disparos"),
         # --- Outros
-        _d("recent_voters", "Últimos cadastros", "Os eleitores cadastrados mais recentemente e quem os cadastrou.",
+        _d("recent_voters", "Últimos cadastros", "Os apoiadores cadastrados mais recentemente e quem os cadastrou.",
            "outros", "clock", "md", limit=(3, 20, 8), filters=True, requires="eleitores"),
         _d("note", "Recado para a equipe", "Texto livre: avisos, orientações ou metas da semana.",
            "outros", "megaphone", "full", text=True),

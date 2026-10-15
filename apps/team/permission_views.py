@@ -59,7 +59,7 @@ ROLE_TABS = (
         "role": Role.CABO,
         "label": "Cabo eleitoral",
         "description": (
-            "Cabos eleitorais veem apenas os eleitores que eles mesmos cadastraram. "
+            "Cabos eleitorais veem apenas os apoiadores que eles mesmos cadastraram. "
             "Mesmo com “Criar” em Equipe, cabos não cadastram membros."
         ),
     },

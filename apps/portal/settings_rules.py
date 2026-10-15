@@ -167,7 +167,7 @@ FORM_FIELD_MODE_CHOICES = [(mode, FORM_FIELD_MODE_LABELS[mode]) for mode in FORM
 
 # Chaves = chaves de Campaign.form_config (apps.core.constants.DEFAULT_FORM_CONFIG)
 FORM_FIELD_GROUPS = [
-    {"key": "email", "label": "E-mail", "description": "Endereço de e-mail do eleitor."},
+    {"key": "email", "label": "E-mail", "description": "Endereço de e-mail do apoiador."},
     {"key": "birth_date", "label": "Data de nascimento", "description": "Permite filtrar por faixa etária."},
     {"key": "gender", "label": "Gênero", "description": "Masculino, feminino, outro ou prefere não informar."},
     {
@@ -175,7 +175,7 @@ FORM_FIELD_GROUPS = [
         "label": "Endereço",
         "description": "CEP, rua, número, bairro e cidade. Alimenta o mapa por bairro.",
     },
-    {"key": "electoral", "label": "Zona e seção eleitoral", "description": "Dados do título de eleitor."},
+    {"key": "electoral", "label": "Zona e seção eleitoral", "description": "Dados do título de apoiador."},
 ]
 
 

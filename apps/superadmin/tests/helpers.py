@@ -43,7 +43,7 @@ def make_super(email="super@efind.test", **extra) -> User:
 
 def make_voter(campaign, registered_by, n, **extra) -> Voter:
     return Voter.objects.create(
-        campaign=campaign, registered_by=registered_by, name=f"Eleitora Sigilosa {n}", phone=f"5511900000{n:03d}", **extra
+        campaign=campaign, registered_by=registered_by, name=f"Apoiadora Sigilosa {n}", phone=f"5511900000{n:03d}", **extra
     )
 
 

@@ -1,4 +1,4 @@
-"""Opções do painel de filtros de eleitores (bairros, cidades, equipe, tags...), sempre dentro do escopo do usuário,
+"""Opções do painel de filtros de apoiadores (bairros, cidades, equipe, tags...), sempre dentro do escopo do usuário,
 e montagem dos campos do painel `{% voter_filters %}`."""
 
 from __future__ import annotations

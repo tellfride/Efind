@@ -158,14 +158,14 @@
       </section>
 
       <section class="card">
-        <div class="card-header"><h2 class="card-title">Público</h2><p class="card-description">Somente eleitores que autorizaram WhatsApp.</p></div>
+        <div class="card-header"><h2 class="card-title">Público</h2><p class="card-description">Somente apoiadores que autorizaram WhatsApp.</p></div>
         <div class="card-body">
           {% if audience %}
           <dl class="grid grid-cols-3 gap-y-2 text-sm">
             {% for label, value in audience %}<dt class="text-slate-500">{{ label }}</dt><dd class="col-span-2 break-words">{{ value }}</dd>{% endfor %}
           </dl>
           {% else %}
-          <p class="text-sm text-slate-600">Todos os eleitores aptos da rede de quem criou o disparo.</p>
+          <p class="text-sm text-slate-600">Todos os apoiadores aptos da rede de quem criou o disparo.</p>
           {% endif %}
         </div>
       </section>

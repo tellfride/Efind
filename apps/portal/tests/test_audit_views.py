@@ -95,12 +95,12 @@ class AuditListTests(AuditBase):
     def test_rows_render_labels_ip_and_details(self):
         response = self.client.get(URL)
         self.assertContains(response, "Configurações atualizadas")
-        self.assertContains(response, "Eleitores exportados")
+        self.assertContains(response, "Apoiadores exportados")
         self.assertContains(response, "10.0.0.2")
         self.assertContains(response, "Ver detalhes")
         self.assertContains(response, "&quot;count&quot;: 7")  # JSON legível e escapado
         self.assertContains(response, "Suporte E-Find")  # ação do super admin identificada
-        self.assertContains(response, "Sistema / eleitor")  # linha sem usuário
+        self.assertContains(response, "Sistema / apoiador")  # linha sem usuário
         self.assertContains(response, "Exportar CSV")
         self.assertContains(response, "LGPD")
 

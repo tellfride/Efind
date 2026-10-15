@@ -30,7 +30,7 @@ class MustChangePasswordTests(TestCase):
 
     def test_flagged_user_is_sent_to_the_password_page(self):
         client = login("novo@a.com")
-        for path in ("/painel/", "/painel/eleitores/", "/painel/meu-link/"):
+        for path in ("/painel/", "/painel/apoiadores/", "/painel/meu-link/"):
             response = client.get(path)
             self.assertRedirects(response, "/painel/perfil/", fetch_redirect_response=False, msg_prefix=path)
         page = client.get("/painel/perfil/")

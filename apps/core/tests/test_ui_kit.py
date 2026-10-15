@@ -40,12 +40,12 @@ class UiKitTests(TestCase):
 
     def test_block_tags(self):
         html = render(
-            '{% page_header title="Eleitores" description="Lista" %}<a>Novo</a>{% endpage_header %}'
+            '{% page_header title="Apoiadores" description="Lista" %}<a>Novo</a>{% endpage_header %}'
             '{% card title="Resumo" %}conteúdo{% endcard %}'
             '{% empty_state icon="inbox" title="Vazio" %}<b>ação</b>{% endempty_state %}'
             '{% alert "warning" title="Atenção" %}texto{% endalert %}'
         )
-        for expected in ("Eleitores", "<a>Novo</a>", "Resumo", "conteúdo", "Vazio", "<b>ação</b>", "alert-warning"):
+        for expected in ("Apoiadores", "<a>Novo</a>", "Resumo", "conteúdo", "Vazio", "<b>ação</b>", "alert-warning"):
             self.assertIn(expected, html)
 
     def test_escapes_user_content(self):
@@ -54,7 +54,7 @@ class UiKitTests(TestCase):
         self.assertNotIn("<b>1</b>", html)
 
     def test_stat_card_and_filters(self):
-        html = render('{% stat_card "Eleitores" total icon="users-round" tone="green" hint="na rede" %}{{ 1234567|num }}|{{ 12.34|pct }}|{{ "5511987654321"|phone }}|{{ "13010001"|cep }}', total=42)
+        html = render('{% stat_card "Apoiadores" total icon="users-round" tone="green" hint="na rede" %}{{ 1234567|num }}|{{ 12.34|pct }}|{{ "5511987654321"|phone }}|{{ "13010001"|cep }}', total=42)
         self.assertIn("42", html)
         self.assertIn("1.234.567|12,3%|(11) 98765-4321|13010-001", html)
 
@@ -68,7 +68,7 @@ class UiKitTests(TestCase):
         self.assertIn('aria-invalid="true"', html)
 
     def test_pagination_keeps_querystring(self):
-        request = RequestFactory().get("/painel/eleitores/", {"q": "ana", "page": "2"})
+        request = RequestFactory().get("/painel/apoiadores/", {"q": "ana", "page": "2"})
         page = Paginator(list(range(100)), 25).page(2)
         html = render("{% pagination page %}", request=request, page=page)
         self.assertIn("q=ana", html)
@@ -90,7 +90,7 @@ class VoterFiltersComponentTests(TestCase):
         self.assertEqual([o["value"] for o in options["neighborhoods"]], ["Centro"])
         self.assertEqual([o["value"] for o in options["tags"]], ["saude"])
 
-        request = RequestFactory().get("/painel/eleitores/", {"bairro": "Centro", "idade_min": "18"})
+        request = RequestFactory().get("/painel/apoiadores/", {"bairro": "Centro", "idade_min": "18"})
         filters = parse_voter_filters(request.GET)
         html = render("{% voter_filters filters options %}", request=request, filters=filters, options=options)
         self.assertIn('name="q"', html)
@@ -98,7 +98,7 @@ class VoterFiltersComponentTests(TestCase):
         self.assertIn("&quot;Centro&quot;", html)  # opção/seleção embutida de forma segura no atributo
         self.assertIn('value="18"', html)
         self.assertIn("2 filtros ativos", html)
-        self.assertIn('action="/painel/eleitores/"', html)
+        self.assertIn('action="/painel/apoiadores/"', html)
 
     def test_panel_opens_when_a_secondary_filter_is_active(self):
         # Regressão (QA no navegador): com idade/datas/mapa/WhatsApp ativos o painel abria recolhido, e o usuário via

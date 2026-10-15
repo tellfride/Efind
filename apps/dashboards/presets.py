@@ -51,7 +51,7 @@ DASHBOARD_PRESETS: dict[str, dict] = {
     },
     "territorial": {
         "name": "Territorial",
-        "description": "Onde estão os eleitores: bairros, cidades e perfil da base.",
+        "description": "Onde estão os apoiadores: bairros, cidades e perfil da base.",
         "widgets": [
             _w("te-total", "kpi_total", "sm"),
             _w("te-periodo", "kpi_period", "sm", period=30),

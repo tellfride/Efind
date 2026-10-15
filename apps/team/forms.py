@@ -48,7 +48,7 @@ class _MemberBaseForm(StyledFormMixin, forms.Form):
         max_value=1_000_000,
         widget=forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "placeholder": "Ex.: 300"}),
         error_messages={"invalid": "Informe um número inteiro.", "min_value": "A meta não pode ser negativa."},
-        help_text="Quantidade de eleitores que o membro deve cadastrar. Deixe em branco para não definir meta.",
+        help_text="Quantidade de apoiadores que o membro deve cadastrar. Deixe em branco para não definir meta.",
     )
     region = forms.CharField(
         label="Região de atuação",
@@ -244,9 +244,9 @@ class MemberEditForm(_MemberBaseForm):
 
 
 class MemberDeleteForm(StyledFormMixin, forms.Form):
-    """Exclusão: exige destino dos eleitores e novo responsável dos membros vinculados quando existirem."""
+    """Exclusão: exige destino dos apoiadores e novo responsável dos membros vinculados quando existirem."""
 
-    transfer_to = _uuid_field("Transferir os eleitores para", "Membro inválido.")
+    transfer_to = _uuid_field("Transferir os apoiadores para", "Membro inválido.")
     new_parent = _uuid_field("Novo responsável pelos membros vinculados", "Responsável inválido.")
 
     def __init__(self, *args, actor, target, **kwargs):
@@ -258,7 +258,7 @@ class MemberDeleteForm(StyledFormMixin, forms.Form):
         self.children_count = queries.children_count(campaign_id, target.pk)
         self.has_other_active_coordinators = queries.has_active_coordinators(campaign_id, exclude_pk=target.pk)
 
-        # Destino dos eleitores: membros ATIVOS do escopo de quem exclui (exceto o excluído)
+        # Destino dos apoiadores: membros ATIVOS do escopo de quem exclui (exceto o excluído)
         self.transfer_options = list(
             team_scope(actor).filter(is_active=True).exclude(pk=target.pk).order_by("name")
         )
@@ -289,7 +289,7 @@ class MemberDeleteForm(StyledFormMixin, forms.Form):
             transfer_to = next((u for u in self.transfer_options if same_id(u.pk, transfer_id)), None)
             if transfer_to is None:
                 # fora do escopo, inativo, de outra campanha ou o próprio excluído
-                self.add_error("transfer_to", "Escolha um membro ativo da sua equipe para receber os eleitores.")
+                self.add_error("transfer_to", "Escolha um membro ativo da sua equipe para receber os apoiadores.")
                 return data
         new_parent = None
         if self.children_count > 0 and parent_id:

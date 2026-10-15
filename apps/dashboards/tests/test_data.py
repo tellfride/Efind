@@ -153,12 +153,12 @@ class ScopeTests(DataBase):
     def test_recent_voters_scope_and_order(self):
         data = self.run_widget(self.cabo1, "recent_voters", limit=5)
         self.assertFalse(data["locked"])
-        self.assertEqual([r["name"] for r in data["rows"]], ["Eleitor 1", "Eleitor 2", "Eleitor 3"])
+        self.assertEqual([r["name"] for r in data["rows"]], ["Apoiador 1", "Apoiador 2", "Apoiador 3"])
         self.assertEqual(data["rows"][0]["registered_by"], "Ana Cabo")
-        self.assertTrue(data["rows"][0]["url"].startswith("/painel/eleitores/"))
+        self.assertTrue(data["rows"][0]["url"].startswith("/painel/apoiadores/"))
         admin = self.run_widget(self.admin, "recent_voters", limit=20)
         self.assertEqual(len(admin["rows"]), 6)
-        self.assertNotIn("Eleitor 7", [r["name"] for r in admin["rows"]])
+        self.assertNotIn("Apoiador 7", [r["name"] for r in admin["rows"]])
 
     def test_recent_voters_locked_without_permission(self):
         RolePermission.objects.filter(campaign=self.a, role=Role.CABO, module="eleitores").update(can_view=False)
@@ -416,7 +416,7 @@ class DashboardDataTests(DataBase):
             make_voter(self.a, self.cabo1 if n % 2 else self.cabo2, n, days_ago(n % 10), neighborhood=f"Bairro {n % 7}")
         with CaptureQueriesContext(connection) as large:
             compute_dashboard_data(self.admin, widgets, now=NOW)
-        self.assertEqual(len(small), len(large))  # sem N+1: mais eleitores não geram mais consultas
+        self.assertEqual(len(small), len(large))  # sem N+1: mais apoiadores não geram mais consultas
         self.assertLess(len(large), 45)
 
     def test_data_context_caches_team_and_permissions(self):

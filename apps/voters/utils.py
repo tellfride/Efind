@@ -1,4 +1,4 @@
-"""Utilitários puros do módulo de eleitores (sem banco): datas, textos, cores da campanha, WhatsApp, ordenação.
+"""Utilitários puros do módulo de apoiadores (sem banco): datas, textos, cores da campanha, WhatsApp, ordenação.
 
 Portado das regras da versão anterior (legacy-nextjs/src/components/voters/voter-utils.ts).
 """

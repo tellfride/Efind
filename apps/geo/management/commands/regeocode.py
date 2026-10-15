@@ -1,13 +1,13 @@
-"""Relocaliza eleitores pelo CEP/bairro, validando cada ponto dentro do bairro. Corrige coordenadas erradas gravadas
-por versões anteriores (ex.: eleitor de Guadalupe aparecendo no Centro do Rio).
+"""Relocaliza apoiadores pelo CEP/bairro, validando cada ponto dentro do bairro. Corrige coordenadas erradas gravadas
+por versões anteriores (ex.: apoiador de Guadalupe aparecendo no Centro do Rio).
 
-    python manage.py regeocode --campaign demo --all     # refaz TODOS os eleitores com endereço de uma campanha
+    python manage.py regeocode --campaign demo --all     # refaz TODOS os apoiadores com endereço de uma campanha
     python manage.py regeocode --all                     # idem, todas as campanhas
     python manage.py regeocode                           # só os pendentes e os que falharam
     python manage.py regeocode --all --purge-cache       # também descarta o cache de pontos e áreas (força nova consulta)
 
 Respeita o limite de 1 requisição por segundo do Nominatim; os resultados ficam em cache por CEP+bairro, então
-eleitores da mesma rua/bairro não geram novas consultas.
+apoiadores da mesma rua/bairro não geram novas consultas.
 """
 
 from __future__ import annotations
@@ -27,13 +27,13 @@ BATCH = 20
 
 
 class Command(BaseCommand):
-    help = "Relocaliza eleitores pelo CEP/bairro, validando o ponto dentro do bairro (corrige coordenadas erradas)."
+    help = "Relocaliza apoiadores pelo CEP/bairro, validando o ponto dentro do bairro (corrige coordenadas erradas)."
 
     def add_arguments(self, parser):
         parser.add_argument("--campaign", help="slug da campanha (padrão: todas)")
-        parser.add_argument("--all", action="store_true", help="refaz TODOS os eleitores com endereço, não só os pendentes")
+        parser.add_argument("--all", action="store_true", help="refaz TODOS os apoiadores com endereço, não só os pendentes")
         parser.add_argument("--purge-cache", action="store_true", help="descarta o cache de pontos e áreas antes de começar")
-        parser.add_argument("--limit", type=int, default=0, help="máximo de eleitores a processar (0 = sem limite)")
+        parser.add_argument("--limit", type=int, default=0, help="máximo de apoiadores a processar (0 = sem limite)")
 
     def handle(self, *args, **opts):
         campaign_id = None
@@ -64,7 +64,7 @@ class Command(BaseCommand):
             self.stdout.write("Nada a processar.")
             return
         limit = opts["limit"] or total
-        self.stdout.write(f"Relocalizando {min(limit, total)} de {total} eleitores (até 1 consulta por segundo)...")
+        self.stdout.write(f"Relocalizando {min(limit, total)} de {total} apoiadores (até 1 consulta por segundo)...")
 
         done, started = 0, time.monotonic()
         while done < limit:

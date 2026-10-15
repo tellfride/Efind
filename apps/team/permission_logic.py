@@ -122,7 +122,7 @@ def _tri_label(value: TriState) -> str:
 
 
 def describe_change(change: PermissionChange) -> str:
-    """Texto curto para a auditoria (somente nomes de módulo/ação): "Eleitores · Exportar: não → sim"."""
+    """Texto curto para a auditoria (somente nomes de módulo/ação): "Apoiadores · Exportar: não → sim"."""
     return (
         f"{MODULES[change.module]['label']} · {ACTION_LABELS[change.action]}: "
         f"{_tri_label(change.before)} → {_tri_label(change.after)}"

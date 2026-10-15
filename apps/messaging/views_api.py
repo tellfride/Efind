@@ -32,7 +32,7 @@ SAMPLE_COUNT = 3
 @require_GET
 @never_cache
 def audience_api(request):
-    """Quebra do público do assistente. Filtros na querystring (mesmos parâmetros da lista de eleitores). Sempre
+    """Quebra do público do assistente. Filtros na querystring (mesmos parâmetros da lista de apoiadores). Sempre
     limitado ao escopo de quem consulta; `messageable` é ignorado (o resultado já separa quem pode receber).
 
     Com `detalhe=1` devolve também: resumo dos filtros, duração estimada (`velocidade`) e até 3 mensagens de exemplo
@@ -70,7 +70,7 @@ def _int_param(value, low: int, high: int) -> int | None:
 
 
 def _samples(request, filters: dict) -> list[dict]:
-    """Mensagens de exemplo (modelo + eleitores reais do público, no escopo do usuário). Só o primeiro nome sai."""
+    """Mensagens de exemplo (modelo + apoiadores reais do público, no escopo do usuário). Só o primeiro nome sai."""
     template = get_template_in_campaign(request.user, request.GET.get("modelo"))
     if template is None:
         return []

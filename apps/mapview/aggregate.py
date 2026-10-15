@@ -1,12 +1,12 @@
 """Agregação dos dados do mapa (lógica pura, sem banco).
 
-Recebe as linhas mínimas dos eleitores JÁ filtradas pelo escopo do usuário (veja `data.py`) e monta totais,
+Recebe as linhas mínimas dos apoiadores JÁ filtradas pelo escopo do usuário (veja `data.py`) e monta totais,
 bairros (centroide), pontos (sem dados pessoais) e limites do mapa.
 
 Cada linha é um mapeamento com as chaves:
     id, latitude, longitude, geo_status, neighborhood, city, support_level, messageable, registered_by_id
 
-Privacidade: nomes, telefones e e-mails de eleitores NUNCA entram aqui; os pontos levam apenas id e coordenadas.
+Privacidade: nomes, telefones e e-mails de apoiadores NUNCA entram aqui; os pontos levam apenas id e coordenadas.
 """
 
 from __future__ import annotations
@@ -95,10 +95,10 @@ def aggregate_map_data(
     point_limit: int | None = None,
     top_members: int = TOP_MEMBERS_PER_NEIGHBORHOOD,
 ) -> dict:
-    """Linhas de eleitores → dados do mapa (dict serializável em JSON, chaves em snake_case).
+    """Linhas de apoiadores → dados do mapa (dict serializável em JSON, chaves em snake_case).
 
     - `member_names`: id → nome de quem cadastrou (o escopo do usuário já garante que são membros visíveis).
-    - Bairros com ao menos um eleitor localizado vão em `neighborhoods` (centroide = média das coordenadas);
+    - Bairros com ao menos um apoiador localizado vão em `neighborhoods` (centroide = média das coordenadas);
       os demais, em `neighborhoods_without_geo`.
     """
     limit = MAP_POINT_LIMIT if point_limit is None else point_limit

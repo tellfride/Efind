@@ -27,7 +27,7 @@ from apps.voters.models import Voter
 
 SLUG_MAX_LENGTH = 60
 SLUG_SUFFIX_RESERVE = 6  # espaço para "-99999" sem estourar o limite
-VOTER_DELETE_CHUNK = 500  # eleitores apagados por consulta na exclusão de uma campanha
+VOTER_DELETE_CHUNK = 500  # apoiadores apagados por consulta na exclusão de uma campanha
 
 _PASSWORD_LETTERS = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"  # sem caracteres ambíguos (i, l, o, I, O)
 _PASSWORD_DIGITS = "23456789"
@@ -200,7 +200,7 @@ def set_campaign_status(request, campaign: Campaign, *, suspend: bool) -> int | 
 
 
 def _delete_voters(campaign_id) -> None:
-    """Apaga os eleitores da campanha em lotes (o Django carrega as linhas na memória para tratar as relações)."""
+    """Apaga os apoiadores da campanha em lotes (o Django carrega as linhas na memória para tratar as relações)."""
     voters = Voter.objects.filter(campaign_id=campaign_id)
     while True:
         batch = list(voters.order_by().values_list("pk", flat=True)[:VOTER_DELETE_CHUNK])
@@ -210,7 +210,7 @@ def _delete_voters(campaign_id) -> None:
 
 
 def delete_campaign(request, campaign: Campaign) -> None:
-    """Exclusão definitiva. Voter.registered_by é RESTRICT: os eleitores saem ANTES (equipe e demais dados da
+    """Exclusão definitiva. Voter.registered_by é RESTRICT: os apoiadores saem ANTES (equipe e demais dados da
     campanha caem em cascata com a campanha). A auditoria fica sem campanha (a campanha deixa de existir)."""
     campaign_id, slug, ballot_name = campaign.pk, campaign.slug, campaign.ballot_name
     try:

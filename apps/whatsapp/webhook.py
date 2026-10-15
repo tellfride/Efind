@@ -1,7 +1,7 @@
 """Aplica os eventos normalizados dos webhooks: status das mensagens de disparo e mensagens recebidas (histórico +
 descadastro por "SAIR"). Sem dependência de request: usado pela view do webhook e pelo simulador (inclusive no worker).
 
-Toda busca é restrita à campanha da conexão: um provedor nunca altera mensagens ou eleitores de outra campanha.
+Toda busca é restrita à campanha da conexão: um provedor nunca altera mensagens ou apoiadores de outra campanha.
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ class ApplyWebhookResult:
     matched: int = 0  # eventos de status cuja mensagem foi encontrada na campanha
     updated: int = 0  # mensagens cujo status mudou
     inbound: int = 0  # mensagens recebidas registradas
-    opt_outs: int = 0  # eleitores descadastrados nesta chamada
+    opt_outs: int = 0  # apoiadores descadastrados nesta chamada
     touched_broadcasts: set = field(default_factory=set)
 
 
@@ -79,7 +79,7 @@ def _find_voter(campaign_id, candidates: list[str]):
 
 
 def _apply_inbound(connection, event: WebhookEvent, touched: set) -> tuple[bool, bool]:
-    """(registrou a mensagem, descadastrou o eleitor)."""
+    """(registrou a mensagem, descadastrou o apoiador)."""
     candidates = inbound_phone_candidates(event.from_phone)
     if not candidates:
         return False, False

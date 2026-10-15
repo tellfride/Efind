@@ -1,4 +1,4 @@
-"""Fixtures dos testes de eleitores: campanhas, usuários e eleitores em memória (SQLite), sem rede."""
+"""Fixtures dos testes de apoiadores: campanhas, usuários e apoiadores em memória (SQLite), sem rede."""
 
 from itertools import count
 from unittest import mock
@@ -43,7 +43,7 @@ def next_phone():
 
 def make_voter(campaign, registered_by, **extra):
     n = next(_phone_seq)
-    data = dict(name=f"Eleitor {n}", phone=f"55119{n:08d}")
+    data = dict(name=f"Apoiador {n}", phone=f"55119{n:08d}")
     data.update(extra)
     return Voter.objects.create(campaign=campaign, registered_by=registered_by, **data)
 

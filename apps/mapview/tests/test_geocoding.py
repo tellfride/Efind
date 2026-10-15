@@ -24,7 +24,7 @@ FAKE_POINT = (-22.9, -47.06)
 
 
 def fake_geocode(voter_id):
-    """Simula apps.geo.geocode.geocode_voter sem rede: eleitores com CEP 00000-000 falham; os demais são localizados."""
+    """Simula apps.geo.geocode.geocode_voter sem rede: apoiadores com CEP 00000-000 falham; os demais são localizados."""
     voter = Voter.objects.get(pk=voter_id)
     if voter.cep == "00000000":
         Voter.objects.filter(pk=voter_id).update(geo_status=GeoStatus.FAILED)
@@ -106,7 +106,7 @@ class RunTests(GeocodeBase):
             voter.refresh_from_db()
             self.assertEqual(voter.geo_status, GeoStatus.OK)
             self.assertEqual(voter.latitude, FAKE_POINT[0])
-        self.assertEqual(self.messages(response), [("success", "3 eleitores localizados.")])
+        self.assertEqual(self.messages(response), [("success", "3 apoiadores localizados.")])
 
     def test_failed_voters_return_to_queue_and_are_retried(self):
         failed = make_voter(self.a, self.cabo, 1, geo_status=GeoStatus.FAILED, cep="13010000")
@@ -114,7 +114,7 @@ class RunTests(GeocodeBase):
             response = client_for(self.admin).post(URL)
         failed.refresh_from_db()
         self.assertEqual(failed.geo_status, GeoStatus.OK)
-        self.assertEqual(self.messages(response), [("success", "1 eleitor localizado.")])
+        self.assertEqual(self.messages(response), [("success", "1 apoiador localizado.")])
 
     def test_still_failing_voters_are_reported(self):
         make_voter(self.a, self.cabo, 1, geo_status=GeoStatus.PENDING, cep="00000000")
@@ -123,7 +123,7 @@ class RunTests(GeocodeBase):
             response = client_for(self.admin).post(URL)
         ((level, text),) = self.messages(response)
         self.assertEqual(level, "success")
-        self.assertIn("1 eleitor localizado", text)
+        self.assertIn("1 apoiador localizado", text)
         self.assertIn("1 endereço não encontrado", text)
 
     def test_nothing_to_do(self):
@@ -131,7 +131,7 @@ class RunTests(GeocodeBase):
         with patched() as geocode:
             response = client_for(self.admin).post(URL)
         geocode.assert_not_called()
-        self.assertEqual(self.messages(response), [("info", "Não há eleitores pendentes de localização.")])
+        self.assertEqual(self.messages(response), [("info", "Não há apoiadores pendentes de localização.")])
 
     def test_processes_at_most_fifteen_and_keeps_the_rest_queued(self):
         for i in range(1, 21):
@@ -143,7 +143,7 @@ class RunTests(GeocodeBase):
         self.assertEqual(Voter.objects.filter(campaign=self.a, geo_status=GeoStatus.OK).count(), 15)
         self.assertEqual(Voter.objects.filter(campaign=self.a, geo_status=GeoStatus.PENDING).count(), 5)
         ((_, text),) = self.messages(response)
-        self.assertIn("5 eleitores continuam na fila", text)
+        self.assertIn("5 apoiadores continuam na fila", text)
 
     def test_never_touches_another_campaign(self):
         mine = make_voter(self.a, self.cabo, 1, geo_status=GeoStatus.PENDING, cep="13010000")
@@ -261,11 +261,11 @@ class RunCampaignGeocodingTests(GeocodeBase):
 
 class MessageTests(SimpleTestCase):
     def test_nothing_processed(self):
-        self.assertEqual(geocode_run_message(GeocodeRunResult(0, 0, 0, 0)), ("info", "Não há eleitores pendentes de localização."))
+        self.assertEqual(geocode_run_message(GeocodeRunResult(0, 0, 0, 0)), ("info", "Não há apoiadores pendentes de localização."))
 
     def test_plurals(self):
-        self.assertEqual(geocode_run_message(GeocodeRunResult(1, 1, 0, 0)), ("success", "1 eleitor localizado."))
-        self.assertEqual(geocode_run_message(GeocodeRunResult(2, 2, 0, 0)), ("success", "2 eleitores localizados."))
+        self.assertEqual(geocode_run_message(GeocodeRunResult(1, 1, 0, 0)), ("success", "1 apoiador localizado."))
+        self.assertEqual(geocode_run_message(GeocodeRunResult(2, 2, 0, 0)), ("success", "2 apoiadores localizados."))
 
     def test_all_failed_is_a_warning(self):
         level, text = geocode_run_message(GeocodeRunResult(2, 0, 2, 0))
@@ -274,6 +274,6 @@ class MessageTests(SimpleTestCase):
 
     def test_remaining_queue_note(self):
         _, one = geocode_run_message(GeocodeRunResult(1, 1, 0, 1))
-        self.assertIn("1 eleitor continua na fila", one)
+        self.assertIn("1 apoiador continua na fila", one)
         _, many = geocode_run_message(GeocodeRunResult(15, 15, 0, 1200))
-        self.assertIn("1.200 eleitores continuam na fila", many)
+        self.assertIn("1.200 apoiadores continuam na fila", many)

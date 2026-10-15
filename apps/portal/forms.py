@@ -89,7 +89,7 @@ class IdentityForm(StyledFormMixin, forms.Form):
         required=False,
         min_value=1,
         max_value=LIMITS["voter_goal_max"],
-        help_text="Total de eleitores que a campanha pretende cadastrar.",
+        help_text="Total de apoiadores que a campanha pretende cadastrar.",
         error_messages={
             "invalid": "Informe uma meta entre 1 e 10.000.000.",
             "min_value": "Informe uma meta entre 1 e 10.000.000.",
@@ -254,7 +254,7 @@ class PublicFormSettingsForm(StyledFormMixin, forms.Form):
         label="Contato do encarregado / controlador de dados",
         required=False,
         max_length=LIMITS["privacy_contact"],
-        help_text="Exibido na política de privacidade do formulário para o eleitor pedir acesso, correção ou exclusão dos dados.",
+        help_text="Exibido na política de privacidade do formulário para o apoiador pedir acesso, correção ou exclusão dos dados.",
         widget=forms.TextInput(attrs={"placeholder": "Ex.: Maria Souza · privacidade@suacampanha.com.br"}),
     )
 

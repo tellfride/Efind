@@ -1,6 +1,6 @@
 # E-Find — Arquitetura e contratos (Django + MariaDB)
 
-Sistema de gestão de campanha eleitoral (efind.com.br): cadastro de eleitores por link/QR Code vinculado a quem
+Sistema de gestão de campanha eleitoral (efind.com.br): cadastro de apoiadores por link/QR Code vinculado a quem
 cadastrou, equipe hierárquica com permissões, mapa por bairro a partir do CEP, dashboards personalizáveis e disparo
 de WhatsApp **somente para quem consentiu**.
 
@@ -54,16 +54,16 @@ legacy-nextjs/         referência arquivada (não executa)
 ## Hierarquia e isolamento (regras invioláveis de segurança)
 
 ```
-SUPER_ADMIN (plataforma — /super)        cria campanhas (candidatos); NÃO vê dados pessoais de eleitores
+SUPER_ADMIN (plataforma — /super)        cria campanhas (candidatos); NÃO vê dados pessoais de apoiadores
 └── Campaign (tenant)                    nenhum candidato enxerga a campanha do outro
     ├── ADMIN          (acesso total à campanha; define permissões)
     │   └── COORDENADOR (parent = admin)        vê a própria rede: ele + cabos com parent = ele
-    │       └── CABO    (parent = coordenador)  vê só os eleitores que ele cadastrou
+    │       └── CABO    (parent = coordenador)  vê só os apoiadores que ele cadastrou
     └── Voter.registered_by → quem cadastrou (sempre preenchido)
 ```
 
 1. Toda consulta de dados de campanha filtra por `campaign_id` do usuário logado — **nunca** por id vindo do cliente.
-2. Eleitores: use **sempre** `voter_scope(user)`, `voters_queryset(user, filters)` ou `get_voter_in_scope(user, id)` de
+2. Apoiadores: use **sempre** `voter_scope(user)`, `voters_queryset(user, filters)` ou `get_voter_in_scope(user, id)` de
    `apps.core.access`. Filtros nunca ampliam o escopo (são AND com o escopo).
 3. Equipe: `team_scope(user)`, `get_member_in_scope(user, id)`, `can_access_member(user, id)`.
 4. Toda view começa com um decorator de `apps.core.decorators` (ver abaixo). O middleware só carrega contexto
@@ -82,7 +82,7 @@ SUPER_ADMIN (plataforma — /super)        cria campanhas (candidatos); NÃO vê
 
 ## Permissões (`apps/core/permissions.py`)
 
-Módulos: `dashboard`, `eleitores`, `mapa`, `meu_link`, `equipe`, `modelos`, `disparos`, `whatsapp`, `configuracoes`,
+Módulos: `dashboard`, `eleitores` (chave interna, já gravada no banco; na interface o módulo se chama **Apoiadores**), `mapa`, `meu_link`, `equipe`, `modelos`, `disparos`, `whatsapp`, `configuracoes`,
 `auditoria`. Ações: `view`, `create`, `edit`, `delete`, `export` (cada módulo suporta um subconjunto — `MODULES[m]["actions"]`).
 
 - ADMIN: sempre tudo. A matriz de permissões (`/painel/permissoes/`) é exclusiva do ADMIN (não delegável).
@@ -115,7 +115,7 @@ Para CBVs: `ModulePermissionMixin` (`permission_module`, `permission_action`).
   `django.core.paginator.Paginator` (25 por página) + `{% pagination page_obj %}`.
 - **Endpoints para JS** (mapa, widgets, contagens ao vivo): views que devolvem `JsonResponse` em `api/painel/<módulo>/...`,
   com `json_response=True` no decorator.
-- **Filtros de eleitores** (lista, mapa, widgets, público de disparo): `parse_voter_filters(request.GET)` →
+- **Filtros de apoiadores** (lista, mapa, widgets, público de disparo): `parse_voter_filters(request.GET)` →
   `voters_queryset(request.user, filters)`; componente `{% voter_filters filters filter_options %}` com
   `get_voter_filter_options(request.user)`. No JS: `EFind.paramsToFilters(new URLSearchParams(new FormData(form)))` e
   `EFind.filtersToParams(filters)` convertem entre querystring e o dict JSON de filtros (`Broadcast.filters`, widgets).
@@ -136,15 +136,15 @@ Para CBVs: `ModulePermissionMixin` (`permission_module`, `permission_action`).
 ## Kit de UI
 
 Templates das páginas estendem `layouts/shell.html` (painel/super: menu + topo) ou `layouts/public.html` (páginas
-públicas) e preenchem `{% block title %}Eleitores · E-Find{% endblock %}` e `{% block content %}`. O kit é *builtin*
+públicas) e preenchem `{% block title %}Apoiadores · E-Find{% endblock %}` e `{% block content %}`. O kit é *builtin*
 (não precisa de `{% load %}`):
 
 ```django
-{% page_header title="Eleitores" description="..." %}<a class="btn btn-primary" href="...">{% icon "plus" %} Novo</a>{% endpage_header %}
+{% page_header title="Apoiadores" description="..." %}<a class="btn btn-primary" href="...">{% icon "plus" %} Novo</a>{% endpage_header %}
 {% card title="Resumo" description="..." padding=False css="mb-6" %}...{% endcard %}
 {% empty_state icon="inbox" title="Nada aqui" description="..." %}<a class="btn btn-primary">Criar</a>{% endempty_state %}
 {% alert "warning" title="Atenção" %}texto{% endalert %}            {# info | success | warning | danger #}
-{% stat_card "Eleitores" total icon="users-round" tone="brand" hint="na sua rede" href="/painel/eleitores/" %}
+{% stat_card "Apoiadores" total icon="users-round" tone="brand" hint="na sua rede" href="/painel/apoiadores/" %}
 {% badge "Ativo" "green" %}  {% progress 40 100 "green" %}  {% avatar user.name %}  {% icon "users" "size-5 text-brand-600" %}
 {% field form.nome hint="..." %}   {% pagination page_obj %}   {% qs page=2 %}   {% voter_filters filters options %}
 filtros: |phone |cep |num |pct |brdate |brdatetime |initials |get_item |tags_list |role_label |percent_of
@@ -179,7 +179,7 @@ Alpine e HTMX são carregados em todas as páginas (`defer`, depois de `app.js`)
 | `/login/`, `/logout/` (POST), `/painel/perfil/`, `/super/perfil/` | accounts (pronto) |
 | `/api/public/cep/<cep>/` | geo (pronto) |
 | `/`, `/privacidade/`, `/termos/`, `/painel/configuracoes/`, `/painel/auditoria/` | portal |
-| `/c/<code>/` (+ `obrigado/`, `privacidade/`), `/painel/eleitores/` (+ `novo/`, `<id>/`, `importar/` (+ `modelo/`: planilha-modelo CSV para download), `exportar/`), `/painel/meu-link/` (+ `cartaz/`) | voters |
+| `/c/<code>/` (+ `obrigado/`, `privacidade/`), `/painel/apoiadores/` (+ `novo/`, `<id>/`, `importar/` (+ `modelo/`: planilha-modelo CSV para download), `exportar/`), `/painel/meu-link/` (+ `cartaz/`) | voters |
 | `/painel/` e `/painel/dashboards/` (+ `<id>/`, `<id>/editar/`), `/api/painel/dashboard/...` | dashboards |
 | `/painel/equipe/` (+ `novo/`, `<id>/`), `/painel/permissoes/` | team |
 | `/painel/mapa/`, `/api/painel/mapa/...` | mapview |
@@ -201,7 +201,7 @@ Cada app declara `app_name` e seus caminhos **completos** em `urls.py` (todos in
 - `apps/campaigns/bootstrap.py` — `bootstrap_campaign(campaign)`: permissões padrão + dashboards (pronto).
 - `apps/core/template_vars.py` — `TEMPLATE_VARIABLES`, `render_template`, `build_template_context` (pronto).
 - `apps/core/qr.py` — `registration_url(code, "link"|"qr")`, `qr_png_data_url`, `qr_svg` (pronto).
-- `apps/core/access.py` — `MESSAGEABLE_Q`: eleitor apto a disparo = `whatsapp_opt_in` + sem `opt_out_at` + `consent_at` (pronto).
+- `apps/core/access.py` — `MESSAGEABLE_Q`: apoiador apto a disparo = `whatsapp_opt_in` + sem `opt_out_at` + `consent_at` (pronto).
 - `apps/geo/geocode.py` — `geocode_voter`, `geocode_voter_in_background`, `process_pending_geocoding` (pronto).
 
 ## Conformidade (LGPD e TSE)
@@ -213,13 +213,13 @@ Cada app declara `app_name` e seus caminhos **completos** em `urls.py` (todos in
   fornecidas pelo provedor do aplicativo ou contrárias aos seus termos de uso. Por isso o E-Find integra **apenas** a API
   oficial do WhatsApp (Meta Cloud API) e parceiros oficiais (Twilio, 360dialog), além de um **Simulador** para testes.
   Não integrar APIs não oficiais (Z-API, Evolution, Baileys etc.).
-- Exportações e exclusões de eleitores são auditadas. Exclusão de eleitor é definitiva (direito do titular).
+- Exportações e exclusões de apoiadores são auditadas. Exclusão de apoiador é definitiva (direito do titular).
 
 ## Desenvolvimento (Windows, Git Bash/PowerShell)
 
 ```bash
 ./.venv/Scripts/python.exe manage.py migrate        # cria/atualiza o banco
-./.venv/Scripts/python.exe manage.py seed_demo      # super admin + campanha demo (240 eleitores fictícios)
+./.venv/Scripts/python.exe manage.py seed_demo      # super admin + campanha demo (240 apoiadores fictícios)
 ./.venv/Scripts/python.exe manage.py runserver 8000 # http://localhost:8000
                                                     # (com --noreload, reinicie após editar Python OU templates: o cache de templates não recarrega)
 ./.venv/Scripts/python.exe manage.py run_worker     # fila de disparos + geocodificação (outro terminal)
@@ -248,5 +248,5 @@ registrem em "mudanças compartilhadas necessárias" e contornem dentro do próp
 - **Confirmação de ações**: use `data-confirm="Mensagem?"` no botão/`<form>`; o diálogo é próprio (`EFind.confirm`), porque
   `window.confirm()` é suprimido em WebViews (ex.: navegador do WhatsApp). Título opcional: `data-confirm-title`; o botão
   de confirmar herda o texto e o tom (`btn-danger` → vermelho) do botão que disparou. Testes: `apps/core/tests/test_js_confirm.py`.
-- **Auditoria de consulta**: abrir a ficha de um eleitor grava `voter.view` (só o id). Nunca coloque dados pessoais em `details`.
+- **Auditoria de consulta**: abrir a ficha de um apoiador grava `voter.view` (só o id). Nunca coloque dados pessoais em `details`.
 - `seed_demo` só roda com `DEBUG=1` (ou `--force` / `ALLOW_SEED_DEMO=1`): ele cria contas com senha conhecida.

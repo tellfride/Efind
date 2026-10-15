@@ -22,18 +22,18 @@ MODULES: dict[str, dict[str, Any]] = {
         "actions": ("view", "create", "edit", "delete"),
     },
     "eleitores": {
-        "label": "Eleitores",
-        "description": "Cadastro e lista de eleitores (cada usuário vê apenas sua rede).",
+        "label": "Apoiadores",
+        "description": "Cadastro e lista de apoiadores (cada usuário vê apenas sua rede).",
         "actions": ("view", "create", "edit", "delete", "export"),
     },
     "mapa": {
         "label": "Mapa",
-        "description": "Mapa por bairro/CEP dos eleitores da rede do usuário.",
+        "description": "Mapa por bairro/CEP dos apoiadores da rede do usuário.",
         "actions": ("view",),
     },
     "meu_link": {
         "label": "Meu link / QR Code",
-        "description": "Link e QR Code pessoal para cadastro de eleitores.",
+        "description": "Link e QR Code pessoal para cadastro de apoiadores.",
         "actions": ("view",),
     },
     "equipe": {
@@ -48,7 +48,7 @@ MODULES: dict[str, dict[str, Any]] = {
     },
     "disparos": {
         "label": "Disparos de WhatsApp",
-        "description": "Envio em massa para eleitores que consentiram. Editar = pausar/retomar/cancelar.",
+        "description": "Envio em massa para apoiadores que consentiram. Editar = pausar/retomar/cancelar.",
         "actions": ("view", "create", "edit", "delete"),
     },
     "whatsapp": {

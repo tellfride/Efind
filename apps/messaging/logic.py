@@ -298,17 +298,17 @@ def send_blocker(
 
 
 def recipient_skip_reason(voter: Any, message: Any) -> str | None:
-    """O eleitor ainda pode receber a mensagem? (o consentimento pode ter sido retirado depois do agendamento)."""
+    """O apoiador ainda pode receber a mensagem? (o consentimento pode ter sido retirado depois do agendamento)."""
     if voter is None:
-        return "Eleitor excluído"
+        return "Apoiador excluído"
     if voter.campaign_id != message.campaign_id:
-        return "Eleitor de outra campanha"
+        return "Apoiador de outra campanha"
     if voter.opt_out_at is not None:
-        return "Eleitor pediu descadastro"
+        return "Apoiador pediu descadastro"
     if not voter.whatsapp_opt_in or voter.consent_at is None:
-        return "Eleitor sem consentimento para WhatsApp"
+        return "Apoiador sem consentimento para WhatsApp"
     if voter.phone != message.phone:
-        return "Telefone do eleitor foi alterado"
+        return "Telefone do apoiador foi alterado"
     return None
 
 

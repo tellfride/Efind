@@ -256,7 +256,7 @@ def regenerate_invite(request, target: User) -> str:
 
 
 def delete_member(request, target: User, data: dict[str, Any]) -> dict[str, Any]:
-    """Exclui o membro. `data` = cleaned_data de `MemberDeleteForm`: os eleitores dele vão para `transfer_to_obj` e
+    """Exclui o membro. `data` = cleaned_data de `MemberDeleteForm`: os apoiadores dele vão para `transfer_to_obj` e
     os membros vinculados para `new_parent_obj`, tudo na mesma transação. Devolve as contagens para a mensagem."""
     actor = request.user
     campaign_id = actor.campaign_id
@@ -275,7 +275,7 @@ def delete_member(request, target: User, data: dict[str, Any]) -> dict[str, Any]
                 )
             if Voter.objects.filter(registered_by_id=target.pk).exists():
                 raise TeamError(
-                    "Este membro cadastrou eleitores agora há pouco. Escolha para quem transferi-los e tente novamente.",
+                    "Este membro cadastrou apoiadores agora há pouco. Escolha para quem transferi-los e tente novamente.",
                     "transfer_to",
                 )
             if new_parent is not None:

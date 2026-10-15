@@ -1,4 +1,4 @@
-/* E-Find · formulários de eleitor: máscara de data (dd/mm/aaaa) e proteção contra envio duplo. */
+/* E-Find · formulários de apoiador: máscara de data (dd/mm/aaaa) e proteção contra envio duplo. */
 (function () {
   "use strict";
 

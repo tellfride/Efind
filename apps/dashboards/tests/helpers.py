@@ -1,4 +1,4 @@
-"""Fixtures dos testes dos dashboards (campanhas, usuários, eleitores e login)."""
+"""Fixtures dos testes dos dashboards (campanhas, usuários, apoiadores e login)."""
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ def make_user(campaign, email: str, role: str, parent=None, name: str | None = N
 
 def make_voter(campaign, registered_by, n: int, created_at: dt.datetime | None = None, **extra) -> Voter:
     voter = Voter.objects.create(
-        campaign=campaign, registered_by=registered_by, name=f"Eleitor {n}", phone=f"551190000{n:04d}", **extra
+        campaign=campaign, registered_by=registered_by, name=f"Apoiador {n}", phone=f"551190000{n:04d}", **extra
     )
     if created_at is not None:
         Voter.objects.filter(pk=voter.pk).update(created_at=created_at)

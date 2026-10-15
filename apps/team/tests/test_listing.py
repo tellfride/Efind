@@ -90,7 +90,7 @@ class PureListingTests(SimpleTestCase):
 
     def test_filter_parsing_rejects_garbage(self):
         f = parse_list_filters({"papel": "SUPER_ADMIN", "status": "x", "ordem": "drop table", "q": "  oi  "}, set())
-        self.assertEqual((f.role, f.status, f.sort, f.q), ("", "", "eleitores", "oi"))
+        self.assertEqual((f.role, f.status, f.sort, f.q), ("", "", "apoiadores", "oi"))
         # coordenador de outra campanha / inexistente é descartado
         f = parse_list_filters({"coord": str(uuid.uuid4())}, {str(self.c1.id)})
         self.assertEqual(f.coordinator, "")
@@ -101,7 +101,7 @@ class PureListingTests(SimpleTestCase):
         def order(sort):
             return [r.name for r in sort_rows(self.rows, sort)]
 
-        self.assertEqual(order("eleitores")[:3], ["Ana", "Carla", "Zeca"])
+        self.assertEqual(order("apoiadores")[:3], ["Ana", "Carla", "Zeca"])
         self.assertEqual(order("menos")[0], "Bruno")
         self.assertEqual(order("7d")[:2], ["Ana", "Carla"])
         self.assertEqual(order("nome")[:3], ["Admin", "Ana", "Bruno"])
@@ -148,7 +148,7 @@ class LoadRowsTests(TestCase):
         make_voter(cls.other, cls.admin_b, 100)
 
     def test_counts_with_a_single_aggregate_query(self):
-        with self.assertNumQueries(2):  # membros + UMA agregação de eleitores (sem N+1)
+        with self.assertNumQueries(2):  # membros + UMA agregação de apoiadores (sem N+1)
             rows = load_team_rows(self.admin)
         by_name = {r.email: r for r in rows}
         self.assertEqual(len(rows), 9)

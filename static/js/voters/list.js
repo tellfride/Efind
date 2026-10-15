@@ -1,4 +1,4 @@
-/* E-Find · lista de eleitores: mantém a ordenação escolhida ao aplicar os filtros. */
+/* E-Find · lista de apoiadores: mantém a ordenação escolhida ao aplicar os filtros. */
 (function () {
   "use strict";
   document.addEventListener("submit", (e) => {

@@ -24,7 +24,7 @@
   <h2>1. Quem é responsável pelos dados</h2>
   <p>O E-Find (efind.com.br) é uma plataforma de gestão de campanha eleitoral. Cada candidato ou candidata contrata o uso da plataforma para a sua própria campanha, que funciona como um ambiente separado dos demais.</p>
   <ul>
-    <li><strong>A campanha é a controladora</strong> dos dados dos eleitores e apoiadores que cadastra: ela decide quais dados coletar, para quais finalidades e quem da equipe pode acessá-los.</li>
+    <li><strong>A campanha é a controladora</strong> dos dados dos apoiadores que cadastra: ela decide quais dados coletar, para quais finalidades e quem da equipe pode acessá-los.</li>
     <li><strong>O E-Find atua como operador</strong>: trata os dados em nome da campanha, seguindo as instruções dela e os <a href="/termos/">Termos de uso</a>, e mantém a infraestrutura segura.</li>
     <li>Em relação aos dados de acesso dos usuários da plataforma (equipe da campanha e administradores do E-Find), o E-Find também atua como controlador, para operar e proteger o serviço.</li>
   </ul>
@@ -32,7 +32,7 @@
 
 <section id="dados">
   <h2>2. Quais dados são tratados</h2>
-  <h3>Eleitores e apoiadores (cadastrados pela campanha ou por formulário público)</h3>
+  <h3>Apoiadores (cadastrados pela campanha ou por formulário público)</h3>
   <ul>
     <li>Identificação e contato: nome completo, telefone/WhatsApp e, se a campanha pedir, e-mail.</li>
     <li>Dados opcionais conforme a configuração da campanha: data de nascimento, gênero, endereço (CEP, logradouro, número, bairro, cidade e estado) e zona e seção eleitoral.</li>
@@ -67,13 +67,13 @@
 <section id="compartilhamento">
   <h2>4. Com quem os dados são compartilhados</h2>
   <ul>
-    <li><strong>Equipe da própria campanha</strong>, dentro das regras de hierarquia: cada pessoa vê apenas a sua rede (o cabo eleitoral vê os eleitores que cadastrou; o coordenador, os da sua equipe; o administrador, toda a campanha).</li>
+    <li><strong>Equipe da própria campanha</strong>, dentro das regras de hierarquia: cada pessoa vê apenas a sua rede (o cabo eleitoral vê os apoiadores que cadastrou; o coordenador, os da sua equipe; o administrador, toda a campanha).</li>
     <li><strong>Provedores oficiais de WhatsApp</strong> escolhidos pela campanha (Meta Cloud API, Twilio ou 360dialog), apenas para entregar mensagens a quem consentiu.</li>
     <li><strong>Serviços de consulta de CEP e geocodificação</strong>, que recebem somente o CEP ou o endereço necessário para localizar o bairro no mapa.</li>
     <li><strong>Fornecedores de infraestrutura</strong> (hospedagem e banco de dados), contratualmente obrigados a proteger as informações.</li>
     <li><strong>Autoridades</strong>, quando houver ordem judicial ou obrigação legal.</li>
   </ul>
-  <p>O super administrador da plataforma gerencia campanhas e usuários, mas <strong>não tem acesso à lista de dados pessoais dos eleitores</strong>.</p>
+  <p>O super administrador da plataforma gerencia campanhas e usuários, mas <strong>não tem acesso à lista de dados pessoais dos apoiadores</strong>.</p>
 </section>
 
 <section id="seguranca">
@@ -82,7 +82,7 @@
     <li><strong>Isolamento entre campanhas:</strong> todas as consultas são restritas à campanha do usuário autenticado; nenhum candidato enxerga dados de outro.</li>
     <li><strong>Controle de acesso:</strong> permissões por módulo e escopo hierárquico, definidos pelo administrador da campanha e aplicados no servidor a cada requisição.</li>
     <li><strong>Criptografia:</strong> credenciais de provedores de WhatsApp são criptografadas com AES-256-GCM; senhas são protegidas com hash (PBKDF2); a comunicação com a plataforma ocorre por conexão segura (HTTPS).</li>
-    <li><strong>Trilha de auditoria:</strong> logins, alterações de configurações, equipe e permissões, exportações e disparos ficam registrados com data, hora e IP, sem dados pessoais de eleitores nos detalhes.</li>
+    <li><strong>Trilha de auditoria:</strong> logins, alterações de configurações, equipe e permissões, exportações e disparos ficam registrados com data, hora e IP, sem dados pessoais de apoiadores nos detalhes.</li>
     <li><strong>Limites de uso:</strong> proteção contra tentativas repetidas de login e uso abusivo do formulário público.</li>
   </ul>
   <p>Nenhum sistema é totalmente imune a incidentes. Se ocorrer um incidente de segurança que possa acarretar risco ou dano relevante, comunicaremos a campanha controladora, a Autoridade Nacional de Proteção de Dados (ANPD) e os titulares, nos termos do art. 48 da LGPD.</p>
@@ -91,7 +91,7 @@
 <section id="retencao">
   <h2>6. Por quanto tempo guardamos</h2>
   <ul>
-    <li>Os dados dos eleitores permanecem enquanto a campanha precisar deles para a finalidade informada ou até o titular pedir a exclusão. A exclusão de um eleitor feita na plataforma é <strong>definitiva</strong>.</li>
+    <li>Os dados dos apoiadores permanecem enquanto a campanha precisar deles para a finalidade informada ou até o titular pedir a exclusão. A exclusão de um apoiador feita na plataforma é <strong>definitiva</strong>.</li>
     <li>Os registros de auditoria são mantidos pelo tempo necessário para a prestação de contas e a defesa em processos.</li>
     <li>Ao término da campanha, a controladora deve decidir pela eliminação ou anonimização dos dados; o E-Find executa a instrução recebida, salvo se a lei exigir a guarda.</li>
   </ul>

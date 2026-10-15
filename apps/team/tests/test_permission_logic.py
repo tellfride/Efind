@@ -83,7 +83,7 @@ class RoleMatrixTests(SimpleTestCase):
 
     def test_describe_change_has_only_names(self):
         text = pl.describe_change(pl.PermissionChange("eleitores", "export", False, True))
-        self.assertEqual(text, "Eleitores · Exportar: não → sim")
+        self.assertEqual(text, "Apoiadores · Exportar: não → sim")
         self.assertEqual(pl.describe_change(pl.PermissionChange("mapa", "view", None, False)), "Mapa · Ver: herdar → não")
 
     def test_module_actions_in_column_order(self):
@@ -130,9 +130,9 @@ class OverrideTests(SimpleTestCase):
         modules = {u["module"] for u in upserts}
         self.assertEqual(modules, {"eleitores", "mapa"})
         self.assertEqual(set(deletes), set(MODULE_KEYS) - modules)
-        eleitores = next(u for u in upserts if u["module"] == "eleitores")
-        self.assertIs(eleitores["can_export"], True)
-        self.assertIsNone(eleitores["can_view"])
+        apoiadores = next(u for u in upserts if u["module"] == "eleitores")
+        self.assertIs(apoiadores["can_export"], True)
+        self.assertIsNone(apoiadores["can_view"])
         # tudo herdado → nada a gravar, tudo a apagar
         upserts, deletes = pl.serialize_overrides(pl.empty_overrides())
         self.assertEqual((upserts, set(deletes)), ([], set(MODULE_KEYS)))

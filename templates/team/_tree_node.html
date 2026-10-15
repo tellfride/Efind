@@ -18,7 +18,7 @@
         {% if not row.is_active %}{% badge "Inativo" "gray" %}{% endif %}
       </div>
       <p class="mt-0.5 text-xs text-slate-500">
-        {{ row.voters_total|num }} eleitor{{ row.voters_total|pluralize:"es" }}
+        {{ row.voters_total|num }} apoiador{{ row.voters_total|pluralize:"es" }}
         {% if node.has_children %}· {{ node.network_total|num }} na rede{% endif %}
         {% if row.region %}· {{ row.region }}{% endif %}
       </p>

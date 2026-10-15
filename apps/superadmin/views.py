@@ -1,6 +1,6 @@
 """Views do super admin (/super/...). Toda view começa com @super_admin_required e muta estado só via POST.
 
-PRIVACIDADE: nenhuma view carrega eleitores — só contagens agregadas (veja selectors.py). O contexto da campanha
+PRIVACIDADE: nenhuma view carrega apoiadores — só contagens agregadas (veja selectors.py). O contexto da campanha
 gerenciada vai nos templates como `camp` (o nome `campaign` é reservado ao context processor do painel).
 """
 

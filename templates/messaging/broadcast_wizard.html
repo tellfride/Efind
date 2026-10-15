@@ -8,7 +8,7 @@
 
 {% if not has_templates %}
 <div class="card">
-  {% empty_state icon="message-square-text" title="Crie um modelo de mensagem primeiro" description="Todo disparo usa um modelo com o texto que os eleitores vão receber." %}
+  {% empty_state icon="message-square-text" title="Crie um modelo de mensagem primeiro" description="Todo disparo usa um modelo com o texto que os apoiadores vão receber." %}
     {% if can_create_template %}<a class="btn btn-primary" href="/painel/mensagens/modelos/novo/">{% icon "plus" %} Criar modelo</a>{% else %}<p class="text-sm text-slate-500">Peça a um administrador para criar um modelo.</p>{% endif %}
   {% endempty_state %}
 </div>
@@ -43,7 +43,7 @@
           <label for="wz-name" class="label">Nome do disparo<span class="ml-0.5 text-red-500">*</span></label>
           <input id="wz-name" type="text" class="input" maxlength="120" autocomplete="off" x-model="form.name" @input="delete errors.name" placeholder="Ex.: Convite para a caminhada de sábado" :aria-invalid="errors.name ? 'true' : null">
           <p class="field-error" x-show="errors.name" x-text="errors.name" role="alert"></p>
-          <p class="field-hint" x-show="!errors.name">Só para você identificar; o eleitor não vê este nome.</p>
+          <p class="field-hint" x-show="!errors.name">Só para você identificar; o apoiador não vê este nome.</p>
         </div>
         <div class="space-y-1.5">
           <label for="wz-template" class="label">Modelo de mensagem<span class="ml-0.5 text-red-500">*</span></label>
@@ -81,7 +81,7 @@
          @click="onFilterClick($event)">
       {% voter_filters filters filter_options action="#" hide=filter_hide submit_label="Atualizar contagem" %}
     </div>
-    <p class="text-xs text-slate-500">Os filtros mostram apenas eleitores da sua rede. Sem filtros, o disparo vai para todos os eleitores aptos da sua rede.</p>
+    <p class="text-xs text-slate-500">Os filtros mostram apenas apoiadores da sua rede. Sem filtros, o disparo vai para todos os apoiadores aptos da sua rede.</p>
 
     <div x-show="errors.filters" class="alert alert-danger" role="alert"><span x-text="errors.filters"></span></div>
 
@@ -98,7 +98,7 @@
               <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">{% icon "users-round" "size-6" %}</div>
               <div>
                 <p class="text-3xl font-bold tracking-tight text-slate-900 tabular-nums" x-text="fmt(audience.eligible)"></p>
-                <p class="text-sm text-slate-600" x-text="audience.eligible === 1 ? 'eleitor vai receber a mensagem' : 'eleitores vão receber a mensagem'"></p>
+                <p class="text-sm text-slate-600" x-text="audience.eligible === 1 ? 'apoiador vai receber a mensagem' : 'apoiadores vão receber a mensagem'"></p>
               </div>
             </div>
             <ul class="space-y-1.5 text-sm text-slate-600">
@@ -106,7 +106,7 @@
               <li x-show="audience.without_opt_in > 0" class="flex items-start gap-2 text-amber-700">{% icon "triangle-alert" "mt-0.5 size-4 shrink-0" %}<span><span x-text="voters(audience.without_opt_in)"></span> <span x-text="audience.without_opt_in === 1 ? 'não autorizou WhatsApp e não receberá' : 'não autorizaram WhatsApp e não receberão'"></span>.</span></li>
               <li x-show="audience.opted_out > 0" class="flex items-start gap-2 text-amber-700">{% icon "user-x" "mt-0.5 size-4 shrink-0" %}<span><span x-text="voters(audience.opted_out)"></span> <span x-text="audience.opted_out === 1 ? 'pediu para sair e não receberá' : 'pediram para sair e não receberão'"></span>.</span></li>
             </ul>
-            <div x-show="audience.eligible === 0" class="alert alert-warning" role="status">Nenhum eleitor deste público pode receber mensagens. Ajuste os filtros para continuar.</div>
+            <div x-show="audience.eligible === 0" class="alert alert-warning" role="status">Nenhum apoiador deste público pode receber mensagens. Ajuste os filtros para continuar.</div>
           </div>
         </template>
       </div>
@@ -193,7 +193,7 @@
             <dt class="text-slate-500">Quando</dt><dd class="col-span-2" x-text="whenLabel"></dd>
             <dt class="text-slate-500">Filtros</dt>
             <dd class="col-span-2">
-              <p x-show="!review || review.filters_summary.length === 0" class="text-slate-600">Todos os eleitores aptos da sua rede.</p>
+              <p x-show="!review || review.filters_summary.length === 0" class="text-slate-600">Todos os apoiadores aptos da sua rede.</p>
               <ul class="space-y-0.5" x-show="review && review.filters_summary.length > 0">
                 <template x-for="item in (review ? review.filters_summary : [])" :key="item.label">
                   <li><span class="text-slate-500" x-text="item.label + ': '"></span><span x-text="item.value"></span></li>
@@ -215,7 +215,7 @@
             <ul class="mt-1 list-disc space-y-0.5 pl-5">
               <li>É vedado o disparo em massa sem consentimento do destinatário.</li>
               <li>Identifique a campanha na mensagem (nome do candidato).</li>
-              <li>Ofereça ao eleitor a opção de descadastro (por exemplo, responder SAIR).</li>
+              <li>Ofereça ao apoiador a opção de descadastro (por exemplo, responder SAIR).</li>
             </ul>
           </div>
           <label class="flex cursor-pointer items-start gap-2 text-sm text-slate-800">

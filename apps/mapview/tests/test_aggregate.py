@@ -1,4 +1,4 @@
-"""Agregação dos dados do mapa: linhas de eleitores → totais, bairros, pontos e limites (lógica pura)."""
+"""Agregação dos dados do mapa: linhas de apoiadores → totais, bairros, pontos e limites (lógica pura)."""
 
 import json
 

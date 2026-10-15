@@ -1,5 +1,5 @@
-"""Leituras do super admin. PRIVACIDADE: eleitores só entram aqui como contagens agregadas (count/aggregate);
-nenhuma linha de eleitor (nome, telefone, e-mail, endereço) é carregada para o super admin.
+"""Leituras do super admin. PRIVACIDADE: apoiadores só entram aqui como contagens agregadas (count/aggregate);
+nenhuma linha de apoiador (nome, telefone, e-mail, endereço) é carregada para o super admin.
 Sem N+1: contagens por campanha vêm de subconsultas anotadas na própria listagem."""
 
 from __future__ import annotations
@@ -105,7 +105,7 @@ def platform_overview(recent_limit: int = 10) -> dict[str, Any]:
 
 
 def campaign_admins(campaign: Campaign) -> list[User]:
-    """Administradores da campanha (contas de equipe, não dados de eleitores)."""
+    """Administradores da campanha (contas de equipe, não dados de apoiadores)."""
     return list(
         User.objects.filter(campaign=campaign, role=Role.ADMIN)
         .only("id", "name", "email", "phone", "is_active", "last_login", "created_at")
@@ -133,7 +133,7 @@ BROADCAST_TONES = {
 
 
 def campaign_usage(campaign: Campaign) -> dict[str, Any]:
-    """Uso da campanha: SOMENTE números agregados (nenhum dado pessoal de eleitor)."""
+    """Uso da campanha: SOMENTE números agregados (nenhum dado pessoal de apoiador)."""
     now = timezone.now()
     d7, d30 = now - timedelta(days=7), now - timedelta(days=30)
 
@@ -191,7 +191,7 @@ def campaign_usage(campaign: Campaign) -> dict[str, Any]:
 # Auditoria
 # ---------------------------------------------------------------------------------------------
 
-# Chaves (minúsculas) que podem carregar dados pessoais de eleitores
+# Chaves (minúsculas) que podem carregar dados pessoais de apoiadores
 PERSONAL_KEYS = frozenset(
     k.lower()
     for k in (
@@ -232,7 +232,7 @@ def _redact(value: Any, depth: int = 0) -> Any:
 
 
 def sanitize_audit_details(action: str, entity: str | None, details: Any) -> Any:
-    """Detalhes prontos para o super admin: em eventos de eleitores, mascara chaves/valores com dados pessoais."""
+    """Detalhes prontos para o super admin: em eventos de apoiadores, mascara chaves/valores com dados pessoais."""
     if details is None:
         return None
     return _redact(details) if is_voter_related(action, entity) else details
@@ -246,7 +246,7 @@ def pretty_details(details: Any, limit: int = 4000) -> str:
 
 
 def audit_queryset(cleaned: dict[str, Any]) -> QuerySet:
-    """Linhas de auditoria filtradas. Não junta eleitores; só campanha e usuário (conta de equipe)."""
+    """Linhas de auditoria filtradas. Não junta apoiadores; só campanha e usuário (conta de equipe)."""
     qs = (
         AuditLog.objects.select_related("campaign", "user")
         .only(

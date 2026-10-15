@@ -1,4 +1,4 @@
-"""Apresentação de eleitores nas telas (rótulos, tons de badge, links): sem consultas ao banco."""
+"""Apresentação de apoiadores nas telas (rótulos, tons de badge, links): sem consultas ao banco."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ MESSAGE_STATUS_TONES = {
 
 
 def decorate_voter(voter):
-    """Acrescenta atributos de exibição ao eleitor (situação do WhatsApp, apoio, link wa.me, origem)."""
+    """Acrescenta atributos de exibição ao apoiador (situação do WhatsApp, apoio, link wa.me, origem)."""
     status = whatsapp_status_of(voter)
     voter.wa_status = status
     voter.wa_label = WHATSAPP_STATUS_LABELS[status]

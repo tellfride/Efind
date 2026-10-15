@@ -1,4 +1,4 @@
-"""Painel de eleitores: lista, exportação, cadastro manual, detalhe, edição, descadastro, troca de responsável e
+"""Painel de apoiadores: lista, exportação, cadastro manual, detalhe, edição, descadastro, troca de responsável e
 exclusão. Todas as consultas passam pelo escopo hierárquico (`apps.core.access`)."""
 
 from __future__ import annotations
@@ -110,7 +110,7 @@ def voter_export(request):
 
 
 def _retryable_geo_failures(campaign_id):
-    """Eleitores não localizados que têm endereço para tentar de novo (CEP ou cidade)."""
+    """Apoiadores não localizados que têm endereço para tentar de novo (CEP ou cidade)."""
     return Voter.objects.filter(campaign_id=campaign_id, geo_status=GeoStatus.FAILED).filter(~Q(cep="") | ~Q(city=""))
 
 
@@ -122,9 +122,9 @@ def retry_geo(request):
     )
     audit("voter.update", request=request, entity="Voter", details={"change": "geo_retry", "count": count})
     if count:
-        messages.success(request, f"{count} eleitor(es) entraram na fila para serem localizados novamente.")
+        messages.success(request, f"{count} apoiador(es) entraram na fila para serem localizados novamente.")
     else:
-        messages.info(request, "Não há eleitores para localizar novamente.")
+        messages.info(request, "Não há apoiadores para localizar novamente.")
     return redirect("voters:list")
 
 
@@ -179,7 +179,7 @@ def voter_create(request):
             )
             if _has_address(data):
                 geocode_voter_in_background(voter.pk)
-            messages.success(request, "Eleitor cadastrado com sucesso.")
+            messages.success(request, "Apoiador cadastrado com sucesso.")
             return redirect("voters:detail", voter_id=voter.pk)
 
     return render(
@@ -201,7 +201,7 @@ def voter_create(request):
 def _voter_or_404(request, voter_id):
     voter = get_voter_in_scope(request.user, voter_id)
     if voter is None:
-        raise Http404("Eleitor não encontrado.")
+        raise Http404("Apoiador não encontrado.")
     return voter
 
 
@@ -279,7 +279,7 @@ def voter_edit(request, voter_id):
                     )
                 if address_changed and _has_address(data):
                     geocode_voter_in_background(voter.pk)
-                messages.success(request, "Dados do eleitor atualizados.")
+                messages.success(request, "Dados do apoiador atualizados.")
                 return redirect("voters:detail", voter_id=voter.pk)
     else:
         form = VoterEditForm(voter=voter, initial=voter_initial(voter))
@@ -303,9 +303,9 @@ def voter_opt_out(request, voter_id):
         voter.opt_out_at = timezone.now()
         voter.save(update_fields=["opt_out_at", "updated_at"])
         audit("voter.opt_out", request=request, entity="Voter", entity_id=voter.pk, details={"voter_id": str(voter.pk)})
-        messages.success(request, "Eleitor descadastrado dos disparos de WhatsApp.")
+        messages.success(request, "Apoiador descadastrado dos disparos de WhatsApp.")
     else:
-        messages.info(request, "Este eleitor já está descadastrado do WhatsApp.")
+        messages.info(request, "Este apoiador já está descadastrado do WhatsApp.")
     return redirect("voters:detail", voter_id=voter.pk)
 
 
@@ -319,7 +319,7 @@ def voter_change_registrar(request, voter_id):
         return redirect("voters:detail", voter_id=voter.pk)
     new_owner = form.cleaned_data["registered_by"]
     if new_owner.pk == voter.registered_by_id:
-        messages.info(request, "O eleitor já está vinculado a este membro da equipe.")
+        messages.info(request, "O apoiador já está vinculado a este membro da equipe.")
         return redirect("voters:detail", voter_id=voter.pk)
     previous = voter.registered_by_id
     voter.registered_by = new_owner
@@ -336,7 +336,7 @@ def voter_change_registrar(request, voter_id):
             "to": str(new_owner.pk),
         },
     )
-    messages.success(request, f"Eleitor transferido para {new_owner.name}.")
+    messages.success(request, f"Apoiador transferido para {new_owner.name}.")
     return redirect("voters:detail", voter_id=voter.pk)
 
 
@@ -352,6 +352,6 @@ def voter_delete(request, voter_id):
         InboundMessage.objects.filter(voter=voter).update(from_phone="", body="")
         voter.delete()  # exclusão definitiva
     audit("voter.delete", request=request, entity="Voter", entity_id=voter_pk, details={"voter_id": voter_pk})
-    messages.success(request, "Eleitor excluído definitivamente.")
+    messages.success(request, "Apoiador excluído definitivamente.")
     return redirect("voters:list")
 

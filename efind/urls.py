@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-# Cada app define suas rotas com o caminho completo (ex.: "painel/eleitores/"), então todos entram na raiz.
+# Cada app define suas rotas com o caminho completo (ex.: "painel/apoiadores/"), então todos entram na raiz.
 urlpatterns = [
     path("", include("apps.accounts.urls")),
     path("", include("apps.portal.urls")),

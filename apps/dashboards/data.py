@@ -1,6 +1,6 @@
 """Cálculo dos dados dos widgets.
 
-TODA consulta de eleitores passa por `apps.core.access.voters_queryset(user, filtros)` e a de equipe por `team_scope(user)`,
+TODA consulta de apoiadores passa por `apps.core.access.voters_queryset(user, filtros)` e a de equipe por `team_scope(user)`,
 portanto respeita a campanha e o escopo hierárquico de quem está vendo (ADMIN: tudo; COORDENADOR: sua rede; CABO: só ele).
 O resultado de `compute_widget_data` é sempre um dict serializável em JSON (ids como texto, datas em ISO).
 """
@@ -55,7 +55,7 @@ class DataContext:
         return self._perms
 
     def voters(self, filters: dict | None = None):
-        """Eleitores do escopo do usuário AND filtros do widget (queryset preguiçoso, reaproveitado por filtros iguais)."""
+        """Apoiadores do escopo do usuário AND filtros do widget (queryset preguiçoso, reaproveitado por filtros iguais)."""
         key = repr(sorted((filters or {}).items()))
         if key not in self._voters:
             self._voters[key] = voters_queryset(self.user, filters)
@@ -326,7 +326,7 @@ def _recent_voters(ctx: DataContext, widget: dict) -> dict:
                 "city": r["city"] or None,
                 "registered_by": r["registered_by__name"],
                 "created_at": r["created_at"].isoformat(),
-                "url": f"/painel/eleitores/{r['id']}/",
+                "url": f"/painel/apoiadores/{r['id']}/",
             }
             for r in rows
         ],

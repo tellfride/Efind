@@ -94,7 +94,7 @@ def is_opt_out_message(body: str | None) -> bool:
 
 
 def inbound_phone_candidates(raw: str | None) -> list[str]:
-    """Telefones possíveis para casar o remetente com o eleitor cadastrado.
+    """Telefones possíveis para casar o remetente com o apoiador cadastrado.
 
     O WhatsApp informa muitos celulares brasileiros antigos SEM o nono dígito (55 + DDD + 8 dígitos), enquanto o
     cadastro guarda 55 + DDD + 9 dígitos — testamos as duas formas. Ordem = preferência.

@@ -10,8 +10,8 @@
   {% stat_card "Campanhas ativas" overview.campaigns_active|num icon="shield-check" tone="green" href=campaigns_url|add:"?status=ACTIVE" %}
   {% stat_card "Campanhas suspensas" overview.campaigns_suspended|num icon="pause" tone="red" href=campaigns_url|add:"?status=SUSPENDED" %}
   {% stat_card "Usuários de campanhas" overview.campaign_users|num icon="users" tone="blue" hint="Administradores, coordenadores e cabos" %}
-  {% stat_card "Eleitores cadastrados" overview.voters_total|num icon="users-round" tone="brand" hint="Em todas as campanhas" %}
-  {% stat_card "Cadastros em 7 dias" overview.voters_last7|num icon="calendar" tone="purple" hint="Novos eleitores na última semana" %}
+  {% stat_card "Apoiadores cadastrados" overview.voters_total|num icon="users-round" tone="brand" hint="Em todas as campanhas" %}
+  {% stat_card "Cadastros em 7 dias" overview.voters_last7|num icon="calendar" tone="purple" hint="Novos apoiadores na última semana" %}
 </div>
 
 <section class="card mt-6">
@@ -35,6 +35,6 @@
 
 <p class="mt-4 flex items-start gap-2 text-xs text-slate-500">
   {% icon "lock" "mt-0.5 size-3.5 shrink-0" %}
-  O super admin vê apenas números agregados das campanhas. Dados pessoais de eleitores ficam restritos a cada campanha (LGPD).
+  O super admin vê apenas números agregados das campanhas. Dados pessoais de apoiadores ficam restritos a cada campanha (LGPD).
 </p>
 {% endblock %}

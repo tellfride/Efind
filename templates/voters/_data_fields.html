@@ -1,4 +1,4 @@
-{% comment %}Campos de dados do eleitor (nome, contato, endereço, título). `form` = VoterDataForm; respeita os grupos configurados.{% endcomment %}
+{% comment %}Campos de dados do apoiador (nome, contato, endereço, título). `form` = VoterDataForm; respeita os grupos configurados.{% endcomment %}
 <div class="space-y-4">
   {% field form.name %}
   {% field form.phone %}
@@ -34,8 +34,8 @@
 
 {% if form.show_electoral %}
 <fieldset class="mt-6 space-y-4 border-t border-slate-100 pt-5">
-  <legend class="sr-only">Título de eleitor</legend>
-  <h3 class="text-sm font-semibold text-slate-900">Título de eleitor</h3>
+  <legend class="sr-only">Título de apoiador</legend>
+  <h3 class="text-sm font-semibold text-slate-900">Título de apoiador</h3>
   <div class="grid grid-cols-2 gap-4">
     {% field form.electoral_zone %}
     {% field form.electoral_section %}

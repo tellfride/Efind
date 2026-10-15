@@ -34,7 +34,7 @@ document.addEventListener("alpine:init", () => {
     get roleHint() {
       if (this.role === "ADMIN") return "Acesso total à campanha. Só administradores criam outros administradores.";
       if (this.role === "COORDENADOR") return "Vê a própria rede: ele e os cabos que estão abaixo dele.";
-      return "Vê apenas os eleitores que ele mesmo cadastrar.";
+      return "Vê apenas os apoiadores que ele mesmo cadastrar.";
     },
 
     // Superiores válidos para o papel escolhido (mesma regra do servidor)

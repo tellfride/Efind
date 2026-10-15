@@ -123,7 +123,7 @@ AUDIT_CATEGORY_LABELS = {
     "settings": "Configurações",
     "user": "Equipe",
     "permissions": "Equipe",
-    "voter": "Eleitores",
+    "voter": "Apoiadores",
     "template": "Modelos de mensagem",
     "broadcast": "Disparos",
     "whatsapp": "WhatsApp",
@@ -156,7 +156,7 @@ def group_audit_actions(actions: Collection[str]) -> list[dict[str, Any]]:
 
 
 _ENTITY_LABELS = {
-    "voter": "Eleitor",
+    "voter": "Apoiador",
     "user": "Usuário",
     "campaign": "Campanha",
     "messagetemplate": "Modelo de mensagem",

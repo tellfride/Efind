@@ -286,17 +286,17 @@ class AuditLabelTests(SimpleTestCase):
     def test_known_and_unknown_actions(self):
         self.assertEqual(ar.audit_action_label("settings.update"), "Configurações atualizadas")
         self.assertEqual(ar.audit_action_label("audit.export"), "Auditoria exportada")
-        self.assertEqual(ar.audit_action_label("voter.merge_all"), "Eleitores: merge all")
+        self.assertEqual(ar.audit_action_label("voter.merge_all"), "Apoiadores: merge all")
         self.assertEqual(ar.audit_action_label("estranha"), "estranha")
 
     def test_grouping_is_sorted_and_deduplicated(self):
         groups = ar.group_audit_actions(["voter.export", "voter.create", "voter.export", "settings.update", "xyz.a"])
-        self.assertEqual([g["label"] for g in groups], ["Configurações", "Eleitores", "Outras"])
-        voter = next(g for g in groups if g["label"] == "Eleitores")
+        self.assertEqual([g["label"] for g in groups], ["Apoiadores", "Configurações", "Outras"])
+        voter = next(g for g in groups if g["label"] == "Apoiadores")
         self.assertEqual([value for value, _ in voter["options"]], ["voter.create", "voter.export"])
 
     def test_entity_label(self):
-        self.assertEqual(ar.audit_entity_label("Voter"), "Eleitor")
+        self.assertEqual(ar.audit_entity_label("Voter"), "Apoiador")
         self.assertEqual(ar.audit_entity_label("Campaign"), "Campanha")
         self.assertEqual(ar.audit_entity_label("Outra"), "Outra")
         self.assertEqual(ar.audit_entity_label(""), "")

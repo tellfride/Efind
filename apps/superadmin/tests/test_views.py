@@ -44,7 +44,7 @@ def url(name, *args):
 
 @fast_hasher
 class BaseCase(TestCase):
-    """Duas campanhas, equipe completa em `alfa`, eleitores com nomes reconhecíveis e um super admin logado."""
+    """Duas campanhas, equipe completa em `alfa`, apoiadores com nomes reconhecíveis e um super admin logado."""
 
     @classmethod
     def setUpTestData(cls):
@@ -143,7 +143,7 @@ class AccessControlTests(BaseCase):
             self.assertEqual(self.client.post(url(name, ghost), {}).status_code, 404, name)
 
     def test_super_admin_does_not_reach_voter_pages(self):
-        for path in ("/painel/", "/painel/eleitores/", f"/painel/eleitores/{self.v1.pk}/", "/painel/mapa/", "/painel/equipe/"):
+        for path in ("/painel/", "/painel/apoiadores/", f"/painel/apoiadores/{self.v1.pk}/", "/painel/mapa/", "/painel/equipe/"):
             response = self.client.get(path)
             self.assertIn(response.status_code, (302, 403, 404), path)
             if response.status_code == 302:
@@ -388,8 +388,8 @@ class CampaignDetailTests(BaseCase):
 
         response = self.client.get(url("campaign_detail", self.a.pk))
         self.assertContains(response, "Aptos a receber WhatsApp")
-        # nenhum dado pessoal de eleitor ou conteúdo de mensagem chega à página
-        for secret in ("Eleitora Sigilosa", "5511900000", "(11) 90000", "oi segredo", "5511900000999"):
+        # nenhum dado pessoal de apoiador ou conteúdo de mensagem chega à página
+        for secret in ("Apoiadora Sigilosa", "5511900000", "(11) 90000", "oi segredo", "5511900000999"):
             self.assertNotContains(response, secret)
 
     def test_update_changes_fields_and_keeps_slug(self):
@@ -727,13 +727,13 @@ class AuditViewTests(BaseCase):
             campaign=self.a,
             entity="Voter",
             entity_id=self.v1.pk,
-            details={"name": self.v1.name, "phone": self.v1.phone, "email": "eleitora@exemplo.com", "contato": "eleitora@exemplo.com", "count": 7},
+            details={"name": self.v1.name, "phone": self.v1.phone, "email": "apoiadora@exemplo.com", "contato": "apoiadora@exemplo.com", "count": 7},
         )
         audit("voter.export", user=self.cabo_a, campaign=self.a, entity="Voter", details={"count": 12})
         response = self.client.get(url("audit"))
-        self.assertContains(response, "Eleitor atualizado")
-        self.assertContains(response, "Eleitores exportados")
-        for secret in ("Eleitora Sigilosa", "5511900000", "eleitora@exemplo.com", "(11) 90000"):
+        self.assertContains(response, "Apoiador atualizado")
+        self.assertContains(response, "Apoiadores exportados")
+        for secret in ("Apoiadora Sigilosa", "5511900000", "apoiadora@exemplo.com", "(11) 90000"):
             self.assertNotContains(response, secret)
         self.assertContains(response, "&quot;count&quot;: 7")
 
@@ -760,7 +760,7 @@ class AuditViewTests(BaseCase):
 
 
 class PrivacyTests(BaseCase):
-    SECRETS = ("Eleitora Sigilosa", "5511900000", "(11) 90000")
+    SECRETS = ("Apoiadora Sigilosa", "5511900000", "(11) 90000")
 
     def test_no_super_page_exposes_voter_personal_data(self):
         audit("voter.create", user=self.cabo_a, campaign=self.a, entity="Voter", entity_id=self.v1.pk, details={"name": self.v1.name, "phone": self.v1.phone})
@@ -780,7 +780,7 @@ class PrivacyTests(BaseCase):
                 self.assertNotContains(response, secret, msg_prefix=page)
 
     def test_super_module_never_queries_voter_rows(self):
-        """Eleitores só entram como contagens: nenhuma consulta das páginas seleciona colunas pessoais."""
+        """Apoiadores só entram como contagens: nenhuma consulta das páginas seleciona colunas pessoais."""
         pages = [url("home"), url("campaigns"), url("campaign_detail", self.a.pk), url("audit")]
         with CaptureQueriesContext(connection) as ctx:
             for page in pages:

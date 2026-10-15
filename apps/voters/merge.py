@@ -1,4 +1,4 @@
-"""Regras puras de atualização de eleitor: recadastro com telefone já existente e mudança de endereço."""
+"""Regras puras de atualização de apoiador: recadastro com telefone já existente e mudança de endereço."""
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ def is_empty(value: Any) -> bool:
 
 @dataclass
 class DuplicateMergePlan:
-    """Atualizações (campo → valor) a gravar no eleitor existente."""
+    """Atualizações (campo → valor) a gravar no apoiador existente."""
 
     updates: dict[str, Any]
     filled: list[str] = field(default_factory=list)  # campos completados com dados novos

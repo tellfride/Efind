@@ -10,7 +10,7 @@
           {% include "superadmin/_status_badge.html" %}
         </span>
         <span class="block truncate text-xs text-slate-500">{{ c.office_label }}{% if c.ballot_number %} · nº {{ c.ballot_number }}{% endif %}{% if c.party %} · {{ c.party }}{% endif %}</span>
-        <span class="block text-xs text-slate-500">{{ c.place }} · {{ c.user_count|num }} usuário{{ c.user_count|pluralize }} · {{ c.voter_count|num }} eleitor{{ c.voter_count|pluralize:"es" }}</span>
+        <span class="block text-xs text-slate-500">{{ c.place }} · {{ c.user_count|num }} usuário{{ c.user_count|pluralize }} · {{ c.voter_count|num }} apoiador{{ c.voter_count|pluralize:"es" }}</span>
       </span>
       {% icon "chevron-right" "mt-2 size-4 shrink-0 text-slate-400" %}
     </a>
@@ -27,7 +27,7 @@
         <th>Local</th>
         <th>Status</th>
         <th class="text-right">Usuários</th>
-        <th class="text-right">Eleitores</th>
+        <th class="text-right">Apoiadores</th>
         <th>Criada em</th>
         <th><span class="sr-only">Ações</span></th>
       </tr>

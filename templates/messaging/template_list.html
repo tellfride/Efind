@@ -2,13 +2,13 @@
 {% load messaging_tags %}
 {% block title %}Modelos de mensagem · E-Find{% endblock %}
 {% block content %}
-{% page_header title="Modelos de mensagem" description="Textos prontos com variáveis do eleitor (nome, bairro, candidato...), usados nos disparos de WhatsApp." %}
+{% page_header title="Modelos de mensagem" description="Textos prontos com variáveis do apoiador (nome, bairro, candidato...), usados nos disparos de WhatsApp." %}
   {% if can_create %}<a class="btn btn-primary" href="/painel/mensagens/modelos/novo/">{% icon "plus" %} Novo modelo</a>{% endif %}
 {% endpage_header %}
 
 {% if total_in_campaign == 0 %}
   <div class="card">
-    {% empty_state icon="message-square-text" title="Nenhum modelo criado ainda" description="Crie o primeiro texto para usar nos disparos. Você pode usar variáveis como o primeiro nome do eleitor e o nome do candidato." %}
+    {% empty_state icon="message-square-text" title="Nenhum modelo criado ainda" description="Crie o primeiro texto para usar nos disparos. Você pode usar variáveis como o primeiro nome do apoiador e o nome do candidato." %}
       {% if can_create %}<a class="btn btn-primary" href="/painel/mensagens/modelos/novo/">{% icon "plus" %} Criar modelo</a>{% endif %}
     {% endempty_state %}
   </div>

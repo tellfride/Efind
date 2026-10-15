@@ -1,7 +1,7 @@
 """Tela de equipe: linhas com contagens, árvore hierárquica, filtros, ordenação e resumo.
 
 A parte pura (dataclasses, `build_tree`, `filter_rows`, `sort_rows`, `summarize`) não toca o banco.
-`load_team_rows(user)` faz 2 consultas no total (membros do escopo + UMA agregação de eleitores), sem N+1.
+`load_team_rows(user)` faz 2 consultas no total (membros do escopo + UMA agregação de apoiadores), sem N+1.
 """
 
 from __future__ import annotations
@@ -24,18 +24,18 @@ ROLE_ORDER = {Role.ADMIN.value: 0, Role.COORDENADOR.value: 1, Role.CABO.value: 2
 ROLE_TONES = {Role.ADMIN.value: "purple", Role.COORDENADOR.value: "blue", Role.CABO.value: "gray"}
 STATUS_CHOICES = (("", "Todos os status"), ("ativos", "Somente ativos"), ("inativos", "Somente inativos"))
 SORT_CHOICES = (
-    ("eleitores", "Mais eleitores"),
-    ("menos", "Menos eleitores"),
+    ("apoiadores", "Mais apoiadores"),
+    ("menos", "Menos apoiadores"),
     ("7d", "Mais cadastros em 7 dias"),
     ("meta", "Maior % da meta"),
     ("nome", "Nome (A–Z)"),
 )
-DEFAULT_SORT = "eleitores"
+DEFAULT_SORT = "apoiadores"
 
 
 @dataclass
 class MemberRow:
-    """Um membro da equipe com as contagens de eleitores cadastrados por ele."""
+    """Um membro da equipe com as contagens de apoiadores cadastrados por ele."""
 
     id: uuid.UUID
     name: str
@@ -77,7 +77,7 @@ class MemberRow:
 class TreeNode:
     row: MemberRow
     children: list[TreeNode] = field(default_factory=list)
-    network_total: int = 0  # eleitores do membro + de toda a rede abaixo dele
+    network_total: int = 0  # apoiadores do membro + de toda a rede abaixo dele
     size: int = 1  # membros na subárvore (incluindo ele)
 
     @property
@@ -117,7 +117,7 @@ class TeamSummary:
 
 
 def load_team_rows(user, *, now: dt.datetime | None = None) -> list[MemberRow]:
-    """Membros visíveis ao usuário + contagens de eleitores (total e últimos 7 dias).
+    """Membros visíveis ao usuário + contagens de apoiadores (total e últimos 7 dias).
 
     Consulta 1: membros do escopo (`team_scope`). Consulta 2: UMA agregação sobre `voter_scope(user)`
     agrupada por `registered_by` — o escopo/campanha do usuário já limitam as linhas.

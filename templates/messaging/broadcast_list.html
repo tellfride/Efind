@@ -1,13 +1,13 @@
 {% extends "layouts/shell.html" %}
 {% block title %}Disparos · E-Find{% endblock %}
 {% block content %}
-{% page_header title="Disparos" description="Envios de WhatsApp em massa, somente para eleitores que autorizaram receber mensagens." %}
+{% page_header title="Disparos" description="Envios de WhatsApp em massa, somente para apoiadores que autorizaram receber mensagens." %}
   {% if can_create %}<a class="btn btn-primary" href="/painel/mensagens/disparos/novo/">{% icon "plus" %} Novo disparo</a>{% endif %}
 {% endpage_header %}
 
 {% if total_in_scope == 0 %}
   <div class="card">
-    {% empty_state icon="send" title="Nenhum disparo ainda" description="Crie um disparo para enviar uma mensagem a um grupo de eleitores que consentiram. Você escolhe o modelo, o público e o horário." %}
+    {% empty_state icon="send" title="Nenhum disparo ainda" description="Crie um disparo para enviar uma mensagem a um grupo de apoiadores que consentiram. Você escolhe o modelo, o público e o horário." %}
       {% if can_create %}<a class="btn btn-primary" href="/painel/mensagens/disparos/novo/">{% icon "plus" %} Criar o primeiro disparo</a>{% endif %}
     {% endempty_state %}
   </div>

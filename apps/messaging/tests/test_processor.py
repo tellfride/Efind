@@ -69,7 +69,7 @@ class MaterializationTests(MessagingTestCase):
         self.assertEqual(message.status, MessageStatus.PENDING)
         self.assertEqual(message.campaign_id, self.a.pk)
         self.assertEqual(message.phone, mine.phone)
-        # variáveis renderizadas por eleitor
+        # variáveis renderizadas por apoiador
         self.assertTrue(message.rendered_body.startswith("Olá, Maria! Aqui é Alfa."))
 
     def test_messageable_filter_is_always_forced(self):

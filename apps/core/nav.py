@@ -15,9 +15,9 @@ PANEL_NAV = [
         ],
     },
     {
-        "title": "Eleitores",
+        "title": "Apoiadores",
         "items": [
-            {"href": "/painel/eleitores/", "label": "Eleitores", "icon": "users-round", "module": "eleitores"},
+            {"href": "/painel/apoiadores/", "label": "Apoiadores", "icon": "users-round", "module": "eleitores"},
             {"href": "/painel/mapa/", "label": "Mapa", "icon": "map", "module": "mapa"},
             {"href": "/painel/meu-link/", "label": "Meu link / QR Code", "icon": "qr-code", "module": "meu_link"},
         ],

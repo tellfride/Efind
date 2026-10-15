@@ -138,7 +138,7 @@ class ValidateWidgetsTests(SimpleTestCase):
         self.assertEqual(w.effective_limit(widget(type_="ranking_members", limit=500)), 100)
         self.assertEqual(w.effective_limit(widget(type_="ranking_members")), 10)
         self.assertEqual(w.effective_limit(widget(type_="kpi_total")), 0)
-        self.assertEqual(w.widget_title(widget(type_="kpi_total")), "Total de eleitores")
+        self.assertEqual(w.widget_title(widget(type_="kpi_total")), "Total de apoiadores")
         self.assertEqual(w.widget_title(widget(type_="kpi_total", title="Base")), "Base")
 
     def test_widget_data_key_ignores_title_size_and_unused_options(self):

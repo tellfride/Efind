@@ -140,7 +140,7 @@ def audit_csv_rows(qs: QuerySet) -> tuple[list[dict[str, Any]], bool]:
         if row["by_platform"]:
             who = f"{row['user_name']} (suporte E-Find)"
         else:
-            who = row["user_name"] or "Sistema / eleitor"
+            who = row["user_name"] or "Sistema / apoiador"
         rows.append(
             {
                 "data_hora": timezone.localtime(log.created_at).strftime("%d/%m/%Y %H:%M:%S"),

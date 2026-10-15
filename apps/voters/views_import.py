@@ -1,4 +1,4 @@
-"""Importação de eleitores por CSV: página, pré-visualização (JSON, validada no servidor), gravação e resultado."""
+"""Importação de apoiadores por CSV: página, pré-visualização (JSON, validada no servidor), gravação e resultado."""
 
 from __future__ import annotations
 
@@ -160,7 +160,7 @@ def _page_context(form: ImportForm, initial: dict) -> dict:
 def import_template(request):
     """Modelo de planilha (CSV) para download. Servido pelo servidor (e não gerado no navegador) para funcionar também
     em navegadores embutidos, como o do WhatsApp, que costumam bloquear downloads por blob:."""
-    return csv_response(build_template_csv(), "modelo-importacao-eleitores.csv")
+    return csv_response(build_template_csv(), "modelo-importacao-apoiadores.csv")
 
 
 @module_permission_required("eleitores", "create")
@@ -201,7 +201,7 @@ def voter_import(request):
             elif analysis.over_limit:
                 form.add_error(None, f"O arquivo tem linhas demais. O máximo por importação é {MAX_IMPORT_ROWS:,}.".replace(",", "."))
             elif not analysis.to_import:
-                form.add_error(None, "Nenhum eleitor novo para importar. Confira os avisos da pré-visualização.")
+                form.add_error(None, "Nenhum apoiador novo para importar. Confira os avisos da pré-visualização.")
             else:
                 with transaction.atomic():
                     outcome = run_import(

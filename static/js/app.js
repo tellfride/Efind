@@ -259,7 +259,7 @@
     if (el instanceof HTMLInputElement && "cepLookup" in el.dataset && el.value.replace(/\D/g, "").length === 8) lookupCep(el);
   });
 
-  // ------------------------------------------------------------------ Filtros de eleitores: formulário <-> JSON
+  // ------------------------------------------------------------------ Filtros de apoiadores: formulário <-> JSON
   const FILTER_PARAMS = {
     q: ["q", "str"],
     bairro: ["neighborhoods", "list"],

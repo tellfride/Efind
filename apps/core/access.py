@@ -1,4 +1,4 @@
-"""Escopo hierárquico de dados. TODA consulta a eleitores/equipe deve passar por aqui.
+"""Escopo hierárquico de dados. TODA consulta a apoiadores/equipe deve passar por aqui.
 
   - ADMIN:        toda a campanha
   - COORDENADOR:  ele mesmo + cabos diretamente abaixo dele (parent = coordenador)
@@ -23,7 +23,7 @@ from .phone import normalize_br_phone
 
 SAO_PAULO = ZoneInfo("America/Sao_Paulo")
 
-# Eleitores aptos a receber disparos: consentiram e não pediram descadastro
+# Apoiadores aptos a receber disparos: consentiram e não pediram descadastro
 MESSAGEABLE_Q = Q(whatsapp_opt_in=True, opt_out_at__isnull=True, consent_at__isnull=False)
 
 
@@ -40,7 +40,7 @@ def scope_user_ids(user) -> list | None:
 
 
 def voter_scope(user) -> QuerySet:
-    """Eleitores visíveis ao usuário (SEMPRE comece por aqui)."""
+    """Apoiadores visíveis ao usuário (SEMPRE comece por aqui)."""
     from apps.voters.models import Voter
 
     if user.campaign_id is None or user.role == Role.SUPER_ADMIN:
@@ -65,7 +65,7 @@ def team_scope(user) -> QuerySet:
 
 
 def get_voter_in_scope(user, voter_id) -> Any | None:
-    """Um eleitor pelo id, se estiver no escopo do usuário (senão None)."""
+    """Um apoiador pelo id, se estiver no escopo do usuário (senão None)."""
     try:
         return voter_scope(user).filter(pk=voter_id).first()
     except (ValueError, TypeError, ValidationError):  # id malformado
@@ -154,5 +154,5 @@ def apply_voter_filters(qs: QuerySet, campaign_id, filters: Mapping[str, Any] | 
 
 
 def voters_queryset(user, filters: Mapping[str, Any] | None = None) -> QuerySet:
-    """Eleitores = escopo do usuário AND filtros. Filtros nunca ampliam o escopo."""
+    """Apoiadores = escopo do usuário AND filtros. Filtros nunca ampliam o escopo."""
     return apply_voter_filters(voter_scope(user), user.campaign_id, filters)

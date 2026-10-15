@@ -45,7 +45,7 @@ class User(AbstractBaseUser, TimestampedModel):
     parent = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="children", verbose_name="superior"
     )
-    # Código do link/QR Code de cadastro de eleitores deste usuário
+    # Código do link/QR Code de cadastro de apoiadores deste usuário
     invite_code = models.CharField(max_length=16, unique=True)
     is_active = models.BooleanField("ativo", default=True)
     goal = models.PositiveIntegerField("meta de cadastros", null=True, blank=True)

@@ -183,7 +183,7 @@ def _detail_context(request, member, *, edit_form=None, delete_form=None, edit_o
     can_edit = can(perms, "equipe", "edit")
     can_delete = can(perms, "equipe", "delete")
 
-    # Estatísticas (somente eleitores do escopo do visualizador — o membro está no escopo, então são todos os dele)
+    # Estatísticas (somente apoiadores do escopo do visualizador — o membro está no escopo, então são todos os dele)
     own = voter_scope(user).filter(registered_by_id=member.pk)
     local_now = timezone.localtime()
     today_start = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -263,7 +263,7 @@ def _detail_context(request, member, *, edit_form=None, delete_form=None, edit_o
         "can_see_voters": can_see_voters,
         "children": children,
         "registration_link": link,
-        "voters_url": f"/painel/eleitores/?cabo={member.pk}",
+        "voters_url": f"/painel/apoiadores/?cabo={member.pk}",
         "qr_data_url": qr_png_data_url(registration_url(member.invite_code, "qr")),
         "show_edit": show_edit,
         "show_active_toggle": show_active_toggle,
@@ -326,7 +326,7 @@ def member_move(request, member_id):
     else:
         if moved:
             messages.success(
-                request, "Membro movido. Os eleitores cadastrados por ele passam a aparecer na rede do novo responsável."
+                request, "Membro movido. Os apoiadores cadastrados por ele passam a aparecer na rede do novo responsável."
             )
         else:
             messages.info(request, "O membro já está com este responsável.")
@@ -396,7 +396,7 @@ def member_regenerate_link(request, member_id):
 def member_delete(request, member_id):
     member = _member_or_404(request, member_id)
     _require_manage(request, member)
-    # Travas antes de pedir destino de eleitores/equipe: o próprio usuário e o último administrador
+    # Travas antes de pedir destino de apoiadores/equipe: o próprio usuário e o último administrador
     others = queries.other_active_admins(request.user.campaign_id, member.pk) if member.role == Role.ADMIN else 1
     blocked = check_self_and_last_admin(OPERATION_DELETE, request.user.pk, member, others)
     if blocked:
@@ -416,7 +416,7 @@ def member_delete(request, member_id):
             moved = result["voters_transferred"]
             messages.success(
                 request,
-                f"Membro excluído. {moved} eleitor{'es' if moved != 1 else ''} transferido{'s' if moved != 1 else ''}."
+                f"Membro excluído. {moved} apoiador{'es' if moved != 1 else ''} transferido{'s' if moved != 1 else ''}."
                 if moved
                 else "Membro excluído.",
             )

@@ -68,7 +68,7 @@ class MappingTests(SimpleTestCase):
         )
 
     def test_each_field_used_once(self):
-        mapping = auto_map_headers(["Nome", "Nome do eleitor", "Telefone", "Whatsapp"])
+        mapping = auto_map_headers(["Nome", "Nome do apoiador", "Telefone", "Whatsapp"])
         self.assertEqual(mapping.count("nome"), 1)
         self.assertEqual(mapping.count("telefone"), 1)
 
@@ -198,8 +198,8 @@ class AnalysisTests(VoterTestCase):
 
 
 class ImportViewTests(VoterTestCase):
-    URL = "/painel/eleitores/importar/"
-    PREVIEW = "/api/painel/eleitores/importar/previa/"
+    URL = "/painel/apoiadores/importar/"
+    PREVIEW = "/api/painel/apoiadores/importar/previa/"
     CSV = (
         "Nome;Telefone;Bairro;Nascimento\n"
         "ana souza;(11) 99999-0001;centro;10/05/1990\n"
@@ -226,7 +226,7 @@ class ImportViewTests(VoterTestCase):
     def test_page_renders_with_required_texts(self):
         self.login(self.cabo1)
         r = self.client.get(self.URL)
-        self.assertContains(r, "Declaro que os eleitores desta lista consentiram com o tratamento de seus dados (LGPD).")
+        self.assertContains(r, "Declaro que os apoiadores desta lista consentiram com o tratamento de seus dados (LGPD).")
         self.assertContains(r, "mensagens de WhatsApp")
         self.assertContains(r, "import-config")
         self.assertNotContains(r, "Cadastrar em nome de")  # cabo importa sempre para si
@@ -288,7 +288,7 @@ class ImportViewTests(VoterTestCase):
     def test_import_flow_and_result_page(self):
         self.login(self.cabo1)
         r = self.post({"whatsapp_opt_in": "on"})
-        self.assertRedirects(r, "/painel/eleitores/importar/resultado/", fetch_redirect_response=False)
+        self.assertRedirects(r, "/painel/apoiadores/importar/resultado/", fetch_redirect_response=False)
         voters = Voter.objects.order_by("name")
         self.assertEqual([v.name for v in voters], ["Ana Souza", "Beto Lima"])
         v = voters[0]
@@ -306,12 +306,12 @@ class ImportViewTests(VoterTestCase):
             {k: log.details[k] for k in ("total", "imported", "duplicates", "invalid", "whatsapp_opt_in")},
             {"total": 4, "imported": 2, "duplicates": 1, "invalid": 1, "whatsapp_opt_in": True},
         )
-        page = self.client.get("/painel/eleitores/importar/resultado/")
+        page = self.client.get("/painel/apoiadores/importar/resultado/")
         self.assertContains(page, "Importação concluída")
         self.assertContains(page, "Telefone repetido no arquivo")
         self.assertContains(page, "Telefone inválido")
         # o resultado só aparece uma vez
-        self.assertRedirects(self.client.get("/painel/eleitores/importar/resultado/"), self.URL, fetch_redirect_response=False)
+        self.assertRedirects(self.client.get("/painel/apoiadores/importar/resultado/"), self.URL, fetch_redirect_response=False)
 
     def test_import_without_whatsapp_checkbox_does_not_opt_in(self):
         self.login(self.cabo1)
@@ -354,7 +354,7 @@ class ImportViewTests(VoterTestCase):
         make_voter(self.a, self.cabo1, phone="5511999990002")
         self.login(self.cabo1)
         r = self.post({"csv_text": "nome;telefone\nAna Souza;11999990001\nBeto Lima;11999990002\n", "mapping": json.dumps(["nome", "telefone"])})
-        self.assertContains(r, "Nenhum eleitor novo para importar")
+        self.assertContains(r, "Nenhum apoiador novo para importar")
         self.assertFalse(AuditLog.objects.filter(action="voter.import").exists())
 
     def test_row_limit(self):

@@ -1,4 +1,4 @@
-"""Importação de eleitores por CSV — lógica pura (sem banco).
+"""Importação de apoiadores por CSV — lógica pura (sem banco).
 
 Fluxo: `parse_csv` → `auto_map_headers`/mapeamento manual → `build_import_records` → `validate_import_record`.
 O servidor SEMPRE reexecuta tudo isso na importação: a pré-visualização do navegador não é confiável.
@@ -45,7 +45,14 @@ class ImportField:
 
 
 IMPORT_FIELDS: tuple[ImportField, ...] = (
-    ImportField("nome", "Nome", True, ("nome", "nomecompleto", "name", "eleitor", "nomedoeleitor", "nomeeleitor")),
+    ImportField(
+        "nome",
+        "Nome",
+        True,
+        # colunas de planilhas antigas ou de outras fontes continuam sendo reconhecidas
+        ("nome", "nomecompleto", "name", "apoiador", "nomedoapoiador", "nomeapoiador",
+         "eleitor", "nomedoeleitor", "nomeeleitor"),  # fmt: skip
+    ),
     ImportField(
         "telefone",
         "Telefone / WhatsApp",
@@ -423,9 +430,9 @@ SAMPLE_COLUMNS = ["nome", "telefone", "email", "nascimento", "genero", "cep", "r
                   "bairro", "cidade", "uf", "zona", "secao", "apoio", "tags"]  # fmt: skip
 
 
-# --- Modelo para download (/painel/eleitores/importar/modelo/) e guia de preenchimento -------------------------
+# --- Modelo para download (/painel/apoiadores/importar/modelo/) e guia de preenchimento -------------------------
 # As linhas de exemplo usam telefone INVÁLIDO de propósito (DDD 00): se alguém esquecer de apagá-las, o importador as
-# rejeita em vez de cadastrar eleitores fictícios.
+# rejeita em vez de cadastrar apoiadores fictícios.
 TEMPLATE_EXAMPLE_ROWS = [
     ["EXEMPLO - apague esta linha", "(00) 90000-0000", "maria@exemplo.com", "15/03/1985", "Feminino", "01310-100",
      "Avenida Paulista", "1000", "Apto 12", "Bela Vista", "São Paulo", "SP", "1", "25", "Apoiador", "saúde, jovem"],
@@ -440,7 +447,7 @@ _GUIDE_TEXT = {
     "email": ("Endereço de e-mail válido.", "maria@exemplo.com"),
     "nascimento": (f"dd/mm/aaaa ou aaaa-mm-dd. Idade entre {MIN_VOTER_AGE} e {MAX_VOTER_AGE} anos.", "15/03/1985"),
     "genero": ("Feminino, Masculino, Outro ou Prefere não informar (também aceita F, M, O, N).", "Feminino"),
-    "cep": ("8 dígitos, com ou sem hífen. Usado para localizar o eleitor no mapa.", "01310-100"),
+    "cep": ("8 dígitos, com ou sem hífen. Usado para localizar o apoiador no mapa.", "01310-100"),
     "rua": ("Logradouro (rua, avenida...).", "Avenida Paulista"),
     "numero": ("Número do imóvel. Não é enviado a serviços externos de mapa.", "1000"),
     "complemento": ("Apartamento, bloco, referência.", "Apto 12"),

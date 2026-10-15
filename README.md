@@ -1,6 +1,6 @@
 # E-Find
 
-Sistema de gestão de campanha eleitoral: cadastro de eleitores por **link e QR Code**, equipe hierárquica com permissões,
+Sistema de gestão de campanha eleitoral: cadastro de apoiadores por **link e QR Code**, equipe hierárquica com permissões,
 **mapa por bairro** a partir do CEP, **dashboards** personalizáveis e **disparos de WhatsApp** (somente para quem consentiu).
 
 > **Status:** em desenvolvimento. Funciona de ponta a ponta em ambiente local (SQLite) e passa em mais de 1.300 testes
@@ -13,10 +13,10 @@ Sistema de gestão de campanha eleitoral: cadastro de eleitores por **link e QR 
 Super admin  →  cria a campanha (candidato). Uma campanha nunca enxerga os dados de outra.
 └── Administrador  →  controla tudo na campanha e define as permissões de cada papel
     └── Coordenador  →  vê a própria rede (ele + os cabos dele)
-        └── Cabo eleitoral  →  vê só os eleitores que ele cadastrou
+        └── Cabo eleitoral  →  vê só os apoiadores que ele cadastrou
 ```
 
-- **Cadastro:** cada usuário tem um link/QR Code próprio; todo eleitor fica vinculado a quem o cadastrou. O formulário público
+- **Cadastro:** cada usuário tem um link/QR Code próprio; todo apoiador fica vinculado a quem o cadastrou. O formulário público
   exige consentimento LGPD e oferece, em separado, o aceite para receber WhatsApp.
 - **Painéis:** ranking de cadastros por cabo, metas, evolução por dia, bairros, perfil da base. Cada usuário vê os dados da sua rede.
 - **Mapa:** bairros por CEP/geocodificação (BrasilAPI/ViaCEP/OpenStreetMap), com filtros.

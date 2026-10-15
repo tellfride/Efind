@@ -53,7 +53,7 @@ def grant(campaign, role: str, module: str, *, view=False, edit=False) -> None:
 
 
 def make_voter(campaign, registered_by, n: int, **extra) -> Voter:
-    return Voter.objects.create(campaign=campaign, registered_by=registered_by, name=f"Eleitor {n}", phone=f"5511900000{n:03d}", **extra)
+    return Voter.objects.create(campaign=campaign, registered_by=registered_by, name=f"Apoiador {n}", phone=f"5511900000{n:03d}", **extra)
 
 
 META_CREDENTIALS = {

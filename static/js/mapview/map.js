@@ -100,7 +100,7 @@
       let resizeObserver = null;
       let focusTimer = null;
       let data = null; // última resposta do servidor (crua)
-      let baseFilters = {}; // filtros da URL, para montar o link "Ver eleitores"
+      let baseFilters = {}; // filtros da URL, para montar o link "Ver apoiadores"
       const layers = { bairros: null, pontos: null, calor: null }; // camadas já construídas para `data`
       const markers = new Map(); // chave do bairro -> L.CircleMarker
 
@@ -114,7 +114,7 @@
         return { filters: filters, query: E.filtersToParams(filters).toString() };
       }
 
-      /** Link para a lista de eleitores do bairro (null sem permissão ou para "Bairro não informado"). */
+      /** Link para a lista de apoiadores do bairro (null sem permissão ou para "Bairro não informado"). */
       function votersLink(n) {
         const E = window.EFind;
         if (!data || !data.can_view_voters || !n.known || !E || !E.filtersToParams) return null;
@@ -122,7 +122,7 @@
         if (n.city) filters.cities = [n.city];
         else delete filters.cities;
         const query = E.filtersToParams(filters).toString();
-        return (cfg.votersUrl || "/painel/eleitores/") + (query ? "?" + query : "");
+        return (cfg.votersUrl || "/painel/apoiadores/") + (query ? "?" + query : "");
       }
 
       // ------------------------------------------------------------------ popups e ícones (nós DOM)
@@ -134,9 +134,9 @@
 
         const grid = el("dl", "mv-popup-grid");
         const row = (label, value) => grid.append(el("dt", "", label), el("dd", "", fmt(value)));
-        row("Total de eleitores", n.count);
+        row("Total de apoiadores", n.count);
         row("Aptos a WhatsApp", n.messageable);
-        row("Apoiadores", n.supporters);
+        row("Nível “apoiador”", n.supporters);
         if (n.count - n.mapped > 0) row("Sem localização no mapa", n.count - n.mapped);
         root.append(grid);
 
@@ -155,7 +155,7 @@
 
         const href = votersLink(n);
         if (href) {
-          const link = el("a", "efind-map-link", "Ver eleitores →");
+          const link = el("a", "efind-map-link", "Ver apoiadores →");
           link.href = href;
           root.append(link);
         }
@@ -169,11 +169,11 @@
       function pointPopup(p) {
         const root = el("div", "mv-popup");
         const head = el("div");
-        head.append(el("p", "mv-popup-title", "Eleitor cadastrado"), el("p", "mv-popup-sub", "Localização aproximada (CEP/logradouro)."));
+        head.append(el("p", "mv-popup-title", "Apoiador cadastrado"), el("p", "mv-popup-sub", "Localização aproximada (CEP/logradouro)."));
         root.append(head);
         if (data && data.can_view_voters) {
           const link = el("a", "efind-map-link", "Ver cadastro →");
-          link.href = (cfg.votersUrl || "/painel/eleitores/") + encodeURIComponent(p.id) + "/";
+          link.href = (cfg.votersUrl || "/painel/apoiadores/") + encodeURIComponent(p.id) + "/";
           root.append(link);
         }
         return root;
@@ -466,8 +466,8 @@
         },
         get emptyDescription() {
           return this.totals.voters > 0
-            ? fmt(this.totals.voters) + " eleitor(es) encontrado(s) ainda sem localização (CEP ausente ou aguardando processamento)."
-            : "Ajuste os filtros ou cadastre eleitores com CEP para vê-los no mapa.";
+            ? fmt(this.totals.voters) + " apoiador(es) encontrado(s) ainda sem localização (CEP ausente ou aguardando processamento)."
+            : "Ajuste os filtros ou cadastre apoiadores com CEP para vê-los no mapa.";
         },
         get rankingAll() {
           const q = norm(this.query.trim());
@@ -484,7 +484,7 @@
           return this.withoutGeo.reduce((sum, item) => sum + item.count, 0);
         },
         get legendTitle() {
-          return this.mode === "bairros" ? "Eleitores por bairro" : this.mode === "pontos" ? "Eleitores" : "Concentração";
+          return this.mode === "bairros" ? "Apoiadores por bairro" : this.mode === "pontos" ? "Apoiadores" : "Concentração";
         },
         get heatGradientCss() {
           const stops = Object.entries(cfg.heatGradient || {})

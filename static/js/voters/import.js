@@ -1,4 +1,4 @@
-/* E-Find · importação de eleitores por CSV.
+/* E-Find · importação de apoiadores por CSV.
  * O navegador só LÊ o arquivo (FileReader) e mostra a análise; toda leitura, mapeamento e validação são feitas
  * pelo servidor (POST em previewUrl para a pré-visualização e novamente no envio final). */
 (function () {
@@ -52,7 +52,7 @@
       },
       get submitLabel() {
         const n = this.analysis.summary.will_import;
-        return this.canSubmit ? "Importar " + n + " eleitor" + (n === 1 ? "" : "es") : "Importar eleitores";
+        return this.canSubmit ? "Importar " + n + " apoiador" + (n === 1 ? "" : "es") : "Importar apoiadores";
       },
 
       onFile(ev) {

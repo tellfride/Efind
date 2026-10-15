@@ -1,7 +1,7 @@
-"""Geocodificação de eleitores para o mapa. Coordenadas no nível do CEP/logradouro (não do imóvel), o que também
-protege a privacidade do eleitor: o número da casa nunca é enviado aos serviços externos.
+"""Geocodificação de apoiadores para o mapa. Coordenadas no nível do CEP/logradouro (não do imóvel), o que também
+protege a privacidade do apoiador: o número da casa nunca é enviado aos serviços externos.
 
-Princípio: NENHUMA coordenada é aceita sem conferir que cai dentro do bairro (ou da cidade) do eleitor. Fontes externas
+Princípio: NENHUMA coordenada é aceita sem conferir que cai dentro do bairro (ou da cidade) do apoiador. Fontes externas
 erram com frequência — ex.: o BrasilAPI devolve o mesmo ponto do centro do Rio para todos os CEPs da Av. Brasil, e uma
 busca só pelo nome dessa avenida (58 km) cai em Campo Grande. Por isso a ordem é:
 
@@ -310,7 +310,7 @@ def geocode_address(*, cep="", street="", neighborhood="", city="", state="") ->
 
 
 def geocode_voter(voter_id) -> None:
-    """Geocodifica um eleitor e grava latitude/longitude/geo_status."""
+    """Geocodifica um apoiador e grava latitude/longitude/geo_status."""
     from apps.voters.models import Voter
 
     voter = Voter.objects.filter(pk=voter_id).first()
@@ -334,7 +334,7 @@ def geocode_voter_in_background(voter_id) -> None:
         try:
             geocode_voter(voter_id)
         except Exception:  # noqa: BLE001
-            logger.exception("Falha ao geocodificar eleitor")
+            logger.exception("Falha ao geocodificar apoiador")
         finally:
             from django.db import connection
 
@@ -344,7 +344,7 @@ def geocode_voter_in_background(voter_id) -> None:
 
 
 def process_pending_geocoding(limit: int = 10, campaign_id=None) -> int:
-    """Processa eleitores com geo_status PENDING (worker). `campaign_id` restringe a uma campanha. Retorna quantos processou."""
+    """Processa apoiadores com geo_status PENDING (worker). `campaign_id` restringe a uma campanha. Retorna quantos processou."""
     from apps.voters.models import Voter
 
     qs = Voter.objects.filter(geo_status=GeoStatus.PENDING)
@@ -355,6 +355,6 @@ def process_pending_geocoding(limit: int = 10, campaign_id=None) -> int:
         try:
             geocode_voter(voter_id)
         except Exception:  # noqa: BLE001
-            logger.exception("Falha ao geocodificar eleitor")
+            logger.exception("Falha ao geocodificar apoiador")
             Voter.objects.filter(pk=voter_id).update(geo_status=GeoStatus.FAILED)
     return len(ids)

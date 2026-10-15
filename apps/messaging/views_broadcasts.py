@@ -333,9 +333,9 @@ def _create_broadcast(request, form: BroadcastForm):
             details={"recipients": result.recipients},
         )
         if result.recipients:
-            messages.success(request, f"Disparo iniciado para {result.recipients} eleitor{'es' if result.recipients != 1 else ''}.")
+            messages.success(request, f"Disparo iniciado para {result.recipients} apoiador{'es' if result.recipients != 1 else ''}.")
         else:
-            messages.warning(request, "Nenhum eleitor apto a receber mensagens foi encontrado. O disparo foi encerrado.")
+            messages.warning(request, "Nenhum apoiador apto a receber mensagens foi encontrado. O disparo foi encerrado.")
     else:
         messages.success(request, "Disparo iniciado.")
     return redirect(_detail_url(broadcast))
@@ -345,7 +345,7 @@ def _create_broadcast(request, form: BroadcastForm):
 
 
 def _recipient_rows(request, page_items):
-    """Nome e telefone dos destinatários. Quem não é ADMIN só vê dados de eleitores que ainda estão na sua rede."""
+    """Nome e telefone dos destinatários. Quem não é ADMIN só vê dados de apoiadores que ainda estão na sua rede."""
     user = request.user
     allowed = None
     if user.role != Role.ADMIN:
@@ -354,7 +354,7 @@ def _recipient_rows(request, page_items):
     for message in page_items:
         voter = message.voter
         if voter is None:
-            message.display_name, message.display_phone = "Eleitor excluído", mask_phone(message.phone)
+            message.display_name, message.display_phone = "Apoiador excluído", mask_phone(message.phone)
         elif allowed is not None and voter.pk not in allowed:
             message.display_name, message.display_phone = "Fora da sua rede", mask_phone(message.phone)
         else:
@@ -416,7 +416,7 @@ def broadcast_detail(request, pk):
         "empty_hint": (
             "As mensagens são preparadas quando chegar o horário agendado."
             if broadcast.status == BroadcastStatus.SCHEDULED
-            else "Nenhum eleitor apto a receber mensagens foi encontrado para este público."
+            else "Nenhum apoiador apto a receber mensagens foi encontrado para este público."
         ),
         "actions": available_actions(broadcast.status, retryable_failures=retryable, can_edit=can_edit, can_delete=can_delete),
         "retryable": retryable,

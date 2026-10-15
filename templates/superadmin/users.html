@@ -2,7 +2,7 @@
 {% block title %}Super admins · E-Find{% endblock %}
 {% block content %}
 <div x-data="{ open: {{ open_form|yesno:'true,false' }} }">
-  {% page_header title="Super admins" description="Contas com acesso à administração da plataforma. Elas criam campanhas, mas nunca veem dados pessoais de eleitores." %}
+  {% page_header title="Super admins" description="Contas com acesso à administração da plataforma. Elas criam campanhas, mas nunca veem dados pessoais de apoiadores." %}
     <button type="button" class="btn btn-primary" x-show="!open" @click="open = true">{% icon "user-plus" %} Novo super admin</button>
   {% endpage_header %}
 

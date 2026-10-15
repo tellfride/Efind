@@ -1,4 +1,4 @@
-"""Geocodificação: nenhuma coordenada é aceita fora do bairro do eleitor.
+"""Geocodificação: nenhuma coordenada é aceita fora do bairro do apoiador.
 
 Regressão do caso real: Av. Brasil, Guadalupe (RJ). O BrasilAPI devolve o MESMO ponto do centro do Rio (perto da
 Av. Passos) para todos os CEPs da avenida, e uma busca só pelo nome da avenida cai em Campo Grande."""
@@ -87,7 +87,7 @@ class GeocodeAddressTests(TestCase):
         self.assertAlmostEqual(point.longitude, -43.3752)
 
     def test_wrong_brasilapi_point_is_rejected_and_falls_back_to_the_bairro_center(self):
-        """O caso do usuário: BrasilAPI aponta para o Centro do Rio; o eleitor mora em Guadalupe."""
+        """O caso do usuário: BrasilAPI aponta para o Centro do Rio; o apoiador mora em Guadalupe."""
         point = self.run_geocode(fake_nominatim(), brasilapi=BRASILAPI_WRONG)
         self.assertEqual((point.precision, point.source), ("APPROXIMATE", "nominatim-bairro"))
         self.assertAlmostEqual(point.latitude, -22.8376, places=3)

@@ -117,7 +117,7 @@ class PageContentTests(MapBase):
         response = client_for(self.admin).get(PAGE_URL)
         config = response.context["map_config"]
         self.assertEqual(config["dataUrl"], DATA_URL)
-        self.assertEqual(config["votersUrl"], "/painel/eleitores/")
+        self.assertEqual(config["votersUrl"], "/painel/apoiadores/")
         self.assertEqual(config["defaultMode"], "bairros")
         self.assertIn("openstreetmap.org", config["basemaps"]["ruas"]["url"])
         self.assertIn("openstreetmap.org", config["basemaps"]["claro"]["url"])
@@ -127,7 +127,7 @@ class PageContentTests(MapBase):
     def test_page_has_no_voter_personal_data(self):
         for user in (self.admin, self.cabo1):
             response = client_for(user).get(PAGE_URL)
-            for secret in ("Eleitor Secreto", "5511900"):
+            for secret in ("Apoiador Secreto", "5511900"):
                 self.assertNotContains(response, secret)
 
     def test_active_filters_are_kept_and_has_geo_is_dropped(self):
@@ -260,7 +260,7 @@ class ApiDataTests(MapBase):
                    neighborhood="Taquaral", city="Campinas", email="secreto@exemplo.com")
         for user in (self.admin, self.coord1, self.cabo1):
             body = self.api(user).content.decode()
-            for secret in ("Eleitor Secreto", "5511900", "secreto@exemplo.com", "@exemplo"):
+            for secret in ("Apoiador Secreto", "5511900", "secreto@exemplo.com", "@exemplo"):
                 self.assertNotIn(secret, body, user.role)
         for point in self.payload(self.admin)["points"]:
             self.assertEqual(set(point), {"id", "lat", "lng"})

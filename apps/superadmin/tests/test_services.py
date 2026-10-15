@@ -131,7 +131,7 @@ class DeleteCampaignTests(TestCase):
         make_voter(self.b, self.admin_b, 50)
 
     def test_deletes_campaign_with_voters_registered_by_its_team(self):
-        # Voter.registered_by é RESTRICT: sem apagar os eleitores antes, a exclusão em cascata falharia
+        # Voter.registered_by é RESTRICT: sem apagar os apoiadores antes, a exclusão em cascata falharia
         pk = self.a.pk
         services.delete_campaign(self.request, self.a)
         self.assertFalse(Campaign.objects.filter(pk=pk).exists())
@@ -141,10 +141,10 @@ class DeleteCampaignTests(TestCase):
         self.assertFalse(Dashboard.objects.filter(campaign_id=pk).exists())
 
     def test_voters_are_deleted_in_batches(self):
-        with patch.object(services, "VOTER_DELETE_CHUNK", 1):  # 4 eleitores → 4 lotes
+        with patch.object(services, "VOTER_DELETE_CHUNK", 1):  # 4 apoiadores → 4 lotes
             services.delete_campaign(self.request, self.a)
         self.assertFalse(Voter.objects.filter(campaign_id=self.a.pk).exists())
-        self.assertEqual(Voter.objects.count(), 1)  # o eleitor da outra campanha continua
+        self.assertEqual(Voter.objects.count(), 1)  # o apoiador da outra campanha continua
 
     def test_other_campaigns_and_super_admins_are_untouched(self):
         services.delete_campaign(self.request, self.a)

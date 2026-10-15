@@ -7,15 +7,15 @@ import re
 from .utils import first_name
 
 TEMPLATE_VARIABLES = [
-    {"key": "nome", "label": "Nome completo do eleitor", "example": "Maria Aparecida da Silva"},
-    {"key": "primeiro_nome", "label": "Primeiro nome do eleitor", "example": "Maria"},
-    {"key": "bairro", "label": "Bairro do eleitor", "example": "Centro"},
-    {"key": "cidade", "label": "Cidade do eleitor", "example": "Campinas"},
+    {"key": "nome", "label": "Nome completo do apoiador", "example": "Maria Aparecida da Silva"},
+    {"key": "primeiro_nome", "label": "Primeiro nome do apoiador", "example": "Maria"},
+    {"key": "bairro", "label": "Bairro do apoiador", "example": "Centro"},
+    {"key": "cidade", "label": "Cidade do apoiador", "example": "Campinas"},
     {"key": "candidato", "label": "Nome de urna do candidato", "example": "Dr. João"},
     {"key": "numero", "label": "Número do candidato", "example": "12345"},
     {"key": "partido", "label": "Partido", "example": "PXX"},
     {"key": "cargo", "label": "Cargo disputado", "example": "Vereador(a)"},
-    {"key": "cabo", "label": "Nome de quem cadastrou o eleitor", "example": "Carlos"},
+    {"key": "cabo", "label": "Nome de quem cadastrou o apoiador", "example": "Carlos"},
 ]
 VARIABLE_KEYS = [v["key"] for v in TEMPLATE_VARIABLES]
 EXAMPLE_CONTEXT = {v["key"]: v["example"] for v in TEMPLATE_VARIABLES}
@@ -48,7 +48,7 @@ def unknown_variables(body: str) -> list[str]:
 
 
 def build_template_context(voter, campaign, registered_by=None) -> dict:
-    """Contexto para renderizar um modelo para um eleitor. `campaign` e `voter` são instâncias dos models."""
+    """Contexto para renderizar um modelo para um apoiador. `campaign` e `voter` são instâncias dos models."""
     from .constants import Office, label_of
 
     return {

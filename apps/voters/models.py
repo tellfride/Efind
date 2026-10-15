@@ -5,10 +5,10 @@ from apps.core.models import TimestampedModel
 
 
 class Voter(TimestampedModel):
-    """Eleitor cadastrado. Sempre vinculado a quem cadastrou (registered_by)."""
+    """Apoiador cadastrado. Sempre vinculado a quem cadastrou (registered_by)."""
 
     campaign = models.ForeignKey("campaigns.Campaign", on_delete=models.CASCADE, related_name="voters")
-    # RESTRICT: não se exclui um usuário que tenha eleitores (transfira antes); ao excluir a campanha inteira, passa.
+    # RESTRICT: não se exclui um usuário que tenha apoiadores (transfira antes); ao excluir a campanha inteira, passa.
     registered_by = models.ForeignKey("accounts.User", on_delete=models.RESTRICT, related_name="registered_voters")
     name = models.CharField("nome", max_length=160)
     # Somente dígitos com DDI: 55 + DDD + número (ex.: 5511987654321)

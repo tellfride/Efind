@@ -1,4 +1,4 @@
-"""Importação de eleitores por CSV: análise (usada na pré-visualização E na importação — o servidor sempre
+"""Importação de apoiadores por CSV: análise (usada na pré-visualização E na importação — o servidor sempre
 reexecuta tudo) e gravação em lote. A lógica de leitura/validação de cada linha está em `csv_import`."""
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ ROW_DUP_FILE = "duplicate_file"
 ROW_DUP_CAMPAIGN = "duplicate_campaign"
 
 IMPORT_CONSENT_TEXT = (
-    "Declaração do responsável pela importação ({responsavel}): os eleitores desta lista consentiram com o "
+    "Declaração do responsável pela importação ({responsavel}): os apoiadores desta lista consentiram com o "
     "tratamento de seus dados pessoais, nos termos da LGPD."
 )
 IMPORT_WHATSAPP_TEXT = " Também consentiram com o recebimento de mensagens de WhatsApp."
@@ -50,7 +50,7 @@ def read_csv(text: str) -> ParsedCsv:
         raise CsvParseError("Arquivo muito grande. Divida a lista em arquivos menores (até 5.000 linhas).")
     parsed = parse_csv(text or "")
     if not parsed.rows:
-        raise CsvParseError("O arquivo está vazio. Cole ou envie um CSV com os eleitores.")
+        raise CsvParseError("O arquivo está vazio. Cole ou envie um CSV com os apoiadores.")
     return parsed
 
 
@@ -213,7 +213,7 @@ def run_import(
     now: datetime,
     ip: str | None,
 ) -> ImportOutcome:
-    """Grava os eleitores válidos e novos. Telefones repetidos/já cadastrados e linhas inválidas são ignorados."""
+    """Grava os apoiadores válidos e novos. Telefones repetidos/já cadastrados e linhas inválidas são ignorados."""
     outcome = ImportOutcome(total=len(analysis.results))
     outcome.invalid = len(analysis.invalid)
     outcome.duplicates_file = len(analysis.repeated)

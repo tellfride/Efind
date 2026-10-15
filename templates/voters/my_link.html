@@ -1,7 +1,7 @@
 {% extends "layouts/shell.html" %}
 {% block title %}Meu link / QR Code · E-Find{% endblock %}
 {% block content %}
-{% page_header title="Meu link / QR Code" description="Todo eleitor que se cadastrar por aqui fica vinculado a você." %}
+{% page_header title="Meu link / QR Code" description="Todo apoiador que se cadastrar por aqui fica vinculado a você." %}
   <a class="btn btn-outline" href="{% url 'voters:my_link_poster' %}" target="_blank" rel="noopener">{% icon "printer" %} Imprimir cartaz</a>
 {% endpage_header %}
 

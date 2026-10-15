@@ -42,7 +42,7 @@ class MyLinkTests(VoterTestCase):
         make_voter(self.a, self.cabo2)  # de outro cabo
         make_voter(self.b, self.admin_b)
         self.login(self.cabo1)
-        r = self.client.get("/painel/eleitores/")  # só garante que a rede não muda as contas
+        r = self.client.get("/painel/apoiadores/")  # só garante que a rede não muda as contas
         self.assertEqual(r.context["total"], 3)
         r = self.client.get("/painel/meu-link/")
         self.assertEqual(r.context["stats"], {"today": 1, "week": 2, "total": 3})
@@ -110,13 +110,13 @@ class RoutingTests(SimpleTestCase):
             ("/c/abc12345/", "voters:public_form"),
             ("/c/abc12345/obrigado/", "voters:public_thanks"),
             ("/c/abc12345/privacidade/", "voters:public_privacy"),
-            ("/painel/eleitores/", "voters:list"),
-            ("/painel/eleitores/novo/", "voters:create"),
-            ("/painel/eleitores/exportar/", "voters:export"),
-            ("/painel/eleitores/importar/", "voters:import"),
+            ("/painel/apoiadores/", "voters:list"),
+            ("/painel/apoiadores/novo/", "voters:create"),
+            ("/painel/apoiadores/exportar/", "voters:export"),
+            ("/painel/apoiadores/importar/", "voters:import"),
             ("/painel/meu-link/", "voters:my_link"),
             ("/painel/meu-link/cartaz/", "voters:my_link_poster"),
-            ("/painel/eleitores/6f1c1d0e-1b0a-4f0e-9f57-5d3d2a1f0a11/", "voters:detail"),
+            ("/painel/apoiadores/6f1c1d0e-1b0a-4f0e-9f57-5d3d2a1f0a11/", "voters:detail"),
         ]:
             match = resolve(path, urlconf="efind.urls")
             self.assertEqual(f"{match.namespace}:{match.url_name}", name, path)

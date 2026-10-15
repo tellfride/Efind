@@ -48,7 +48,7 @@ class TemplateForm(StyledFormMixin, forms.Form):
         label="Nome do modelo",
         min_length=3,
         max_length=120,
-        help_text="Só para você identificar o modelo; o eleitor não vê este nome.",
+        help_text="Só para você identificar o modelo; o apoiador não vê este nome.",
         error_messages={"min_length": "Use pelo menos 3 caracteres."},
     )
     category = forms.ChoiceField(label="Categoria", choices=TemplateCategory.choices)
@@ -301,6 +301,6 @@ class BroadcastForm(StyledFormMixin, forms.Form):
             self.eligible = voters_queryset(self.user, {**data["filters"], "messageable": True}).count()
             if self.eligible == 0 and not self.errors:
                 raise forms.ValidationError(
-                    "Nenhum eleitor deste público autorizou receber mensagens pelo WhatsApp. Ajuste os filtros."
+                    "Nenhum apoiador deste público autorizou receber mensagens pelo WhatsApp. Ajuste os filtros."
                 )
         return data

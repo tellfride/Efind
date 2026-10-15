@@ -1,7 +1,7 @@
 """Páginas públicas do link de cadastro: /c/<code>/ (formulário), /obrigado/ e /privacidade/.
 
 Sem login. Medidas: CSRF, honeypot, limite de taxa por IP e por código, resposta idêntica para links inexistentes,
-desativados ou de campanha suspensa (404 amigável) e nunca expor dados de eleitores já cadastrados.
+desativados ou de campanha suspensa (404 amigável) e nunca expor dados de apoiadores já cadastrados.
 """
 
 from __future__ import annotations

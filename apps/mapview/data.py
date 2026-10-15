@@ -37,12 +37,12 @@ def map_filters(filters: Mapping[str, Any] | None) -> dict:
 
 
 def map_voters(user, filters: Mapping[str, Any] | None = None):
-    """Eleitores do mapa = escopo do usuário AND filtros (sem has_geo)."""
+    """Apoiadores do mapa = escopo do usuário AND filtros (sem has_geo)."""
     return voters_queryset(user, map_filters(filters))
 
 
 def iter_map_rows(user, filters: Mapping[str, Any] | None = None) -> Iterator[dict]:
-    """Linhas mínimas dos eleitores visíveis, uma de cada vez (evita guardar dicionários de todos os eleitores)."""
+    """Linhas mínimas dos apoiadores visíveis, uma de cada vez (evita guardar dicionários de todos os apoiadores)."""
     queryset = (
         map_voters(user, filters)
         .annotate(
@@ -64,7 +64,7 @@ def load_map_data(user, filters: Mapping[str, Any] | None = None, *, can_view_vo
 
 
 def geo_queue_counts(user) -> dict[str, int]:
-    """Eleitores da campanha aguardando (PENDING) ou que falharam (FAILED) na geocodificação.
+    """Apoiadores da campanha aguardando (PENDING) ou que falharam (FAILED) na geocodificação.
 
     Usado só pelo ADMIN (cujo escopo é a campanha inteira); mesmo assim parte de `voter_scope`.
     """

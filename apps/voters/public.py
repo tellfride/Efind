@@ -1,5 +1,5 @@
 """Dados públicos do link de cadastro (/c/<code>/): expõe só o necessário para a página (identidade visual da
-campanha e o primeiro nome de quem indicou). Nada de dados de eleitores ou da equipe."""
+campanha e o primeiro nome de quem indicou). Nada de dados de apoiadores ou da equipe."""
 
 from __future__ import annotations
 

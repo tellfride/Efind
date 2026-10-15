@@ -32,7 +32,7 @@ def make_user(campaign, email, role, parent=None, **extra):
 
 
 def make_voter(campaign, registered_by, n, **extra):
-    return Voter.objects.create(campaign=campaign, registered_by=registered_by, name=f"Eleitor {n}", phone=f"5511900000{n:03d}", **extra)
+    return Voter.objects.create(campaign=campaign, registered_by=registered_by, name=f"Apoiador {n}", phone=f"5511900000{n:03d}", **extra)
 
 
 class ScopeTests(TestCase):
@@ -135,19 +135,19 @@ class AuthFlowTests(TestCase):
         self.assertRedirects(r, "/painel/", fetch_redirect_response=False)
 
     def test_anonymous_is_sent_to_login(self):
-        r = Client().get("/painel/eleitores/")
+        r = Client().get("/painel/apoiadores/")
         self.assertEqual(r.status_code, 302)
         self.assertTrue(r["Location"].startswith("/login/?next="))
 
     def test_super_admin_cannot_open_campaign_panel_and_vice_versa(self):
         client, _ = self.login("super@x.com")
-        self.assertEqual(client.get("/painel/eleitores/").status_code, 302)
+        self.assertEqual(client.get("/painel/apoiadores/").status_code, 302)
         client, _ = self.login("admin@a.com")
         self.assertEqual(client.get("/super/campanhas/").status_code, 302)
 
     def test_cabo_cannot_open_modules_without_permission(self):
         client, _ = self.login("cabo@a.com")
-        self.assertEqual(client.get("/painel/eleitores/").status_code, 200)
+        self.assertEqual(client.get("/painel/apoiadores/").status_code, 200)
         self.assertEqual(client.get("/painel/equipe/").status_code, 403)
         self.assertEqual(client.get("/painel/permissoes/").status_code, 403)
         self.assertEqual(client.get("/painel/mensagens/disparos/").status_code, 403)
@@ -160,9 +160,9 @@ class AuthFlowTests(TestCase):
 
     def test_deactivated_user_loses_access(self):
         client, _ = self.login("cabo@a.com")
-        self.assertEqual(client.get("/painel/eleitores/").status_code, 200)
+        self.assertEqual(client.get("/painel/apoiadores/").status_code, 200)
         User.objects.filter(pk=self.cabo.pk).update(is_active=False)
-        self.assertEqual(client.get("/painel/eleitores/").status_code, 302)
+        self.assertEqual(client.get("/painel/apoiadores/").status_code, 302)
 
     def test_suspended_campaign_blocks_login_and_active_sessions(self):
         client, _ = self.login("admin@a.com")

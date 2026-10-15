@@ -1,4 +1,4 @@
-"""Migração 0003: ao atualizar, eleitores localizados pela versão antiga voltam à fila para serem localizados de novo."""
+"""Migração 0003: ao atualizar, apoiadores localizados pela versão antiga voltam à fila para serem localizados de novo."""
 
 import importlib
 
@@ -19,7 +19,7 @@ def make_voter(campaign, owner, n, **extra):
     data = dict(cep="21660000", street="Avenida Brasil", neighborhood="Guadalupe", city="Rio de Janeiro", state="RJ",
                 latitude=WRONG[0], longitude=WRONG[1], geo_status="OK")  # fmt: skip
     data.update(extra)
-    return Voter.objects.create(campaign=campaign, registered_by=owner, name=f"Eleitor {n}", phone=f"5521988880{n:03d}", **data)
+    return Voter.objects.create(campaign=campaign, registered_by=owner, name=f"Apoiador {n}", phone=f"5521988880{n:03d}", **data)
 
 
 class RequeueMigrationTests(TestCase):

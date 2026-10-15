@@ -9,7 +9,7 @@
 <div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
   {% stat_card "Membros da equipe" summary.total icon="users" tone="brand" hint=roles_hint %}
   {% stat_card "Membros ativos" summary.active icon="user-check" tone="green" hint=inactive_hint %}
-  {% stat_card "Eleitores cadastrados" summary.voters|num icon="users-round" tone="blue" hint="pela equipe visível" %}
+  {% stat_card "Apoiadores cadastrados" summary.voters|num icon="users-round" tone="blue" hint="pela equipe visível" %}
   {% stat_card "Sem cadastros em 7 dias" summary.idle_7d icon="clock" tone="yellow" hint="coordenadores e cabos ativos" %}
 </div>
 
@@ -127,7 +127,7 @@
               <th scope="col">Papel</th>
               <th scope="col">Coordenador</th>
               <th scope="col">Telefone</th>
-              <th scope="col" class="text-right"><a class="inline-flex items-center gap-1 hover:text-slate-800" href="{% if filters.sort == 'eleitores' %}{% qs ordem='menos' page=None vista='lista' %}{% else %}{% qs ordem='eleitores' page=None vista='lista' %}{% endif %}" title="Ordenar por eleitores">Eleitores {% icon "chevrons-up-down" "size-3" %}</a></th>
+              <th scope="col" class="text-right"><a class="inline-flex items-center gap-1 hover:text-slate-800" href="{% if filters.sort == 'apoiadores' %}{% qs ordem='menos' page=None vista='lista' %}{% else %}{% qs ordem='apoiadores' page=None vista='lista' %}{% endif %}" title="Ordenar por apoiadores">Apoiadores {% icon "chevrons-up-down" "size-3" %}</a></th>
               <th scope="col" class="text-right">7 dias</th>
               <th scope="col" class="min-w-40">Meta</th>
               <th scope="col">Último acesso</th>

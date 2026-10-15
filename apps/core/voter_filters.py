@@ -1,4 +1,4 @@
-"""Filtros de eleitores compartilhados por lista, mapa, dashboards e público dos disparos.
+"""Filtros de apoiadores compartilhados por lista, mapa, dashboards e público dos disparos.
 
 Um filtro é um dict simples e serializável em JSON (cabe em Broadcast.filters / widget.config):
 

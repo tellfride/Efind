@@ -123,7 +123,7 @@ class PermissionsPageTests(PermissionsBase):
             supported = [c["action"] for c in mapa["cells"] if c["supported"]]
             self.assertEqual(supported, ["view"])
             self.assertEqual([c["action"] for c in mapa["cells"]], list(ACTIONS))
-        for text in ("Exceções por usuário", "Restaurar padrão", "Eleitores", "Disparos de WhatsApp", "administrador"):
+        for text in ("Exceções por usuário", "Restaurar padrão", "Apoiadores", "Disparos de WhatsApp", "administrador"):
             self.assertContains(r, text)
         # nenhum dado de outra campanha
         self.assertNotContains(r, "Cabo Beta Secreto")
@@ -143,8 +143,8 @@ class PermissionsPageTests(PermissionsBase):
         RolePermission.objects.filter(campaign=self.camp, role=Role.CABO, module="eleitores").update(can_export=True)
         r = login(self.admin).get(reverse("team:permissions"))
         cabo = next(t for t in r.context["tabs"] if t["slug"] == "cabo")
-        eleitores = next(row for row in cabo["rows"] if row["key"] == "eleitores")
-        export = next(c for c in eleitores["cells"] if c["action"] == "export")
+        apoiadores = next(row for row in cabo["rows"] if row["key"] == "eleitores")
+        export = next(c for c in apoiadores["cells"] if c["action"] == "export")
         self.assertTrue(export["checked"])
         self.assertFalse(export["default"])
         self.assertFalse(cabo["is_default"])

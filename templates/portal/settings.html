@@ -105,7 +105,7 @@ ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_
         <input type="hidden" name="section" value="public_form">
         <div class="card-header">
           <h2 class="card-title">Formulário público de cadastro</h2>
-          <p class="card-description">Página aberta pelos eleitores ao acessar o link ou o QR Code de cada pessoa da equipe.</p>
+          <p class="card-description">Página aberta pelos apoiadores ao acessar o link ou o QR Code de cada pessoa da equipe.</p>
         </div>
         <fieldset class="contents" {% if not can_edit %}disabled{% endif %}>
           <div class="card-body space-y-6">
@@ -127,7 +127,7 @@ ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_
             {# Campos exibidos #}
             <div>
               <h3 class="text-sm font-semibold text-slate-900">Campos do cadastro</h3>
-              <p class="mt-1 text-sm text-slate-500">Nome completo e WhatsApp são sempre obrigatórios. Escolha o que mais pedir ao eleitor: quanto menos campos, maior a taxa de cadastro.</p>
+              <p class="mt-1 text-sm text-slate-500">Nome completo e WhatsApp são sempre obrigatórios. Escolha o que mais pedir ao apoiador: quanto menos campos, maior a taxa de cadastro.</p>
               <ul class="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200">
                 {% for row in mode_rows %}
                 <li class="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -167,7 +167,7 @@ ao vivo lendo os campos do DOM. Variáveis: veja apps/portal/views.py::settings_
               {% endif %}
               <div class="alert alert-info text-xs">
                 <p class="font-semibold">Aceite de WhatsApp (separado e opcional)</p>
-                <p class="mt-1 opacity-90">O formulário sempre oferece um segundo aceite, não marcado previamente, para o eleitor receber mensagens da campanha por WhatsApp. Disparos só são feitos para quem marcou esse aceite e não pediu descadastro.</p>
+                <p class="mt-1 opacity-90">O formulário sempre oferece um segundo aceite, não marcado previamente, para o apoiador receber mensagens da campanha por WhatsApp. Disparos só são feitos para quem marcou esse aceite e não pediu descadastro.</p>
               </div>
             </div>
 

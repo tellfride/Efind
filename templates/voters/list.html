@@ -1,18 +1,18 @@
 {% extends "layouts/shell.html" %}
 {% load static %}
-{% block title %}Eleitores · E-Find{% endblock %}
+{% block title %}Apoiadores · E-Find{% endblock %}
 {% block content %}
-{% page_header title="Eleitores" description="Cadastros da sua rede, com situação de consentimento para WhatsApp." %}
+{% page_header title="Apoiadores" description="Cadastros da sua rede, com situação de consentimento para WhatsApp." %}
   {% if perms.eleitores.export %}<a class="btn btn-outline" href="{% url 'voters:export' %}{% if export_query %}?{{ export_query }}{% endif %}">{% icon "download" %} Exportar CSV</a>{% endif %}
   {% if perms.eleitores.create %}
     <a class="btn btn-outline" href="{% url 'voters:import' %}">{% icon "upload" %} Importar</a>
-    <a class="btn btn-primary" href="{% url 'voters:create' %}">{% icon "user-plus" %} Novo eleitor</a>
+    <a class="btn btn-primary" href="{% url 'voters:create' %}">{% icon "user-plus" %} Novo apoiador</a>
   {% endif %}
 {% endpage_header %}
 
 {% if failed_geo %}
 <div class="mb-4">
-  {% alert "warning" title="Alguns eleitores não foram localizados no mapa" %}
+  {% alert "warning" title="Alguns apoiadores não foram localizados no mapa" %}
     <p>O endereço informado não foi encontrado. Você pode tentar novamente (por exemplo, depois de corrigir um CEP).</p>
     <form method="post" action="{% url 'voters:retry_geo' %}" class="mt-2">
       {% csrf_token %}
@@ -26,13 +26,13 @@
 
 <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
   <p class="text-sm text-slate-600">
-    <strong class="text-slate-900">{{ total|num }}</strong> eleitor{{ total|pluralize:",es" }} encontrado{{ total|pluralize }}
+    <strong class="text-slate-900">{{ total|num }}</strong> apoiador{{ total|pluralize:",es" }} encontrado{{ total|pluralize }}
     <span class="mx-1 text-slate-300">·</span>
     <strong class="text-emerald-700">{{ messageable|num }}</strong> apto{{ messageable|pluralize }} a WhatsApp
   </p>
   <label class="flex items-center gap-2 text-sm text-slate-600">
     <span class="shrink-0">Ordenar por</span>
-    <select class="select w-auto" x-data @change="window.location = $event.target.value" aria-label="Ordenar eleitores">
+    <select class="select w-auto" x-data @change="window.location = $event.target.value" aria-label="Ordenar apoiadores">
       {% for key, label in sort_options %}<option value="{% qs ordem=key page='' %}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
   </label>
@@ -41,13 +41,13 @@
 {% if total == 0 %}
 <div class="card">
   {% if has_filters %}
-    {% empty_state icon="search-x" title="Nenhum eleitor encontrado" description="Nenhum cadastro corresponde aos filtros aplicados. Tente ampliar a busca." %}
+    {% empty_state icon="search-x" title="Nenhum apoiador encontrado" description="Nenhum cadastro corresponde aos filtros aplicados. Tente ampliar a busca." %}
       <a class="btn btn-outline" href="{% url 'voters:list' %}">Limpar filtros</a>
     {% endempty_state %}
   {% else %}
-    {% empty_state icon="users-round" title="Nenhum eleitor cadastrado ainda" description="Compartilhe seu link ou QR Code, cadastre manualmente ou importe uma lista." %}
+    {% empty_state icon="users-round" title="Nenhum apoiador cadastrado ainda" description="Compartilhe seu link ou QR Code, cadastre manualmente ou importe uma lista." %}
       {% if perms.meu_link.view %}<a class="btn btn-primary" href="{% url 'voters:my_link' %}">{% icon "qr-code" %} Ver meu link</a>{% endif %}
-      {% if perms.eleitores.create %}<a class="btn btn-outline" href="{% url 'voters:create' %}">{% icon "user-plus" %} Novo eleitor</a>{% endif %}
+      {% if perms.eleitores.create %}<a class="btn btn-outline" href="{% url 'voters:create' %}">{% icon "user-plus" %} Novo apoiador</a>{% endif %}
     {% endempty_state %}
   {% endif %}
 </div>

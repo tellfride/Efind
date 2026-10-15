@@ -24,7 +24,7 @@ from .data import geo_queue_counts, load_map_data, map_filters
 from .geocoding import DEFAULT_LIMIT, geocode_run_message, requeue_all_voters, run_campaign_geocoding
 from .options import build_map_config
 
-VOTERS_URL = "/painel/eleitores/"
+VOTERS_URL = "/painel/apoiadores/"
 LOGIN_URL = "/login/"
 # Filtros que não se aplicam ao mapa (ele já mostra quem tem e quem não tem localização)
 HIDDEN_FILTERS = ["has_geo"]
@@ -55,7 +55,7 @@ def index(request):
 @module_permission_required("mapa", json_response=True)
 @require_GET
 def data(request):
-    """Dados agregados do mapa (bairros, pontos, limites) no escopo do usuário. Sem nomes nem telefones de eleitores."""
+    """Dados agregados do mapa (bairros, pontos, limites) no escopo do usuário. Sem nomes nem telefones de apoiadores."""
     filters = parse_voter_filters(request.GET)
     can_view_voters = can(request.perms, "eleitores", "view")
     return JsonResponse(load_map_data(request.user, filters, can_view_voters=can_view_voters))
@@ -74,24 +74,24 @@ def _back_to_map(request):
 @admin_required
 @require_POST
 def geocode_requeue_all(request):
-    """ADMIN: manda todos os eleitores com endereço de volta à fila de geocodificação."""
+    """ADMIN: manda todos os apoiadores com endereço de volta à fila de geocodificação."""
     count = requeue_all_voters(request.user)
     audit("voter.geocode", request=request, entity="Voter", details={"requeued": count, "scope": "all"})
     if count:
         messages.success(
             request,
-            f"{count} eleitor(es) voltaram para a fila e serão localizados de novo pelo CEP e bairro. "
+            f"{count} apoiador(es) voltaram para a fila e serão localizados de novo pelo CEP e bairro. "
             "Use \"Localizar pendentes agora\" ou aguarde o processamento em segundo plano.",
         )
     else:
-        messages.info(request, "Não há eleitores com endereço para relocalizar.")
+        messages.info(request, "Não há apoiadores com endereço para relocalizar.")
     return _back_to_map(request)
 
 
 @admin_required
 @require_POST
 def geocode_pending(request):
-    """ADMIN: devolve os FAILED da campanha à fila e processa até 15 eleitores agora."""
+    """ADMIN: devolve os FAILED da campanha à fila e processa até 15 apoiadores agora."""
     user = request.user
     limit = rate_limit(f"mapview-geocode:{user.campaign_id}", 12, 10 * 60)
     if not limit.ok:

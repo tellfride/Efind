@@ -1,5 +1,5 @@
-"""Modelo de planilha para download na importação de eleitores: arquivo servido pelo servidor, reconhecido pelo
-próprio importador e com exemplos que nunca viram eleitores por engano."""
+"""Modelo de planilha para download na importação de apoiadores: arquivo servido pelo servidor, reconhecido pelo
+próprio importador e com exemplos que nunca viram apoiadores por engano."""
 
 import codecs
 
@@ -23,7 +23,7 @@ from apps.voters.csv_import import (
 
 from .helpers import PASSWORD, make_campaign, make_user
 
-URL = "/painel/eleitores/importar/modelo/"
+URL = "/painel/apoiadores/importar/modelo/"
 
 
 class TemplateFileTests(TestCase):
@@ -42,7 +42,7 @@ class TemplateFileTests(TestCase):
         response = self.client.get(URL)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response["Content-Type"].startswith("text/csv"))
-        self.assertIn('attachment; filename="modelo-importacao-eleitores.csv"', response["Content-Disposition"])
+        self.assertIn('attachment; filename="modelo-importacao-apoiadores.csv"', response["Content-Disposition"])
         self.assertTrue(response.content.startswith(codecs.BOM_UTF8))  # o Excel reconhece acentos
         self.assertIn(b"\r\n", response.content)
 
@@ -63,7 +63,7 @@ class TemplateFileTests(TestCase):
         results = validate_records(records)
         self.assertEqual(len(results), len(TEMPLATE_EXAMPLE_ROWS))
         for result in results:
-            self.assertIsNone(result.voter)  # nenhum eleitor fictício é criado
+            self.assertIsNone(result.voter)  # nenhum apoiador fictício é criado
             self.assertTrue(any("Telefone inválido" in e for e in result.errors))
 
     def test_example_rows_show_valid_formats_for_every_other_column(self):
@@ -84,7 +84,7 @@ class TemplateFileTests(TestCase):
 
     def test_import_page_links_the_server_file_and_shows_the_guide(self):
         self.login("adm@modelo.com")
-        page = self.client.get("/painel/eleitores/importar/")
+        page = self.client.get("/painel/apoiadores/importar/")
         self.assertContains(page, f'href="{URL}"')
         self.assertContains(page, "Baixar modelo de planilha")
         self.assertContains(page, "Como preencher a planilha")
@@ -99,7 +99,7 @@ class TemplateFileTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response["Location"].startswith("/login/"))
 
-        self.login("cabo@modelo.com")  # o cabo cria eleitores por padrão
+        self.login("cabo@modelo.com")  # o cabo cria apoiadores por padrão
         self.assertEqual(self.client.get(URL).status_code, 200)
         UserPermission.objects.update_or_create(user=self.cabo, module="eleitores", defaults={"can_create": False})
         self.assertEqual(self.client.get(URL).status_code, 403)  # sem permissão de criar, sem modelo

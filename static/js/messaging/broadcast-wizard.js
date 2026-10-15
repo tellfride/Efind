@@ -116,7 +116,7 @@ document.addEventListener("alpine:init", () => {
       return Number(n || 0).toLocaleString("pt-BR");
     },
     voters(n) {
-      return this.fmt(n) + (Number(n) === 1 ? " eleitor" : " eleitores");
+      return this.fmt(n) + (Number(n) === 1 ? " apoiador" : " apoiadores");
     },
 
     // ---------------------------------------------------------- etapa 1: mensagem

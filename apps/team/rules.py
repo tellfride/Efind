@@ -257,18 +257,18 @@ def validate_delete_plan(
     new_parent: Any,
     has_other_active_coordinators: bool,
 ) -> PlanResult:
-    """Exclusão de membro: se ele tem eleitores, é obrigatório transferi-los para outro membro ativo do escopo;
+    """Exclusão de membro: se ele tem apoiadores, é obrigatório transferi-los para outro membro ativo do escopo;
     se tem membros vinculados, é obrigatório escolher o novo responsável deles.
     `transfer_to` deve ter sido carregado dentro do escopo do ator; `new_parent`, dentro da campanha."""
     if voters_count > 0:
         if transfer_to is None:
             return PlanResult(
-                False, "Escolha para quem transferir os eleitores cadastrados por este membro.", "transfer_to"
+                False, "Escolha para quem transferir os apoiadores cadastrados por este membro.", "transfer_to"
             )
         if same_id(transfer_to.id, target.id):
-            return PlanResult(False, "Escolha outro membro para receber os eleitores.", "transfer_to")
+            return PlanResult(False, "Escolha outro membro para receber os apoiadores.", "transfer_to")
         if not transfer_to.is_active:
-            return PlanResult(False, "O membro que vai receber os eleitores está inativo.", "transfer_to")
+            return PlanResult(False, "O membro que vai receber os apoiadores está inativo.", "transfer_to")
     if children_count > 0:
         if new_parent is None:
             return PlanResult(False, "Escolha o novo responsável pelos membros vinculados.", "new_parent")
@@ -339,6 +339,6 @@ def build_access_message(
         )
     lines = [intro, "", f"Acesse: {login_url}", f"E-mail: {email}", f"Senha provisória: {password}"]
     if registration_url:
-        lines += ["", f"Seu link para cadastrar eleitores: {registration_url}"]
+        lines += ["", f"Seu link para cadastrar apoiadores: {registration_url}"]
     lines += ["", "Por segurança, troque a senha no primeiro acesso (menu Meu perfil)."]
     return "\n".join(lines)

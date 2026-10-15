@@ -1,6 +1,6 @@
 """Escalas visuais do mapa (lógica pura).
 
-Cor: do lilás claro ao índigo escuro da marca conforme a quantidade de eleitores do bairro.
+Cor: do lilás claro ao índigo escuro da marca conforme a quantidade de apoiadores do bairro.
 Raio: proporcional à raiz quadrada da quantidade (a ÁREA do círculo é proporcional ao total).
 """
 
@@ -50,7 +50,7 @@ def _pick_color(ramp: Sequence[str], index: int, classes: int) -> str:
 def build_color_scale(max_count: float, ramp: Sequence[str] = COLOR_RAMP) -> list[ColorBin]:
     """Faixas contíguas de 1 até `max_count` (no máximo uma por cor da rampa).
 
-    As faixas iniciais são mais estreitas (escala quadrática), porque poucos bairros concentram muitos eleitores.
+    As faixas iniciais são mais estreitas (escala quadrática), porque poucos bairros concentram muitos apoiadores.
     """
     try:
         maximum = int(math.floor(max_count))

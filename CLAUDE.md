@@ -6,9 +6,12 @@ convenções e os contratos entre módulos. `legacy-nextjs/` é uma versão anti
 
 Regras essenciais:
 - Interface em português do Brasil; identificadores de código em inglês; mobile-first (360 px).
-- Toda view de painel começa com um decorator de `apps/core/decorators.py`; toda leitura/escrita de eleitores/equipe
+- Terminologia (decisão ética do cliente): em interface, textos, e-mails e documentação use **"apoiador(es)"**, nunca
+  "eleitor(es)". "Eleitoral" (cabo eleitoral, zona eleitoral) continua valendo. A chave de permissão `"eleitores"` fica
+  só como identificador interno (já gravado no banco). `apps/core/tests/test_terminology.py` barra o termo antigo.
+- Toda view de painel começa com um decorator de `apps/core/decorators.py`; toda leitura/escrita de apoiadores/equipe
   passa pelos helpers de escopo de `apps/core/access.py`. Nunca confie em ids vindos do cliente sem validar campanha e escopo.
-- Disparos de WhatsApp somente para eleitores com consentimento (`MESSAGEABLE_Q`) e somente por provedores oficiais
+- Disparos de WhatsApp somente para apoiadores com consentimento (`MESSAGEABLE_Q`) e somente por provedores oficiais
   (Meta Cloud API, Twilio, 360dialog) ou o simulador.
 - Use o kit de UI (`templates/components/`, `apps/core/templatetags/ui.py`, classes de `assets/css/app.css`) e o componente
   `{% voter_filters %}`. Nunca edite `static/css/app.css` à mão (`npm run build:css`).

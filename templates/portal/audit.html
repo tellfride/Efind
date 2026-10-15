@@ -13,7 +13,7 @@ Tabela no desktop e lista de cartões no celular (360 px).
 <div class="mb-6">
   {% alert "info" title="Prestação de contas (LGPD)" %}
     A Lei Geral de Proteção de Dados exige que a campanha saiba demonstrar quem tratou os dados pessoais e quando. Este registro guarda acessos, alterações de configurações, equipe e permissões, exportações e disparos, com data, hora e endereço IP.
-    Os detalhes não contêm dados pessoais de eleitores, apenas identificadores e contagens.
+    Os detalhes não contêm dados pessoais de apoiadores, apenas identificadores e contagens.
     {% if options.scoped %}<span class="mt-1 block">Você vê somente as ações da sua própria rede.</span>{% endif %}
   {% endalert %}
 </div>
@@ -86,7 +86,7 @@ Tabela no desktop e lista de cartões no celular (360 px).
                 <span class="block font-medium text-slate-900">{{ row.user_name }}</span>
                 <span class="block text-xs text-slate-500">{% if row.by_platform %}Suporte E-Find{% else %}{{ row.user_role }}{% endif %}</span>
               {% else %}
-                <span class="text-slate-500">Sistema / eleitor</span>
+                <span class="text-slate-500">Sistema / apoiador</span>
               {% endif %}
             </td>
             <td>
@@ -111,7 +111,7 @@ Tabela no desktop e lista de cartões no celular (360 px).
           <p class="shrink-0 text-xs text-slate-500 tabular-nums">{{ row.created_at|brdatetime }}</p>
         </div>
         <p class="text-sm text-slate-600">
-          {% if row.user_name %}{{ row.user_name }} <span class="text-xs text-slate-400">· {% if row.by_platform %}Suporte E-Find{% else %}{{ row.user_role }}{% endif %}</span>{% else %}Sistema / eleitor{% endif %}
+          {% if row.user_name %}{{ row.user_name }} <span class="text-xs text-slate-400">· {% if row.by_platform %}Suporte E-Find{% else %}{{ row.user_role }}{% endif %}</span>{% else %}Sistema / apoiador{% endif %}
         </p>
         <p class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
           {% if row.entity %}<span>{{ row.entity }}</span>{% endif %}

@@ -92,21 +92,21 @@
       {% csrf_token %}
       <div class="card-header">
         <h2 class="card-title text-red-700">Excluir {{ member.name }}</h2>
-        <p class="card-description">Ação definitiva: o acesso e o link de cadastro deste membro deixam de existir. Os eleitores nunca são apagados por aqui.</p>
+        <p class="card-description">Ação definitiva: o acesso e o link de cadastro deste membro deixam de existir. Os apoiadores nunca são apagados por aqui.</p>
       </div>
       <div class="card-body space-y-4">
         {% if delete_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ delete_form.non_field_errors.0 }}</div>{% endif %}
 
         {% if delete_form.needs_transfer %}
-        {% alert "warning" %}Este membro cadastrou <strong>{{ delete_form.voters_count|num }} eleitor{{ delete_form.voters_count|pluralize:"es" }}</strong>. Escolha quem passa a ser o responsável por {{ delete_form.voters_count|pluralize:"ele,eles" }}.{% endalert %}
+        {% alert "warning" %}Este membro cadastrou <strong>{{ delete_form.voters_count|num }} apoiador{{ delete_form.voters_count|pluralize:"es" }}</strong>. Escolha quem passa a ser o responsável por {{ delete_form.voters_count|pluralize:"ele,eles" }}.{% endalert %}
         <div class="space-y-1.5">
-          <label for="delete-transfer-to" class="label">Transferir os eleitores para<span class="ml-0.5 text-red-500">*</span></label>
+          <label for="delete-transfer-to" class="label">Transferir os apoiadores para<span class="ml-0.5 text-red-500">*</span></label>
           <select id="delete-transfer-to" name="transfer_to" class="select" required {% if delete_form.transfer_to.errors %}aria-invalid="true"{% endif %}>
             <option value="">Selecione…</option>
             {% for u in delete_form.transfer_options %}<option value="{{ u.pk }}" {% if delete_form.transfer_to.value|stringformat:"s" == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.name }} · {{ u.role|role_label }}</option>{% endfor %}
           </select>
           {% if delete_form.transfer_to.errors %}<p class="field-error" role="alert">{{ delete_form.transfer_to.errors.0 }}</p>{% endif %}
-          {% if not delete_form.transfer_options %}<p class="field-error">Não há outro membro ativo disponível para receber os eleitores. Ative ou cadastre outro membro antes de excluir.</p>{% endif %}
+          {% if not delete_form.transfer_options %}<p class="field-error">Não há outro membro ativo disponível para receber os apoiadores. Ative ou cadastre outro membro antes de excluir.</p>{% endif %}
         </div>
         {% endif %}
 
@@ -124,7 +124,7 @@
         {% endif %}
 
         {% if not delete_form.needs_transfer and not delete_form.needs_new_parent %}
-        <p class="text-sm text-slate-600">Este membro não tem eleitores cadastrados nem membros vinculados.</p>
+        <p class="text-sm text-slate-600">Este membro não tem apoiadores cadastrados nem membros vinculados.</p>
         {% endif %}
       </div>
       <div class="card-footer flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -140,9 +140,9 @@
     <div class="space-y-6 lg:col-span-2">
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {% if can_see_voters %}
-        {% stat_card "Eleitores cadastrados" stats.total|num icon="users-round" tone="brand" hint="ver na lista" href=voters_url %}
+        {% stat_card "Apoiadores cadastrados" stats.total|num icon="users-round" tone="brand" hint="ver na lista" href=voters_url %}
         {% else %}
-        {% stat_card "Eleitores cadastrados" stats.total|num icon="users-round" tone="brand" %}
+        {% stat_card "Apoiadores cadastrados" stats.total|num icon="users-round" tone="brand" %}
         {% endif %}
         {% stat_card "Hoje" stats.today|num icon="calendar" tone="green" %}
         {% stat_card "Últimos 7 dias" stats.d7|num icon="trending-up" tone="blue" %}
@@ -172,7 +172,7 @@
       <section class="card">
         <div class="card-header">
           <h2 class="card-title">Principais bairros</h2>
-          <p class="card-description">Onde estão os eleitores cadastrados por este membro.</p>
+          <p class="card-description">Onde estão os apoiadores cadastrados por este membro.</p>
         </div>
         <div class="card-body">
           {% if neighborhoods %}
@@ -188,7 +188,7 @@
             {% endfor %}
           </ol>
           {% else %}
-          <p class="text-sm text-slate-500">Ainda não há eleitores com bairro informado.</p>
+          <p class="text-sm text-slate-500">Ainda não há apoiadores com bairro informado.</p>
           {% endif %}
         </div>
       </section>
@@ -196,13 +196,13 @@
       {# Últimos cadastros #}
       {% if can_see_voters %}
       <section class="card">
-        <div class="card-header"><h2 class="card-title">Últimos cadastros</h2><p class="card-description">Os 10 eleitores mais recentes registrados por este membro.</p></div>
+        <div class="card-header"><h2 class="card-title">Últimos cadastros</h2><p class="card-description">Os 10 apoiadores mais recentes registrados por este membro.</p></div>
         {% if recent_voters %}
         <ul class="divide-y divide-slate-100">
           {% for v in recent_voters %}
           <li class="flex items-center justify-between gap-3 px-5 py-3">
             <div class="min-w-0">
-              <a class="link block truncate" href="/painel/eleitores/{{ v.id }}/">{{ v.name }}</a>
+              <a class="link block truncate" href="/painel/apoiadores/{{ v.id }}/">{{ v.name }}</a>
               <p class="truncate text-xs text-slate-500">{% if v.neighborhood %}{{ v.neighborhood }}{% else %}Bairro não informado{% endif %}</p>
             </div>
             <span class="shrink-0 text-xs text-slate-500">{{ v.created_at|brdatetime }}</span>
@@ -210,7 +210,7 @@
           {% endfor %}
         </ul>
         {% else %}
-        <p class="card-body text-sm text-slate-500">Nenhum eleitor cadastrado ainda.</p>
+        <p class="card-body text-sm text-slate-500">Nenhum apoiador cadastrado ainda.</p>
         {% endif %}
       </section>
       {% endif %}
@@ -228,7 +228,7 @@
                 <a class="link block truncate" href="{% url 'team:detail' item.member.pk %}">{{ item.member.name }}</a>
                 <p class="text-xs text-slate-500">{{ item.member.role|role_label }}{% if not item.member.is_active %} · inativo{% endif %}</p>
               </div>
-              <p class="shrink-0 text-right text-sm font-semibold tabular-nums">{{ item.voters|num }} <span class="block text-[11px] font-normal text-slate-500">eleitor{{ item.voters|pluralize:"es" }}</span></p>
+              <p class="shrink-0 text-right text-sm font-semibold tabular-nums">{{ item.voters|num }} <span class="block text-[11px] font-normal text-slate-500">apoiador{{ item.voters|pluralize:"es" }}</span></p>
             </div>
             {% if item.member.goal %}
             <div class="mt-2 flex items-center gap-2 pl-11">
@@ -253,7 +253,7 @@
           <dt class="col-span-2 text-slate-500">Papel</dt><dd class="col-span-3 font-medium">{{ member.role|role_label }}</dd>
           {% if member.role != "ADMIN" %}<dt class="col-span-2 text-slate-500">Responsável</dt><dd class="col-span-3 font-medium">{% if parent %}{{ parent.name }}{% else %}—{% endif %}</dd>{% endif %}
           <dt class="col-span-2 text-slate-500">Região</dt><dd class="col-span-3">{% if member.region %}{{ member.region }}{% else %}—{% endif %}</dd>
-          <dt class="col-span-2 text-slate-500">Meta</dt><dd class="col-span-3">{% if member.goal %}{{ member.goal|num }} eleitores{% else %}Sem meta{% endif %}</dd>
+          <dt class="col-span-2 text-slate-500">Meta</dt><dd class="col-span-3">{% if member.goal %}{{ member.goal|num }} apoiadores{% else %}Sem meta{% endif %}</dd>
           <dt class="col-span-2 text-slate-500">E-mail</dt><dd class="col-span-3 break-all">{{ member.email }}</dd>
           <dt class="col-span-2 text-slate-500">Telefone</dt>
           <dd class="col-span-3">{% if member.phone %}{{ member.phone|phone }}{% else %}—{% endif %}</dd>
@@ -266,7 +266,7 @@
       <section class="card">
         <div class="card-header">
           <h2 class="card-title">Link de cadastro</h2>
-          <p class="card-description">Eleitores cadastrados por este link ou QR Code ficam vinculados a {{ member.name }}.</p>
+          <p class="card-description">Apoiadores cadastrados por este link ou QR Code ficam vinculados a {{ member.name }}.</p>
         </div>
         <div class="card-body space-y-3">
           {% if member.is_active %}
@@ -290,7 +290,7 @@
           {% csrf_token %}
           <div class="card-header">
             <h2 class="card-title">Mover de responsável</h2>
-            <p class="card-description">Os eleitores dele passam a aparecer na rede do novo responsável.</p>
+            <p class="card-description">Os apoiadores dele passam a aparecer na rede do novo responsável.</p>
           </div>
           <div class="card-body">
             <label for="move-parent" class="label">Novo responsável</label>

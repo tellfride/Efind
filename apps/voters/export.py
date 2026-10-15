@@ -1,4 +1,4 @@
-"""Exportação de eleitores em CSV: colunas e conversão de cada registro (pura, sem banco)."""
+"""Exportação de apoiadores em CSV: colunas e conversão de cada registro (pura, sem banco)."""
 
 from __future__ import annotations
 
@@ -90,7 +90,7 @@ def voter_to_export_row(voter: Any, today=None) -> dict[str, Any]:
 
 def export_filename(today=None) -> str:
     day = today or timezone.localdate()
-    return f"eleitores-{day.isoformat()}.csv"
+    return f"apoiadores-{day.isoformat()}.csv"
 
 
 def audit_safe_filters(filters: Mapping[str, Any]) -> dict[str, Any]:

@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}{{ page_title }} · E-Find{% endblock %}
 {% block content %}
-{% page_header title=page_title description="Escreva o texto com variáveis e veja ao lado como o eleitor vai receber." %}
+{% page_header title=page_title description="Escreva o texto com variáveis e veja ao lado como o apoiador vai receber." %}
   <a class="btn btn-outline" href="{{ list_url }}">{% icon "arrow-left" %} Voltar</a>
 {% endpage_header %}
 
@@ -31,7 +31,7 @@
     <section class="card">
       <div class="card-header">
         <h2 class="card-title">Mensagem</h2>
-        <p class="card-description">Clique em uma variável para inseri-la onde está o cursor. Cada eleitor recebe o texto com os próprios dados.</p>
+        <p class="card-description">Clique em uma variável para inseri-la onde está o cursor. Cada apoiador recebe o texto com os próprios dados.</p>
       </div>
       <div class="card-body space-y-4">
         {% if not read_only %}
@@ -66,7 +66,7 @@
         <div x-show="missingOptOut" x-cloak class="alert alert-warning flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" role="status">
           <div>
             <p class="font-semibold">Falta a instrução de descadastro</p>
-            <p class="mt-1 text-sm">Toda mensagem deve explicar como deixar de receber (por exemplo, responder SAIR). Isso protege o eleitor e a campanha.</p>
+            <p class="mt-1 text-sm">Toda mensagem deve explicar como deixar de receber (por exemplo, responder SAIR). Isso protege o apoiador e a campanha.</p>
           </div>
           {% if not read_only %}<button type="button" class="btn btn-outline btn-sm shrink-0" @click="addOptOut()">{% icon "plus" %} Adicionar instrução de descadastro</button>{% endif %}
         </div>
